@@ -429,6 +429,10 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         open_folder_action.setShortcut("Ctrl+Shift+O")
         open_folder_action.triggered.connect(self.open_database_folder)
         
+        create_multifile_action = file_menu.addAction("Create Multi-File Database...")
+        create_multifile_action.setShortcut("Ctrl+Shift+N")
+        create_multifile_action.triggered.connect(self.create_multi_file_database)
+        
         # Recent Databases submenu
         self.recent_databases_menu = file_menu.addMenu("Recent Databases")
         self.setup_recent_databases_menu()
@@ -1779,17 +1783,176 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
 
     def open_database_folder(self):
         """Open a database folder"""
-        from PyQt6.QtWidgets import QFileDialog
+        from PyQt6.QtWidgets import QFileDialog, QMessageBox
+        from pathlib import Path
+        
         folder_path = QFileDialog.getExistingDirectory(
             self,
             "Open Elevation Database Folder"
         )
         
         if folder_path:
+            folder_path_obj = Path(folder_path)
+            
+            # Check if metadata file exists
+            existing_json_files = list(folder_path_obj.glob("*.json"))
+            
+            if not existing_json_files:
+                # No metadata file found - ask user if they want to create one
+                reply = QMessageBox.question(
+                    self,
+                    "No Multi-File Database Definition",
+                    f"This folder does not contain a multi-file database definition file.\n\n"
+                    f"Would you like to scan this folder for elevation data and create a definition file?\n\n"
+                    f"This will make loading faster and enable full multi-file database features.",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes
+                )
+                
+                if reply == QMessageBox.StandardButton.Yes:
+                    # Create metadata file using the create_multi_file_database workflow
+                    from multi_file_database import MultiFileDatabase
+                    
+                    try:
+                        print(f"🔨 Creating metadata file for folder: {folder_path}")
+                        success = MultiFileDatabase.create_metadata_file(folder_path_obj, None)
+                        
+                        if not success:
+                            QMessageBox.warning(
+                                self,
+                                "Metadata Creation Failed",
+                                f"Could not create metadata file for this folder.\n\n"
+                                f"Common issues:\n"
+                                f"• No valid DEM files found\n"
+                                f"• Files cannot be read as elevation data\n\n"
+                                f"You can try loading individual files instead."
+                            )
+                            return
+                    except Exception as e:
+                        print(f"❌ Error creating metadata: {e}")
+                        QMessageBox.critical(
+                            self,
+                            "Error Creating Metadata",
+                            f"An error occurred while creating the metadata file:\n\n{str(e)}"
+                        )
+                        return
+            
+            # Try to load the database (now with metadata file if we just created one)
             success = self.load_database_folder(folder_path)
             if success:
                 recent_db_manager.add_recent_database(folder_path, 'multi_file')
                 self.update_recent_databases_menu()
+    
+    def create_multi_file_database(self):
+        """Create a multi-file database from a folder of DEM files"""
+        from PyQt6.QtWidgets import QFileDialog, QMessageBox, QProgressDialog, QInputDialog
+        from PyQt6.QtCore import Qt
+        from pathlib import Path
+        
+        # Get folder from user
+        folder_path = QFileDialog.getExistingDirectory(
+            self,
+            "Select Folder to Create Multi-File Database",
+            "",
+            QFileDialog.Option.ShowDirsOnly
+        )
+        
+        if not folder_path:
+            return
+            
+        folder_path = Path(folder_path)
+        
+        # Check if metadata file already exists
+        existing_json_files = list(folder_path.glob("*_metadata.json"))
+        if existing_json_files:
+            reply = QMessageBox.question(
+                self,
+                "Metadata File Exists",
+                f"This folder already contains a metadata file:\n{existing_json_files[0].name}\n\n"
+                f"Do you want to recreate it?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+        
+        # Get optional database name from user
+        database_name, ok = QInputDialog.getText(
+            self,
+            "Database Name",
+            "Enter name for database:",
+            text=folder_path.name
+        )
+        
+        if not ok:
+            return
+            
+        if not database_name.strip():
+            database_name = None
+        
+        # Show progress dialog
+        progress = QProgressDialog("Scanning folder for DEM files...", "Cancel", 0, 0, self)
+        progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.setAutoClose(False)
+        progress.setAutoReset(False)
+        progress.show()
+        
+        try:
+            # Import and create metadata file
+            from multi_file_database import MultiFileDatabase
+            
+            print(f"🔨 Creating multi-file database: {folder_path}")
+            success = MultiFileDatabase.create_metadata_file(folder_path, database_name)
+            
+            progress.close()
+            
+            if success:
+                # Show success dialog
+                QMessageBox.information(
+                    self,
+                    "Multi-File Database Created",
+                    f"Successfully created multi-file database metadata.\n\n"
+                    f"Folder: {folder_path.name}\n"
+                    f"Metadata file: {folder_path.name}_metadata.json\n\n"
+                    f"Loading database now..."
+                )
+                
+                # Load the newly created database
+                if self.load_database_folder(folder_path):
+                    # Add to recent databases
+                    from recent_databases import RecentDatabasesManager
+                    recent_db_manager = RecentDatabasesManager()
+                    recent_db_manager.add_recent_database(str(folder_path), 'multi_file')
+                    self.update_recent_databases_menu()
+                    
+                    print(f"✅ Successfully created and loaded multi-file database: {folder_path.name}")
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "Database Load Failed",
+                        f"Created metadata file but failed to load the database.\n\n"
+                        f"You can try opening the folder manually using 'Open Elevation Database Folder...'"
+                    )
+            else:
+                QMessageBox.critical(
+                    self,
+                    "Creation Failed",
+                    f"Failed to create multi-file database.\n\n"
+                    f"Common issues:\n"
+                    f"• No valid DEM files found in folder\n"
+                    f"• Files cannot be read as elevation data\n"
+                    f"• Permission issues\n\n"
+                    f"Check the console output for details."
+                )
+                
+        except Exception as e:
+            progress.close()
+            print(f"❌ Error creating multi-file database: {e}")
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"An error occurred while creating the multi-file database:\n\n{str(e)}"
+            )
 
     def open_recent_database(self, path: str, db_type: str):
         """Open a recent database"""
@@ -2790,9 +2953,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                         self.world_map.set_database_background('gtopo30', database_path)
                         print(f"🗺️ Set Gtopo30 background for database: {database_path.name}")
                     else:
-                        # Try to detect other database types or use default
-                        self.world_map.set_database_background('multi_file', database_path)
-                        print(f"🗺️ Set multi-file background for database: {database_path.name}")
+                        # For non-gtopo30 databases, clear any database-specific background and use default
+                        self.world_map.clear_database_background()
+                        print(f"🗺️ Using default background for database: {database_path.name}")
                     
                     # Update window title and status
                     self.update_window_title(Path(folder_path).name)

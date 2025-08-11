@@ -91,6 +91,8 @@ class MultiFileDatabase:
                         bounds_info = self.dem_reader.get_geographic_bounds()
                         if bounds_info:
                             west, north, east, south = bounds_info
+                            # Clean up floating-point precision issues
+                            west, north, east, south = self._normalize_bounds(west, north, east, south)
                             bounds = TileBounds(west, north, east, south)
                             
                             # Get actual pixel dimensions
@@ -134,6 +136,8 @@ class MultiFileDatabase:
                         bounds_info = self.dem_reader.get_geographic_bounds()
                         if bounds_info:
                             west, north, east, south = bounds_info
+                            # Clean up floating-point precision issues
+                            west, north, east, south = self._normalize_bounds(west, north, east, south)
                             bounds = TileBounds(west, north, east, south)
                             
                             # Calculate actual resolution
@@ -157,6 +161,63 @@ class MultiFileDatabase:
                     print(f"   ⚠️ Could not process {dem_file.name}: {e}")
                     continue
     
+    def _normalize_bounds(self, west: float, north: float, east: float, south: float) -> Tuple[float, float, float, float]:
+        """Clean up floating-point precision issues in bounds"""
+        # Round very small values near zero to exactly zero
+        tolerance = 1e-10
+        
+        if abs(west) < tolerance:
+            west = 0.0
+        if abs(north - 90.0) < tolerance:
+            north = 90.0
+        if abs(east - 90.0) < tolerance:
+            east = 90.0
+        elif abs(east - 180.0) < tolerance:
+            east = 180.0
+        elif abs(east) < tolerance:
+            east = 0.0
+        if abs(south) < tolerance:
+            south = 0.0
+        elif abs(south + 90.0) < tolerance:
+            south = -90.0
+            
+        # Round to reasonable precision (6 decimal places should be sufficient for geographic coordinates)
+        west = round(west, 6)
+        north = round(north, 6)
+        east = round(east, 6)
+        south = round(south, 6)
+        
+        return west, north, east, south
+    
+    @staticmethod
+    def _static_normalize_bounds(west: float, north: float, east: float, south: float) -> Tuple[float, float, float, float]:
+        """Static version of bounds normalization for use in class methods"""
+        # Round very small values near zero to exactly zero
+        tolerance = 1e-10
+        
+        if abs(west) < tolerance:
+            west = 0.0
+        if abs(north - 90.0) < tolerance:
+            north = 90.0
+        if abs(east - 90.0) < tolerance:
+            east = 90.0
+        elif abs(east - 180.0) < tolerance:
+            east = 180.0
+        elif abs(east) < tolerance:
+            east = 0.0
+        if abs(south) < tolerance:
+            south = 0.0
+        elif abs(south + 90.0) < tolerance:
+            south = -90.0
+            
+        # Round to reasonable precision (6 decimal places should be sufficient for geographic coordinates)
+        west = round(west, 6)
+        north = round(north, 6)
+        east = round(east, 6)
+        south = round(south, 6)
+        
+        return west, north, east, south
+    
     def _calculate_global_bounds(self):
         """Calculate the overall bounds of all tiles"""
         if not self.tiles:
@@ -176,26 +237,35 @@ class MultiFileDatabase:
     
     def get_tiles_for_bounds(self, west: float, north: float, east: float, south: float) -> List[TileInfo]:
         """Get all tiles that intersect with the given bounds"""
+        print(f"🔍 DEBUG: get_tiles_for_bounds called with bounds: W={west}°, N={north}°, E={east}°, S={south}°")
+        print(f"🔍 DEBUG: Database type: {self.database_type}, Total tiles available: {len(self.tiles)}")
+        
         intersecting_tiles = []
         
         # Always check tiles in their normal positions first
+        print(f"🔍 DEBUG: Checking normal tile positions...")
         normal_tiles = self._get_tiles_for_simple_bounds(west, north, east, south)
+        print(f"🔍 DEBUG: Found {len(normal_tiles)} normal tiles: {[t.name for t in normal_tiles]}")
         intersecting_tiles.extend(normal_tiles)
         
         # Check for meridian crossing cases and add shifted tiles
         crossing_east = east > 180.0
         crossing_west = west < -180.0
         
+        print(f"🔍 DEBUG: Meridian crossing check - crossing_east: {crossing_east}, crossing_west: {crossing_west}")
+        
         if crossing_east:
             # Selection crosses eastward past 180° - check each tile shifted +360°
-            print(f"🌍 Crossing east detected (east={east}°) - checking tiles shifted +360°")
+            print(f"🌍 DEBUG: Crossing east detected (east={east}°) - checking tiles shifted +360°")
             shifted_tiles = self._get_tiles_with_longitude_shift(west, north, east, south, 360.0)
+            print(f"🔍 DEBUG: Found {len(shifted_tiles)} east-shifted tiles: {[t.name for t in shifted_tiles]}")
             intersecting_tiles.extend(shifted_tiles)
             
         if crossing_west:
             # Selection crosses westward past -180° - check each tile shifted -360°
-            print(f"🌍 Crossing west detected (west={west}°) - checking tiles shifted -360°")
+            print(f"🌍 DEBUG: Crossing west detected (west={west}°) - checking tiles shifted -360°")
             shifted_tiles = self._get_tiles_with_longitude_shift(west, north, east, south, -360.0)
+            print(f"🔍 DEBUG: Found {len(shifted_tiles)} west-shifted tiles: {[t.name for t in shifted_tiles]}")
             intersecting_tiles.extend(shifted_tiles)
         
         # Remove duplicates (same tile found multiple ways)
@@ -205,6 +275,10 @@ class MultiFileDatabase:
             if tile.name not in seen_names:
                 unique_tiles.append(tile)
                 seen_names.add(tile.name)
+        
+        print(f"🔍 DEBUG: Final unique tiles: {len(unique_tiles)} total")
+        for tile in unique_tiles:
+            print(f"   📋 {tile.name}: {tile.bounds}")
         
         if crossing_east or crossing_west:
             print(f"🌍 Meridian crossing: found {len(unique_tiles)} unique tiles (including shifted)")
@@ -225,6 +299,7 @@ class MultiFileDatabase:
     
     def _get_tiles_with_longitude_shift(self, west: float, north: float, east: float, south: float, longitude_shift: float) -> List[TileInfo]:
         """Check each tile with shifted longitude coordinates to find meridian crossing matches"""
+        print(f"🔍 DEBUG: _get_tiles_with_longitude_shift called with shift={longitude_shift}°")
         intersecting_tiles = []
         
         for tile in self.tiles.values():
@@ -232,11 +307,19 @@ class MultiFileDatabase:
             shifted_west = tile.bounds.west + longitude_shift
             shifted_east = tile.bounds.east + longitude_shift
             
+            print(f"   🔄 DEBUG: Checking tile {tile.name}: original ({tile.bounds.west:.1f}°, {tile.bounds.east:.1f}°) → shifted ({shifted_west:.1f}°, {shifted_east:.1f}°)")
+            
             # Check if the shifted tile intersects with selection bounds
-            if (shifted_west < east and shifted_east > west and
-                tile.bounds.south < north and tile.bounds.north > south):
+            intersects = (shifted_west < east and shifted_east > west and
+                         tile.bounds.south < north and tile.bounds.north > south)
+            
+            print(f"      🔍 DEBUG: Intersection check: ({shifted_west:.1f} < {east}) and ({shifted_east:.1f} > {west}) and ({tile.bounds.south:.1f} < {north}) and ({tile.bounds.north:.1f} > {south}) = {intersects}")
+            
+            if intersects:
                 intersecting_tiles.append(tile)
-                print(f"   Found shifted tile: {tile.name} shifted to ({shifted_west:.1f}°, {shifted_east:.1f}°)")
+                print(f"   ✅ Found shifted tile: {tile.name} shifted to ({shifted_west:.1f}°, {shifted_east:.1f}°)")
+            else:
+                print(f"   ❌ No intersection for shifted tile: {tile.name}")
         
         return intersecting_tiles
     
@@ -316,11 +399,17 @@ class MultiFileDatabase:
                 # Handle meridian crossing by determining if this tile was found via shifting
                 tile_needs_shifting = False
                 
+                print(f"🔍 DEBUG: Processing tile {tile.name} with bounds {tile.bounds}")
+                print(f"🔍 DEBUG: Selection bounds: W={west}°, N={north}°, E={east}°, S={south}°")
+                print(f"🔍 DEBUG: crosses_meridian={crosses_meridian}")
+                
                 # Check if this tile needs longitude shifting for intersection calculation
                 if crosses_meridian:
                     # Check if tile intersects normally
                     normal_intersects = (tile.bounds.west < east and tile.bounds.east > west and
                                         tile.bounds.south < north and tile.bounds.north > south)
+                    
+                    print(f"🔍 DEBUG: Normal intersection check: ({tile.bounds.west} < {east}) and ({tile.bounds.east} > {west}) and ({tile.bounds.south} < {north}) and ({tile.bounds.north} > {south}) = {normal_intersects}")
                     
                     if not normal_intersects:
                         # This tile was found via shifting - need to calculate intersection with shifted coordinates
@@ -331,6 +420,8 @@ class MultiFileDatabase:
                             intersect_west = max(west, shifted_west)
                             intersect_east = min(east, shifted_east)
                             tile_needs_shifting = True
+                            print(f"🔍 DEBUG: East crossing - tile shifted to ({shifted_west}°, {shifted_east}°)")
+                            print(f"🔍 DEBUG: Shifted intersection: W={intersect_west}°, E={intersect_east}°")
                         elif west < -180.0:  # West crossing case
                             # Shift tile west by 360° for intersection calculation
                             # gt30e140n90 (140° to 180°) becomes (-220° to -180°)
@@ -339,16 +430,20 @@ class MultiFileDatabase:
                             intersect_west = max(west, shifted_west)
                             intersect_east = min(east, shifted_east)
                             tile_needs_shifting = True
+                            print(f"🔍 DEBUG: West crossing - tile shifted to ({shifted_west}°, {shifted_east}°)")
+                            print(f"🔍 DEBUG: Shifted intersection: W={intersect_west}°, E={intersect_east}°")
                 
                 if not tile_needs_shifting:
                     # Normal intersection calculation
                     intersect_west = max(west, tile.bounds.west)
                     intersect_east = min(east, tile.bounds.east)
+                    print(f"🔍 DEBUG: Normal intersection: W={intersect_west}°, E={intersect_east}°")
                 
                 intersect_north = min(north, tile.bounds.north)
                 intersect_south = max(south, tile.bounds.south)
                 
-                print(f"   📍 Intersection: W={intersect_west:.1f}°, N={intersect_north:.1f}°, E={intersect_east:.1f}°, S={intersect_south:.1f}°")
+                print(f"   📍 FINAL Intersection: W={intersect_west:.1f}°, N={intersect_north:.1f}°, E={intersect_east:.1f}°, S={intersect_south:.1f}°")
+                print(f"🔍 DEBUG: tile_needs_shifting = {tile_needs_shifting}")
                 
                 # Calculate where this intersection should go in the output array (handling meridian crossing)
                 output_west_px = map_longitude_to_array_x(intersect_west, west, east, output_width, crosses_meridian)
@@ -369,9 +464,20 @@ class MultiFileDatabase:
                 if tile_needs_shifting:
                     # Need to map shifted intersection back to original tile coordinates
                     if east > 180.0:  # East crossing case
-                        # Map shifted intersection coordinates back to original tile space
-                        tile_intersect_west = intersect_west - 360.0 if intersect_west > 180.0 else intersect_west
-                        tile_intersect_east = intersect_east - 360.0 if intersect_east > 180.0 else intersect_east
+                        # For positive meridian crossing, the shifted intersection coordinates need to be
+                        # wrapped back to the tile's coordinate space properly.
+                        # The issue is that we shifted the tile by +360° for intersection calculation,
+                        # but now we need to map the intersection back to the tile's actual coordinate range.
+                        
+                        # Simple approach: just subtract 360° from both coordinates to get them 
+                        # back into the tile's coordinate space
+                        tile_intersect_west = intersect_west - 360.0
+                        tile_intersect_east = intersect_east - 360.0
+                        
+                        # Ensure they're within the tile's actual bounds
+                        tile_intersect_west = max(tile_intersect_west, tile.bounds.west)
+                        tile_intersect_east = min(tile_intersect_east, tile.bounds.east)
+                        
                     elif west < -180.0:  # West crossing case
                         # Map shifted intersection coordinates back to original tile space
                         # For west crossing, coordinates like -200° should map to 160°, -180° should map to 180°
@@ -382,10 +488,22 @@ class MultiFileDatabase:
                     tile_intersect_west = intersect_west
                     tile_intersect_east = intersect_east
                 
+                print(f"🔍 DEBUG: Tile pixel calculation inputs:")
+                print(f"   tile_intersect_west = {tile_intersect_west:.6f}°")
+                print(f"   tile_intersect_east = {tile_intersect_east:.6f}°")
+                print(f"   tile.bounds.west = {tile.bounds.west:.6f}°")
+                print(f"   tile_width_deg = {tile_width_deg:.6f}°")
+                print(f"   tile_width_px = {tile_width_px}")
+                
                 tile_west_px = int((tile_intersect_west - tile.bounds.west) / tile_width_deg * tile_width_px)
                 tile_east_px = int((tile_intersect_east - tile.bounds.west) / tile_width_deg * tile_width_px)
                 tile_north_px = int((tile.bounds.north - intersect_north) / tile_height_deg * tile_height_px)
                 tile_south_px = int((tile.bounds.north - intersect_south) / tile_height_deg * tile_height_px)
+                
+                print(f"🔍 DEBUG: Calculated tile pixels:")
+                print(f"   tile_west_px = {tile_west_px}")
+                print(f"   tile_east_px = {tile_east_px}")
+                print(f"   pixel width = {tile_east_px - tile_west_px}")
                 
                 # Debug output for meridian crossing cases
                 if tile_needs_shifting:
@@ -486,6 +604,177 @@ class MultiFileDatabase:
             return None
         
         return assembled_data
+    
+    @staticmethod
+    def create_metadata_file(folder_path: Path, database_name: str = None) -> bool:
+        """
+        Create a metadata JSON file for a folder containing DEM files
+        
+        Args:
+            folder_path: Path to folder containing DEM files
+            database_name: Optional name for the database (defaults to folder name)
+            
+        Returns:
+            True if metadata file created successfully, False otherwise
+        """
+        import json
+        from datetime import datetime
+        
+        folder_path = Path(folder_path)
+        
+        if not folder_path.exists() or not folder_path.is_dir():
+            print(f"❌ {folder_path} is not a valid directory")
+            return False
+        
+        print(f"🔍 Scanning folder for DEM files: {folder_path}")
+        
+        # Look for DEM files (common extensions)
+        dem_files = []
+        for pattern in ['*.dem', '*.bil', '*.tif', '*.tiff']:
+            found_files = list(folder_path.rglob(pattern))
+            dem_files.extend(found_files)
+            
+        if not dem_files:
+            print(f"❌ No DEM files found in {folder_path}")
+            return False
+            
+        print(f"📁 Found {len(dem_files)} potential DEM files")
+        
+        # Create DEM reader for scanning
+        dem_reader = DEMReader()
+        tiles_metadata = {}
+        
+        # Calculate overall bounds and resolution
+        all_west = []
+        all_north = []  
+        all_east = []
+        all_south = []
+        resolutions = []
+        valid_files = 0
+        
+        for dem_file in dem_files:
+            try:
+                print(f"   📊 Processing: {dem_file.name}")
+                
+                if dem_reader.load_dem_file(str(dem_file)):
+                    bounds = dem_reader.get_geographic_bounds()
+                    if bounds:
+                        west, north, east, south = bounds
+                        # Clean up floating-point precision issues
+                        west, north, east, south = MultiFileDatabase._static_normalize_bounds(west, north, east, south)
+                        width = dem_reader.width
+                        height = dem_reader.height
+                        
+                        # Calculate resolution (pixels per degree)
+                        tile_width_deg = east - west
+                        tile_height_deg = north - south
+                        if tile_width_deg > 0 and tile_height_deg > 0:
+                            res_x = width / tile_width_deg
+                            res_y = height / tile_height_deg
+                            avg_resolution = (res_x + res_y) / 2.0
+                            resolutions.append(avg_resolution)
+                        
+                        # Get relative path from folder
+                        relative_path = dem_file.relative_to(folder_path)
+                        
+                        # Create tile metadata
+                        tile_name = dem_file.stem
+                        tiles_metadata[tile_name] = {
+                            "file_path": str(relative_path),
+                            "dimensions": [width, height],
+                            "bounds": [west, north, east, south],
+                            "bounds_desc": f"{west:.1f}°{'E' if west >= 0 else 'W'}, {north:.1f}°{'N' if north >= 0 else 'S'}, {east:.1f}°{'E' if east >= 0 else 'W'}, {south:.1f}°{'N' if south >= 0 else 'S'}",
+                            "resolution_degrees": [tile_width_deg / width, tile_height_deg / height],
+                            "nodata_value": getattr(dem_reader, 'no_data_value', -9999),
+                            "byte_order": "little_endian",  # Most modern files
+                            "data_format": dem_file.suffix.upper()[1:],  # Remove dot, uppercase
+                            "bits_per_sample": 16  # Most common
+                        }
+                        
+                        # Collect bounds for overall calculation
+                        all_west.append(west)
+                        all_north.append(north)
+                        all_east.append(east)
+                        all_south.append(south)
+                        valid_files += 1
+                        
+                        print(f"      ✅ {width}×{height}, {west:.1f}°-{east:.1f}°, {south:.1f}°-{north:.1f}°")
+                    else:
+                        print(f"      ⚠️ Could not get geographic bounds")
+                else:
+                    print(f"      ⚠️ Could not load as DEM file")
+                    
+            except Exception as e:
+                print(f"      ❌ Error processing {dem_file.name}: {e}")
+                continue
+        
+        if valid_files == 0:
+            print(f"❌ No valid DEM files found")
+            return False
+            
+        if valid_files == 1:
+            print(f"⚠️ Only 1 valid DEM file found. Consider using 'Open Single File' instead.")
+            # Continue anyway - user might want to add more files later
+        
+        # Calculate overall database bounds
+        global_west = min(all_west)
+        global_north = max(all_north)
+        global_east = max(all_east)
+        global_south = min(all_south)
+        
+        # Calculate average resolution
+        avg_resolution = sum(resolutions) / len(resolutions) if resolutions else 30.0  # Default to 30 arc-seconds
+        resolution_degrees = 1.0 / avg_resolution if avg_resolution > 0 else 0.00833333333333
+        
+        # Calculate total dimensions if this were a single raster
+        total_width = int((global_east - global_west) / resolution_degrees)
+        total_height = int((global_north - global_south) / resolution_degrees)
+        
+        # Create database metadata
+        db_name = database_name or f"Custom Database ({folder_path.name})"
+        
+        metadata = {
+            "dataset_info": {
+                "name": db_name,
+                "description": f"Multi-file database created from {folder_path}",
+                "resolution_arcsec": 3600.0 / avg_resolution if avg_resolution > 0 else 30,
+                "resolution_degrees": resolution_degrees,
+                "total_dimensions": [total_width, total_height],
+                "total_bounds": [global_west, global_north, global_east, global_south],
+                "bounds_desc": f"{global_west:.1f}°{'E' if global_west >= 0 else 'W'}, {global_north:.1f}°{'N' if global_north >= 0 else 'S'}, {global_east:.1f}°{'E' if global_east >= 0 else 'W'}, {global_south:.1f}°{'N' if global_south >= 0 else 'S'}",
+                "total_tiles": valid_files,
+                "coverage": f"{valid_files} tiles covering {global_east - global_west:.1f}° × {global_north - global_south:.1f}°",
+                "source": "User-created multi-file database",
+                "coordinate_system": "Geographic (WGS84)",
+                "datum": "WGS84",
+                "nodata_value": -9999,
+                "data_type": "int16",
+                "byte_order": "little_endian",
+                "created_date": datetime.now().isoformat(),
+                "created_by": "TopoToImage v4.0.0"
+            },
+            "tiles": tiles_metadata
+        }
+        
+        # Write metadata file
+        metadata_file = folder_path / f"{folder_path.name}_metadata.json"
+        
+        try:
+            with open(metadata_file, 'w', encoding='utf-8') as f:
+                json.dump(metadata, f, indent=2, ensure_ascii=False)
+                
+            print(f"✅ Created metadata file: {metadata_file.name}")
+            print(f"📊 Database summary:")
+            print(f"   Name: {db_name}")
+            print(f"   Tiles: {valid_files}")
+            print(f"   Coverage: {global_west:.1f}°W-{global_east:.1f}°E, {global_south:.1f}°S-{global_north:.1f}°N")
+            print(f"   Resolution: ~{3600.0 / avg_resolution:.0f} arc-seconds")
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error writing metadata file: {e}")
+            return False
 
 
 def test_multi_file_database():
