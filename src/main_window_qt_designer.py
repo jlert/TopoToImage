@@ -2940,9 +2940,12 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     self.update_coordinate_fields_from_database(database_info, preserve_selection=True)
                     
                     # Set coverage bounds on the map for visual feedback
-                    coverage_bounds_dict = {'west': west, 'north': north, 'east': east, 'south': south}
-                    if hasattr(self.world_map, 'set_dem_coverage'):
-                        self.world_map.set_dem_coverage(coverage_bounds_dict)
+                    # NOTE: For multi-file databases, we skip set_dem_coverage() because it would
+                    # clear the tile boundaries that were just set above. The tile boundaries
+                    # already provide the coverage visualization we need.
+                    # coverage_bounds_dict = {'west': west, 'north': north, 'east': east, 'south': south}
+                    # if hasattr(self.world_map, 'set_dem_coverage'):
+                    #     self.world_map.set_dem_coverage(coverage_bounds_dict)
                     
                     # Set database-specific background (e.g., Gtopo30 background)
                     database_path = Path(folder_path)

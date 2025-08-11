@@ -102,15 +102,6 @@ class MapBackgroundManager:
                 'projection': 'equirectangular',
                 'bounds': [-180, 90, 180, -90]
             },
-            'gtopo30_reference': {
-                'name': 'GTOPO30 Reference',
-                'description': 'Reference map for GTOPO30 database',
-                'file_path': 'maps/gtopo30_reference.svg',
-                'type': 'svg',
-                'projection': 'equirectangular',
-                'bounds': [-180, 90, 180, -90],
-                'database_type': 'gtopo30'
-            }
         }
         
         # Check for user's preferred default map file
