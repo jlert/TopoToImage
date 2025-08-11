@@ -481,7 +481,9 @@ class WorldMapWidget(QWidget):
         # Draw DEM coverage area if loaded
         if self.dem_coverage:
             self.draw_coverage_area(painter)
-        elif self.tile_boundaries:
+            
+        # Draw individual tile boundaries for multi-file databases
+        if self.tile_boundaries:
             self.draw_tile_boundaries(painter)
         
         # Draw selection rectangle if active
@@ -535,9 +537,9 @@ class WorldMapWidget(QWidget):
         painter.drawRect(x1, y1, x2 - x1, y2 - y1)
     
     def draw_tile_boundaries(self, painter):
-        """Draw individual tile boundaries with green borders only (no background fill)"""
-        # Draw border for each tile (no gray overlay or fill)
-        painter.setPen(QPen(QColor(0, 120, 0), 1, Qt.PenStyle.SolidLine))
+        """Draw individual tile boundaries with thin blue borders (no background fill)"""
+        # Draw thin blue border for each tile (no gray overlay or fill)
+        painter.setPen(QPen(QColor(0, 100, 200), 1, Qt.PenStyle.SolidLine))  # Blue color
         painter.setBrush(QBrush())  # No fill
         
         for tile_bounds in self.tile_boundaries:

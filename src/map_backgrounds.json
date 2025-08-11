@@ -14,20 +14,6 @@
         180,
         -90
       ]
-    },
-    "world_political_gtopo30": {
-      "name": "GTOPO30 World Political Map",
-      "description": "Professional world map optimized for GTOPO30 database",
-      "file_path": "maps/world_political_gtopo30_v2.svg",
-      "type": "svg",
-      "projection": "equirectangular",
-      "bounds": [
-        -180,
-        90,
-        180,
-        -90
-      ],
-      "database_type": "gtopo30"
     }
   }
 }
