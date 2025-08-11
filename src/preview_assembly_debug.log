@@ -1,0 +1,139 @@
+2025-07-29 20:28:07,821 - INFO - log_system_info:117 - ============================================================
+2025-07-29 20:28:07,821 - INFO - log_system_info:118 - DEM ASSEMBLY SESSION STARTED
+2025-07-29 20:28:07,821 - INFO - log_system_info:119 - ============================================================
+2025-07-29 20:28:07,821 - INFO - log_system_info:120 - System Memory: 24.0GB total, 6.7GB available (72.1% used)
+2025-07-29 20:28:07,821 - INFO - log_system_info:122 - Disk Space: 1435.8GB free
+2025-07-29 20:28:07,822 - INFO - log_system_info:123 - NumPy version: 1.26.4
+2025-07-29 20:28:07,822 - INFO - log_system_info:124 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage/src
+2025-07-29 20:28:08,189 - INFO - log_assembly_request:130 - Assembly Request:
+2025-07-29 20:28:08,189 - INFO - log_assembly_request:131 -   Bounds: W=0.0°, N=0.0°, E=0.0°, S=0.0°
+2025-07-29 20:28:08,189 - INFO - log_assembly_request:132 -   Area: 0.00 square degrees
+2025-07-29 20:28:08,189 - INFO - log_assembly_request:133 -   Export Scale: 100.0%
+2025-07-29 20:28:08,189 - INFO - log_assembly_request:134 -   Tiles: 1
+2025-07-29 20:28:08,189 - DEBUG - log_memory_state:139 - Assembly Start: Memory 72.3% used, 6.6GB available
+2025-07-29 20:28:08,189 - DEBUG - estimate_assembly_memory_gb:215 - Memory estimation: 0×0 = 0 pixels = 0.00GB
+2025-07-29 20:28:08,191 - INFO - select_assembly_approach:234 - 🔧 Forced universal chunking (Option 2) for testing
+2025-07-29 20:28:08,191 - INFO - log_strategy_selection:144 - Strategy Selected: universal_chunked
+2025-07-29 20:28:08,191 - INFO - log_strategy_selection:145 -   Estimated Memory: 0.0GB
+2025-07-29 20:28:08,191 - INFO - log_strategy_selection:146 -   Memory Limit: 3.3GB
+2025-07-29 20:28:08,191 - INFO - log_strategy_selection:147 -   Description: Universal chunked assembly (Option 2)
+2025-07-29 20:28:08,191 - INFO - log_strategy_selection:148 -   Expected Time: 30 seconds - 5 minutes
+2025-07-29 20:28:08,191 - INFO - select_assembly_approach:234 - 🔧 Forced universal chunking (Option 2) for testing
+2025-07-29 20:28:08,191 - INFO - _assemble_universal_chunks:466 - 🚀 Starting universal chunked assembly (Option 2)
+2025-07-29 20:28:08,191 - DEBUG - log_memory_state:139 - Universal Chunked Assembly Start: Memory 72.3% used, 6.6GB available
+2025-07-29 20:28:08,191 - INFO - _calculate_chunk_configuration:563 - 📊 Chunk configuration:
+2025-07-29 20:28:08,191 - INFO - _calculate_chunk_configuration:564 -    Output dimensions: 0×0
+2025-07-29 20:28:08,191 - INFO - _calculate_chunk_configuration:565 -    Chunk grid: 1×1 = 1 chunks
+2025-07-29 20:28:08,191 - INFO - _calculate_chunk_configuration:566 -    Chunk size: 0×0 (~0.0GB each)
+2025-07-29 20:28:08,191 - INFO - _calculate_chunk_configuration:567 -    Available memory: 6.6GB
+2025-07-29 20:28:08,191 - INFO - _assemble_universal_chunks:478 - 📦 Single chunk detected - using optimized single-chunk processing
+2025-07-29 20:28:08,191 - INFO - _process_single_chunk:576 - 📦 Processing as single chunk
+2025-07-29 20:28:08,192 - INFO - _assemble_in_memory:362 - Starting in-memory assembly...
+2025-07-29 20:28:08,192 - DEBUG - log_memory_state:139 - In-Memory Assembly Start: Memory 72.3% used, 6.6GB available
+2025-07-29 20:28:08,269 - ERROR - _assemble_in_memory:381 - Failed to assemble tiles
+2025-07-29 20:28:08,271 - ERROR - assemble_tiles_to_dem:347 - ❌ Assembly failed
+2025-07-30 10:29:56,967 - INFO - log_system_info:117 - ============================================================
+2025-07-30 10:29:56,967 - INFO - log_system_info:118 - DEM ASSEMBLY SESSION STARTED
+2025-07-30 10:29:56,967 - INFO - log_system_info:119 - ============================================================
+2025-07-30 10:29:56,967 - INFO - log_system_info:120 - System Memory: 24.0GB total, 9.4GB available (60.8% used)
+2025-07-30 10:29:56,968 - INFO - log_system_info:122 - Disk Space: 1432.5GB free
+2025-07-30 10:29:56,968 - INFO - log_system_info:123 - NumPy version: 1.26.4
+2025-07-30 10:29:56,968 - INFO - log_system_info:124 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage/src
+2025-07-30 10:29:57,352 - INFO - log_assembly_request:130 - Assembly Request:
+2025-07-30 10:29:57,352 - INFO - log_assembly_request:131 -   Bounds: W=38.0°, N=12.0°, E=42.0°, S=6.0°
+2025-07-30 10:29:57,352 - INFO - log_assembly_request:132 -   Area: 24.00 square degrees
+2025-07-30 10:29:57,352 - INFO - log_assembly_request:133 -   Export Scale: 100.0%
+2025-07-30 10:29:57,352 - INFO - log_assembly_request:134 -   Tiles: 1
+2025-07-30 10:29:57,353 - DEBUG - log_memory_state:139 - Assembly Start: Memory 61.1% used, 9.3GB available
+2025-07-30 10:29:57,353 - DEBUG - estimate_assembly_memory_gb:215 - Memory estimation: 480×720 = 345,600 pixels = 0.00GB
+2025-07-30 10:29:57,354 - INFO - select_assembly_approach:234 - 🔧 Forced universal chunking (Option 2) for testing
+2025-07-30 10:29:57,354 - INFO - log_strategy_selection:144 - Strategy Selected: universal_chunked
+2025-07-30 10:29:57,354 - INFO - log_strategy_selection:145 -   Estimated Memory: 0.0GB
+2025-07-30 10:29:57,354 - INFO - log_strategy_selection:146 -   Memory Limit: 4.7GB
+2025-07-30 10:29:57,354 - INFO - log_strategy_selection:147 -   Description: Universal chunked assembly (Option 2)
+2025-07-30 10:29:57,354 - INFO - log_strategy_selection:148 -   Expected Time: 30 seconds - 5 minutes
+2025-07-30 10:29:57,354 - INFO - select_assembly_approach:234 - 🔧 Forced universal chunking (Option 2) for testing
+2025-07-30 10:29:57,354 - INFO - _assemble_universal_chunks:466 - 🚀 Starting universal chunked assembly (Option 2)
+2025-07-30 10:29:57,354 - DEBUG - log_memory_state:139 - Universal Chunked Assembly Start: Memory 61.1% used, 9.3GB available
+2025-07-30 10:29:57,354 - INFO - _calculate_chunk_configuration:563 - 📊 Chunk configuration:
+2025-07-30 10:29:57,354 - INFO - _calculate_chunk_configuration:564 -    Output dimensions: 480×720
+2025-07-30 10:29:57,355 - INFO - _calculate_chunk_configuration:565 -    Chunk grid: 1×1 = 1 chunks
+2025-07-30 10:29:57,355 - INFO - _calculate_chunk_configuration:566 -    Chunk size: 480×720 (~0.0GB each)
+2025-07-30 10:29:57,355 - INFO - _calculate_chunk_configuration:567 -    Available memory: 9.3GB
+2025-07-30 10:29:57,355 - INFO - _assemble_universal_chunks:478 - 📦 Single chunk detected - using optimized single-chunk processing
+2025-07-30 10:29:57,355 - INFO - _process_single_chunk:576 - 📦 Processing as single chunk
+2025-07-30 10:29:57,355 - INFO - _assemble_in_memory:362 - Starting in-memory assembly...
+2025-07-30 10:29:57,355 - DEBUG - log_memory_state:139 - In-Memory Assembly Start: Memory 61.1% used, 9.3GB available
+2025-07-30 10:29:57,450 - INFO - _assemble_in_memory:407 - Export scale is 100% - using full resolution data
+2025-07-30 10:29:57,450 - DEBUG - create_temp_dem_path:294 - Temp DEM path: assembled_dem_20250730_102957.dem
+2025-07-30 10:29:57,452 - INFO - _write_dem_file:812 - DEM file written: assembled_dem_20250730_102957.dem (480×720)
+2025-07-30 10:29:57,452 - DEBUG - _write_dem_file:813 - Header file written: assembled_dem_20250730_102957.hdr
+2025-07-30 10:29:57,452 - DEBUG - log_memory_state:139 - In-Memory Assembly Complete: Memory 61.5% used, 9.2GB available
+2025-07-30 10:29:57,453 - INFO - log_assembly_completion:153 - Assembly Completed: 0.0 seconds
+2025-07-30 10:29:57,453 - INFO - log_assembly_completion:154 - Output file: assembled_dem_20250730_102957.dem
+2025-07-30 10:29:57,454 - INFO - assemble_tiles_to_dem:345 - ✅ Assembly successful: assembled_dem_20250730_102957.dem
+2025-07-30 10:29:59,380 - DEBUG - cleanup_temp_dem:829 - Deleted temp DEM: assembled_dem_20250730_102957.dem
+2025-07-30 10:29:59,389 - DEBUG - cleanup_temp_dem:833 - Deleted temp HDR: assembled_dem_20250730_102957.hdr
+2025-07-30 10:36:11,074 - INFO - log_system_info:117 - ============================================================
+2025-07-30 10:36:11,074 - INFO - log_system_info:118 - DEM ASSEMBLY SESSION STARTED
+2025-07-30 10:36:11,074 - INFO - log_system_info:119 - ============================================================
+2025-07-30 10:36:11,074 - INFO - log_system_info:120 - System Memory: 24.0GB total, 9.3GB available (61.1% used)
+2025-07-30 10:36:11,074 - INFO - log_system_info:122 - Disk Space: 1432.3GB free
+2025-07-30 10:36:11,074 - INFO - log_system_info:123 - NumPy version: 1.26.4
+2025-07-30 10:36:11,074 - INFO - log_system_info:124 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage/src
+2025-07-30 11:07:32,518 - INFO - log_system_info:117 - ============================================================
+2025-07-30 11:07:32,519 - INFO - log_system_info:118 - DEM ASSEMBLY SESSION STARTED
+2025-07-30 11:07:32,519 - INFO - log_system_info:119 - ============================================================
+2025-07-30 11:07:32,519 - INFO - log_system_info:120 - System Memory: 24.0GB total, 9.4GB available (60.8% used)
+2025-07-30 11:07:32,519 - INFO - log_system_info:122 - Disk Space: 1432.1GB free
+2025-07-30 11:07:32,519 - INFO - log_system_info:123 - NumPy version: 1.26.4
+2025-07-30 11:07:32,519 - INFO - log_system_info:124 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage/src
+2025-07-30 11:07:48,489 - INFO - log_system_info:117 - ============================================================
+2025-07-30 11:07:48,490 - INFO - log_system_info:118 - DEM ASSEMBLY SESSION STARTED
+2025-07-30 11:07:48,490 - INFO - log_system_info:119 - ============================================================
+2025-07-30 11:07:48,490 - INFO - log_system_info:120 - System Memory: 24.0GB total, 9.4GB available (60.8% used)
+2025-07-30 11:07:48,490 - INFO - log_system_info:122 - Disk Space: 1432.1GB free
+2025-07-30 11:07:48,490 - INFO - log_system_info:123 - NumPy version: 1.26.4
+2025-07-30 11:07:48,491 - INFO - log_system_info:124 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage/src
+2025-07-30 11:08:31,693 - INFO - log_system_info:117 - ============================================================
+2025-07-30 11:08:31,693 - INFO - log_system_info:118 - DEM ASSEMBLY SESSION STARTED
+2025-07-30 11:08:31,693 - INFO - log_system_info:119 - ============================================================
+2025-07-30 11:08:31,694 - INFO - log_system_info:120 - System Memory: 24.0GB total, 9.4GB available (60.9% used)
+2025-07-30 11:08:31,694 - INFO - log_system_info:122 - Disk Space: 1432.2GB free
+2025-07-30 11:08:31,694 - INFO - log_system_info:123 - NumPy version: 1.26.4
+2025-07-30 11:08:31,694 - INFO - log_system_info:124 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage/src
+2025-07-30 11:09:15,988 - INFO - log_system_info:117 - ============================================================
+2025-07-30 11:09:15,989 - INFO - log_system_info:118 - DEM ASSEMBLY SESSION STARTED
+2025-07-30 11:09:15,989 - INFO - log_system_info:119 - ============================================================
+2025-07-30 11:09:15,989 - INFO - log_system_info:120 - System Memory: 24.0GB total, 9.4GB available (60.9% used)
+2025-07-30 11:09:15,989 - INFO - log_system_info:122 - Disk Space: 1432.2GB free
+2025-07-30 11:09:15,989 - INFO - log_system_info:123 - NumPy version: 1.26.4
+2025-07-30 11:09:15,989 - INFO - log_system_info:124 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage/src
+2025-07-30 11:10:15,366 - INFO - log_system_info:117 - ============================================================
+2025-07-30 11:10:15,366 - INFO - log_system_info:118 - DEM ASSEMBLY SESSION STARTED
+2025-07-30 11:10:15,366 - INFO - log_system_info:119 - ============================================================
+2025-07-30 11:10:15,366 - INFO - log_system_info:120 - System Memory: 24.0GB total, 9.3GB available (61.3% used)
+2025-07-30 11:10:15,366 - INFO - log_system_info:122 - Disk Space: 1432.1GB free
+2025-07-30 11:10:15,366 - INFO - log_system_info:123 - NumPy version: 1.26.4
+2025-07-30 11:10:15,366 - INFO - log_system_info:124 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage/src
+2025-07-30 11:11:32,443 - INFO - log_system_info:117 - ============================================================
+2025-07-30 11:11:32,443 - INFO - log_system_info:118 - DEM ASSEMBLY SESSION STARTED
+2025-07-30 11:11:32,444 - INFO - log_system_info:119 - ============================================================
+2025-07-30 11:11:32,444 - INFO - log_system_info:120 - System Memory: 24.0GB total, 9.5GB available (60.5% used)
+2025-07-30 11:11:32,444 - INFO - log_system_info:122 - Disk Space: 1432.1GB free
+2025-07-30 11:11:32,444 - INFO - log_system_info:123 - NumPy version: 1.26.4
+2025-07-30 11:11:32,444 - INFO - log_system_info:124 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage/src
+2025-07-30 11:11:56,103 - INFO - log_system_info:117 - ============================================================
+2025-07-30 11:11:56,103 - INFO - log_system_info:118 - DEM ASSEMBLY SESSION STARTED
+2025-07-30 11:11:56,103 - INFO - log_system_info:119 - ============================================================
+2025-07-30 11:11:56,103 - INFO - log_system_info:120 - System Memory: 24.0GB total, 9.5GB available (60.5% used)
+2025-07-30 11:11:56,103 - INFO - log_system_info:122 - Disk Space: 1432.1GB free
+2025-07-30 11:11:56,103 - INFO - log_system_info:123 - NumPy version: 1.26.4
+2025-07-30 11:11:56,103 - INFO - log_system_info:124 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage/src
+2025-07-30 13:25:42,877 - INFO - log_system_info:117 - ============================================================
+2025-07-30 13:25:42,877 - INFO - log_system_info:118 - DEM ASSEMBLY SESSION STARTED
+2025-07-30 13:25:42,877 - INFO - log_system_info:119 - ============================================================
+2025-07-30 13:25:42,877 - INFO - log_system_info:120 - System Memory: 24.0GB total, 9.2GB available (61.8% used)
+2025-07-30 13:25:42,877 - INFO - log_system_info:122 - Disk Space: 1432.6GB free
+2025-07-30 13:25:42,877 - INFO - log_system_info:123 - NumPy version: 1.26.4
+2025-07-30 13:25:42,877 - INFO - log_system_info:124 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage/src

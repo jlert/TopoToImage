@@ -1,0 +1,1476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1206</width>
+    <height>896</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>800</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1206</width>
+    <height>896</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>DEM Visualizer</string>
+  </property>
+  <widget class="QWidget" name="central_widget">
+   <layout class="QVBoxLayout" name="main_layout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QScrollArea" name="scroll_area">
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scroll_contents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>1204</width>
+         <height>843</height>
+        </rect>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>1190</width>
+         <height>816</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string>QPushButton {
+    background-color: white;
+    border: 1px solid #c0c0c0;
+    border-radius: 6px;
+    padding: 4px 8px;
+    color: #333333;
+    font-weight: normal;
+    text-align: center;
+}
+QPushButton:hover {
+    background-color: #f8f8f8;
+    border: 1px solid #a0a0a0;
+}
+QPushButton:pressed {
+    background-color: #e8e8e8;
+    border: 1px solid #808080;
+}
+QPushButton:disabled {
+    background-color: #f0f0f0;
+    color: #999999;
+    border: 1px solid #d0d0d0;
+}</string>
+       </property>
+       <widget class="QWidget" name="world_map" native="true">
+        <property name="geometry">
+         <rect>
+          <x>24</x>
+          <y>24</y>
+          <width>720</width>
+          <height>360</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string>QWidget { background-color: #f0f0f0; border: 1px solid #ccc; }</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="coordinates_widget">
+        <property name="geometry">
+         <rect>
+          <x>24</x>
+          <y>390</y>
+          <width>348</width>
+          <height>168</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Selection Coordinates</string>
+        </property>
+        <widget class="QLabel" name="north_label">
+         <property name="geometry">
+          <rect>
+           <x>92</x>
+           <y>32</y>
+           <width>40</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>North</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="north_edit">
+         <property name="geometry">
+          <rect>
+           <x>134</x>
+           <y>29</y>
+           <width>121</width>
+           <height>24</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="south_label">
+         <property name="geometry">
+          <rect>
+           <x>93</x>
+           <y>104</y>
+           <width>40</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>South</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="south_edit">
+         <property name="geometry">
+          <rect>
+           <x>134</x>
+           <y>99</y>
+           <width>121</width>
+           <height>24</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="west_edit">
+         <property name="geometry">
+          <rect>
+           <x>47</x>
+           <y>64</y>
+           <width>121</width>
+           <height>24</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="east_label">
+         <property name="geometry">
+          <rect>
+           <x>184</x>
+           <y>69</y>
+           <width>30</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>East</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="east_edit">
+         <property name="geometry">
+          <rect>
+           <x>215</x>
+           <y>64</y>
+           <width>121</width>
+           <height>24</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="decimal_radio">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>140</y>
+           <width>80</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Decimal</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">coordinate_format_group</string>
+         </attribute>
+        </widget>
+        <widget class="QRadioButton" name="dms_radio">
+         <property name="geometry">
+          <rect>
+           <x>128</x>
+           <y>140</y>
+           <width>181</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Degrees/Minutes/Seconds</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">coordinate_format_group</string>
+         </attribute>
+        </widget>
+        <widget class="QLabel" name="west_label">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>70</y>
+           <width>30</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>West</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="export_controls_widget">
+        <property name="geometry">
+         <rect>
+          <x>396</x>
+          <y>390</y>
+          <width>348</width>
+          <height>311</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Export File</string>
+        </property>
+        <widget class="QLabel" name="export_scale_label">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>40</y>
+           <width>80</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Export Scale:</string>
+         </property>
+        </widget>
+        <widget class="QComboBox" name="export_scale_combo">
+         <property name="geometry">
+          <rect>
+           <x>100</x>
+           <y>40</y>
+           <width>120</width>
+           <height>24</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QDoubleSpinBox" name="export_scale_spinbox">
+         <property name="geometry">
+          <rect>
+           <x>225</x>
+           <y>40</y>
+           <width>111</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="suffix">
+          <string>%</string>
+         </property>
+         <property name="minimum">
+          <double>1.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>100.000000000000000</double>
+         </property>
+        </widget>
+        <widget class="QGroupBox" name="export_file_controls_group">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>70</y>
+           <width>324</width>
+           <height>227</height>
+          </rect>
+         </property>
+         <property name="title">
+          <string>Export Image Size Controls</string>
+         </property>
+         <widget class="QLabel" name="width_label">
+          <property name="geometry">
+           <rect>
+            <x>12</x>
+            <y>46</y>
+            <width>40</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Width</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="width_edit">
+          <property name="geometry">
+           <rect>
+            <x>60</x>
+            <y>40</y>
+            <width>121</width>
+            <height>24</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>20.000</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="width_unit_label">
+          <property name="geometry">
+           <rect>
+            <x>190</x>
+            <y>46</y>
+            <width>30</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>In.</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="lock_width_radio">
+          <property name="geometry">
+           <rect>
+            <x>260</x>
+            <y>46</y>
+            <width>61</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Lock</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">lock_group</string>
+          </attribute>
+         </widget>
+         <widget class="QLabel" name="height_label">
+          <property name="geometry">
+           <rect>
+            <x>12</x>
+            <y>90</y>
+            <width>40</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Height</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="height_edit">
+          <property name="geometry">
+           <rect>
+            <x>60</x>
+            <y>90</y>
+            <width>121</width>
+            <height>24</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>20.000</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="height_unit_label">
+          <property name="geometry">
+           <rect>
+            <x>190</x>
+            <y>90</y>
+            <width>30</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>In.</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="lock_height_radio">
+          <property name="geometry">
+           <rect>
+            <x>260</x>
+            <y>90</y>
+            <width>61</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Lock</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">lock_group</string>
+          </attribute>
+         </widget>
+         <widget class="QLabel" name="resolution_label">
+          <property name="geometry">
+           <rect>
+            <x>12</x>
+            <y>139</y>
+            <width>30</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Res.</string>
+          </property>
+         </widget>
+         <widget class="QLineEdit" name="resolution_edit">
+          <property name="geometry">
+           <rect>
+            <x>60</x>
+            <y>139</y>
+            <width>121</width>
+            <height>24</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>20.000</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="resolution_unit_label">
+          <property name="geometry">
+           <rect>
+            <x>190</x>
+            <y>139</y>
+            <width>50</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Pix/In.</string>
+          </property>
+         </widget>
+         <widget class="QRadioButton" name="lock_resolution_radio">
+          <property name="geometry">
+           <rect>
+            <x>260</x>
+            <y>139</y>
+            <width>61</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Lock</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">lock_group</string>
+          </attribute>
+         </widget>
+         <widget class="QRadioButton" name="inches_radio">
+          <property name="geometry">
+           <rect>
+            <x>12</x>
+            <y>190</y>
+            <width>60</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Inch</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">units_group</string>
+          </attribute>
+         </widget>
+         <widget class="QRadioButton" name="picas_radio">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>190</y>
+            <width>60</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Picas</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">units_group</string>
+          </attribute>
+         </widget>
+         <widget class="QRadioButton" name="points_radio">
+          <property name="geometry">
+           <rect>
+            <x>180</x>
+            <y>190</y>
+            <width>60</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Points</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">units_group</string>
+          </attribute>
+         </widget>
+         <widget class="QRadioButton" name="cm_radio">
+          <property name="geometry">
+           <rect>
+            <x>270</x>
+            <y>190</y>
+            <width>51</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>CM</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">units_group</string>
+          </attribute>
+         </widget>
+        </widget>
+       </widget>
+       <widget class="QPushButton" name="preview_btn">
+        <property name="geometry">
+         <rect>
+          <x>396</x>
+          <y>717</y>
+          <width>348</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Preview</string>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="export_elevation_btn">
+        <property name="geometry">
+         <rect>
+          <x>396</x>
+          <y>787</y>
+          <width>348</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Export Elevation Database</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="database_info_groupbox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>24</x>
+          <y>563</y>
+          <width>211</width>
+          <height>251</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>50</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Database Info</string>
+        </property>
+        <widget class="QLabel" name="pxheight_row_label">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>219</y>
+           <width>94</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Pix Height</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="north_row_label">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>123</y>
+           <width>35</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>North</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="west_db_label">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>99</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>-180</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="east_row_label">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>147</y>
+           <width>27</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>East</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="pix_deg_db_label">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>75</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>12</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="height_db_label">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>51</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>2160</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="west_row_label">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>99</y>
+           <width>31</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>West</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="height_row_label">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>51</y>
+           <width>41</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Height</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="width_db_label">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>27</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>4320</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="south_row_label">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>171</y>
+           <width>36</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>South</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="width_row_label">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>27</y>
+           <width>36</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Width</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="pix_deg_row_label">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>75</y>
+           <width>71</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Pixels/deg</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="size_row_label">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>195</y>
+           <width>49</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>File size</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="north_db_label">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>123</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>90</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="east_db_label">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>147</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>179.1234567</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="south_db_label">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>171</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>-90</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="size_db_label">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>195</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>182.2 KB</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="pxheight_db_label">
+         <property name="geometry">
+          <rect>
+           <x>90</x>
+           <y>219</y>
+           <width>111</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>500 km (200 mi)</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="blank_label">
+         <property name="geometry">
+          <rect>
+           <x>15</x>
+           <y>33</y>
+           <width>16</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="gradient_controls_widget">
+        <property name="geometry">
+         <rect>
+          <x>767</x>
+          <y>8</y>
+          <width>415</width>
+          <height>801</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Gradient Style</string>
+        </property>
+        <widget class="QPushButton" name="new_gradient_btn">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>210</y>
+           <width>144</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>New Gradient</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="delete_gradient_btn">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>245</y>
+           <width>144</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Delete Gradient</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="edit_gradient_btn">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>280</y>
+           <width>144</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Edit Gradient</string>
+         </property>
+        </widget>
+        <widget class="QGroupBox" name="preview_group">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>24</y>
+           <width>144</width>
+           <height>163</height>
+          </rect>
+         </property>
+         <property name="title">
+          <string>Preview</string>
+         </property>
+         <widget class="QLabel" name="preview_label">
+          <property name="geometry">
+           <rect>
+            <x>12</x>
+            <y>30</y>
+            <width>120</width>
+            <height>120</height>
+           </rect>
+          </property>
+          <property name="styleSheet">
+           <string>QLabel { border: 1px solid #ccc; background-color: #f8f8f8; }</string>
+          </property>
+          <property name="text">
+           <string>Preview</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignmentFlag::AlignCenter</set>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QLabel" name="max_elevation_label">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>682</y>
+           <width>144</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Maximum elevation</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="max_elevation">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>702</y>
+           <width>144</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>-12000</number>
+         </property>
+         <property name="maximum">
+          <number>12000</number>
+         </property>
+         <property name="value">
+          <number>10000</number>
+         </property>
+        </widget>
+        <widget class="QLabel" name="min_elevation_label">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>740</y>
+           <width>144</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Minimum elevation</string>
+         </property>
+        </widget>
+        <widget class="QSpinBox" name="min_elevation">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>760</y>
+           <width>144</width>
+           <height>24</height>
+          </rect>
+         </property>
+         <property name="minimum">
+          <number>-12000</number>
+         </property>
+         <property name="maximum">
+          <number>12000</number>
+         </property>
+         <property name="value">
+          <number>10000</number>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="move_up_btn">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>315</y>
+           <width>144</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Move Up</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="move_down_btn">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>350</y>
+           <width>144</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Move Down</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="sort_list_btn">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>385</y>
+           <width>144</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Sort List</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="save_list_btn">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>420</y>
+           <width>144</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Save List</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="load_list_btn">
+         <property name="geometry">
+          <rect>
+           <x>24</x>
+           <y>455</y>
+           <width>144</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Load List</string>
+         </property>
+        </widget>
+        <widget class="QGroupBox" name="gradient_list_group">
+         <property name="geometry">
+          <rect>
+           <x>191</x>
+           <y>24</y>
+           <width>200</width>
+           <height>754</height>
+          </rect>
+         </property>
+         <property name="title">
+          <string>Gradient List</string>
+         </property>
+         <widget class="QListWidget" name="gradient_list">
+          <property name="geometry">
+           <rect>
+            <x>12</x>
+            <y>30</y>
+            <width>176</width>
+            <height>681</height>
+           </rect>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="key_file_export_check_box">
+          <property name="geometry">
+           <rect>
+            <x>12</x>
+            <y>720</y>
+            <width>181</width>
+            <height>20</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Save Legend file</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QRadioButton" name="scale_to_crop_radio">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>510</y>
+           <width>141</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Percent</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">scale_gradient_group</string>
+         </attribute>
+        </widget>
+        <widget class="QRadioButton" name="scale_to_max_min_radio">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>590</y>
+           <width>131</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Meters</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">scale_gradient_group</string>
+         </attribute>
+        </widget>
+        <widget class="Line" name="line_4">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>500</y>
+           <width>144</width>
+           <height>3</height>
+          </rect>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_for_percent">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>530</y>
+           <width>121</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>(Scale the gradient to elevation found in the crop area)</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_for_meters">
+         <property name="geometry">
+          <rect>
+           <x>40</x>
+           <y>610</y>
+           <width>121</width>
+           <height>51</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>(Scale the gradient to the Maximum and Minimum elevations)</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QGroupBox" name="export_file_info_groupbox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>250</x>
+          <y>563</y>
+          <width>121</width>
+          <height>251</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>50</width>
+          <height>50</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Export file info</string>
+        </property>
+        <widget class="QLabel" name="width_export_label_2">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>30</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>288</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="height_export_label_2">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>51</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>216</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="pix_deg_export_label_2">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>75</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>12</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="west_export_label_2">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>99</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>20.000</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="north_export_label_2">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>123</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>40.000</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="east_export_label_2">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>147</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>60.000</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="south_export_label_2">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>171</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>-10.000</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="size_export_label_2">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>195</y>
+           <width>101</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>18.2 KB</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="pxheight_export_label_2">
+         <property name="geometry">
+          <rect>
+           <x>12</x>
+           <y>219</y>
+           <width>111</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>13</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>500 km (200 mi)</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QPushButton" name="save_image_btn">
+        <property name="geometry">
+         <rect>
+          <x>396</x>
+          <y>752</y>
+          <width>348</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Save Image File</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1206</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="scale_gradient_group"/>
+  <buttongroup name="lock_group"/>
+  <buttongroup name="units_group"/>
+  <buttongroup name="coordinate_format_group"/>
+ </buttongroups>
+</ui>

@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "default_background": "default_map",
+  "backgrounds": {
+    "default_map": {
+      "name": "Default Background Map",
+      "description": "User-specified default world map",
+      "file_path": "maps/default_background_map.svg",
+      "type": "svg",
+      "projection": "equirectangular",
+      "bounds": [
+        -180,
+        90,
+        180,
+        -90
+      ]
+    },
+    "world_political_gtopo30": {
+      "name": "GTOPO30 World Political Map",
+      "description": "Professional world map optimized for GTOPO30 database",
+      "file_path": "maps/world_political_gtopo30_v2.svg",
+      "type": "svg",
+      "projection": "equirectangular",
+      "bounds": [
+        -180,
+        90,
+        180,
+        -90
+      ],
+      "database_type": "gtopo30"
+    },
+    "Gtopo30_database_background": {
+      "name": "Gtopo30 Database Background",
+      "description": "Database-specific background for Gtopo30",
+      "file_path": "/Users/josephlertola/Documents/claude-code/dem-databases/Gtopo30/default_database_background_map.svg",
+      "type": "svg",
+      "projection": "equirectangular",
+      "bounds": [
+        -180,
+        90,
+        180,
+        -90
+      ],
+      "database_type": "gtopo30",
+      "database_specific": true
+    }
+  }
+}

@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>HLSAdjustmentDialog</class>
+ <widget class="QDialog" name="HLSAdjustmentDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>320</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>HLS Color Adjustment</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <widget class="QLabel" name="title_label">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>10</y>
+     <width>360</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Adjust Hue, Lightness, and Saturation</string>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  
+  <!-- Hue Controls -->
+  <widget class="QLabel" name="hue_label">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>50</y>
+     <width>60</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Hue:</string>
+   </property>
+  </widget>
+  <widget class="QSlider" name="hue_slider">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>50</y>
+     <width>220</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-180</number>
+   </property>
+   <property name="maximum">
+    <number>180</number>
+   </property>
+   <property name="value">
+    <number>0</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="hue_spinbox">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>47</y>
+     <width>60</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-180</number>
+   </property>
+   <property name="maximum">
+    <number>180</number>
+   </property>
+   <property name="suffix">
+    <string>°</string>
+   </property>
+  </widget>
+  
+  <!-- Lightness Controls -->
+  <widget class="QLabel" name="lightness_label">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>85</y>
+     <width>60</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Lightness:</string>
+   </property>
+  </widget>
+  <widget class="QSlider" name="lightness_slider">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>85</y>
+     <width>220</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-100</number>
+   </property>
+   <property name="maximum">
+    <number>100</number>
+   </property>
+   <property name="value">
+    <number>0</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="lightness_spinbox">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>82</y>
+     <width>60</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-100</number>
+   </property>
+   <property name="maximum">
+    <number>100</number>
+   </property>
+   <property name="suffix">
+    <string>%</string>
+   </property>
+  </widget>
+  
+  <!-- Saturation Controls -->
+  <widget class="QLabel" name="saturation_label">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>120</y>
+     <width>60</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Saturation:</string>
+   </property>
+  </widget>
+  <widget class="QSlider" name="saturation_slider">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>120</y>
+     <width>220</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-100</number>
+   </property>
+   <property name="maximum">
+    <number>100</number>
+   </property>
+   <property name="value">
+    <number>0</number>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="saturation_spinbox">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>117</y>
+     <width>60</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>-100</number>
+   </property>
+   <property name="maximum">
+    <number>100</number>
+   </property>
+   <property name="suffix">
+    <string>%</string>
+   </property>
+  </widget>
+  
+  <!-- Radio Button Group -->
+  <widget class="QGroupBox" name="adjustment_group">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>160</y>
+     <width>360</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Apply Adjustment To:</string>
+   </property>
+   <widget class="QRadioButton" name="current_point_radio">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>25</y>
+      <width>200</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Current point only</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="all_colors_radio">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>50</y>
+      <width>200</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>All colors</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+  </widget>
+  
+  <!-- Buttons -->
+  <widget class="QPushButton" name="reset_button">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>260</y>
+     <width>80</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Reset</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="cancel_button">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>260</y>
+     <width>80</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Cancel</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="ok_button">
+   <property name="geometry">
+    <rect>
+     <x>310</x>
+     <y>260</y>
+     <width>80</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>OK</string>
+   </property>
+   <property name="default">
+    <bool>true</bool>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
