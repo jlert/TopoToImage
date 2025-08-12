@@ -39,8 +39,7 @@ def get_resource_path(relative_path):
 def check_essential_maps():
     """Check if essential map files exist and show error dialog if missing"""
     essential_maps = [
-        "maps/default_background_map.svg",
-        "maps/world_political_gtopo30_v2.svg"
+        "maps/default_background_map.svg"
     ]
     
     missing_maps = []
