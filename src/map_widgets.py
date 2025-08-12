@@ -80,7 +80,7 @@ class WorldMapWidget(QWidget):
     def set_tile_boundaries(self, tile_list):
         """Set multiple tile boundaries for multi-tile datasets"""
         self.tile_boundaries = tile_list
-        self.dem_coverage = None  # Clear single DEM coverage
+        # Don't clear dem_coverage - allow both tile boundaries AND overall coverage
         self.update()
     
     def set_background_map(self, background_name: str):
