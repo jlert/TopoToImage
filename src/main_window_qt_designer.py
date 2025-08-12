@@ -432,6 +432,12 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         create_multifile_action.setShortcut("Ctrl+Shift+N")
         create_multifile_action.triggered.connect(self.create_multi_file_database)
         
+        file_menu.addSeparator()
+        
+        reveal_action = file_menu.addAction("Reveal Database in Finder")
+        reveal_action.setShortcut("Ctrl+R")
+        reveal_action.triggered.connect(self.reveal_database_in_finder)
+        
         # Recent Databases submenu
         self.recent_databases_menu = file_menu.addMenu("Recent Databases")
         self.setup_recent_databases_menu()
@@ -1951,6 +1957,81 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 self,
                 "Error",
                 f"An error occurred while creating the multi-file database:\n\n{str(e)}"
+            )
+
+    def reveal_database_in_finder(self):
+        """Reveal the currently loaded database in Finder"""
+        if not hasattr(self, 'current_database_info') or not self.current_database_info:
+            QMessageBox.information(
+                self,
+                "No Database Loaded",
+                "No database is currently loaded.\n\n"
+                "Please open a database first, then use this command to reveal it in Finder."
+            )
+            return
+        
+        database_path = self.current_database_info.get('path')
+        database_type = self.current_database_info.get('type')
+        
+        if not database_path:
+            QMessageBox.warning(
+                self,
+                "Database Path Unknown",
+                "Could not determine the path to the currently loaded database."
+            )
+            return
+            
+        import subprocess
+        from pathlib import Path
+        
+        try:
+            path_obj = Path(database_path)
+            
+            if database_type == 'single_file':
+                # For single files, reveal and select the file in Finder
+                if path_obj.exists():
+                    subprocess.run(['open', '-R', str(path_obj)], check=True)
+                    print(f"✅ Revealed single-file database in Finder: {path_obj.name}")
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "File Not Found", 
+                        f"The database file no longer exists:\n{path_obj}\n\n"
+                        f"It may have been moved or deleted."
+                    )
+            
+            elif database_type == 'multi_file':
+                # For multi-file databases, open the containing folder
+                if path_obj.is_dir() and path_obj.exists():
+                    subprocess.run(['open', str(path_obj)], check=True)
+                    print(f"✅ Opened multi-file database folder in Finder: {path_obj.name}")
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "Folder Not Found",
+                        f"The database folder no longer exists:\n{path_obj}\n\n"
+                        f"It may have been moved or deleted."
+                    )
+            
+            else:
+                QMessageBox.warning(
+                    self,
+                    "Unknown Database Type",
+                    f"Unknown database type: {database_type}"
+                )
+                
+        except subprocess.CalledProcessError as e:
+            QMessageBox.critical(
+                self,
+                "Finder Error",
+                f"Failed to open Finder:\n\n{str(e)}\n\n"
+                f"Make sure Finder is available on your system."
+            )
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"An unexpected error occurred:\n\n{str(e)}"
             )
 
     def open_recent_database(self, path: str, db_type: str):
