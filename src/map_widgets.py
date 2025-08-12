@@ -70,7 +70,7 @@ class WorldMapWidget(QWidget):
     def set_dem_coverage(self, bounds):
         """Set the geographic coverage area of a single loaded DEM"""
         self.dem_coverage = bounds
-        self.tile_boundaries = []  # Clear multi-tile boundaries
+        # Don't automatically clear tile_boundaries - allow both to coexist
         self.update()
     
     def set_dem_reader(self, dem_reader):

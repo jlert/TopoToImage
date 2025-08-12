@@ -2802,6 +2802,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 coverage_bounds = {
                     'west': west, 'east': east, 'north': north, 'south': south
                 }
+                # For single-file databases, clear any tile boundaries first
+                if hasattr(self.world_map, 'set_tile_boundaries'):
+                    self.world_map.set_tile_boundaries([])
                 self.world_map.set_dem_coverage(coverage_bounds)
                 if hasattr(self.world_map, 'set_dem_reader'):
                     self.world_map.set_dem_reader(self.dem_reader)  # Set DEM reader for pixel snapping
