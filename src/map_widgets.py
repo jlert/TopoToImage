@@ -537,8 +537,8 @@ class WorldMapWidget(QWidget):
         painter.drawRect(x1, y1, x2 - x1, y2 - y1)
     
     def draw_tile_boundaries(self, painter):
-        """Draw individual tile boundaries with thin blue borders (no background fill)"""
-        # Draw thin blue border for each tile (no gray overlay or fill)
+        """Draw individual tile boundaries with thin blue borders only (no text labels, no background fill)"""
+        # Draw thin blue border for each tile (no gray overlay, no fill, no text labels)
         painter.setPen(QPen(QColor(0, 100, 200), 1, Qt.PenStyle.SolidLine))  # Blue color
         painter.setBrush(QBrush())  # No fill
         
@@ -547,12 +547,13 @@ class WorldMapWidget(QWidget):
             east = tile_bounds['east'] 
             north = tile_bounds['north']
             south = tile_bounds['south']
+            # Note: Ignoring tile_bounds['name'] to prevent any text labels from being drawn
             
             # Convert to pixel coordinates
             x1, y1 = self.geographic_to_pixel(west, north)  # Top-left
             x2, y2 = self.geographic_to_pixel(east, south)  # Bottom-right
             
-            # Draw green border around this tile area (no fill)
+            # Draw blue border around this tile area (no fill, no text)
             painter.drawRect(x1, y1, x2 - x1, y2 - y1)
     
     def draw_selection_rectangle(self, painter):
