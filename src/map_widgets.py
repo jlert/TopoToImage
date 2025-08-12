@@ -539,7 +539,7 @@ class WorldMapWidget(QWidget):
     def draw_tile_boundaries(self, painter):
         """Draw individual tile boundaries with thin blue borders only (no text labels, no background fill)"""
         # Draw thin blue border for each tile (no gray overlay, no fill, no text labels)
-        painter.setPen(QPen(QColor(0, 100, 200), 1, Qt.PenStyle.SolidLine))  # Blue color
+        painter.setPen(QPen(QColor(0, 100, 200), 0.5, Qt.PenStyle.SolidLine))  # Thin blue color
         painter.setBrush(QBrush())  # No fill
         
         for tile_bounds in self.tile_boundaries:
