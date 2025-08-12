@@ -10,6 +10,9 @@ from pathlib import Path
 from typing import List, Dict, Tuple, Optional, NamedTuple
 from dataclasses import dataclass
 from dem_reader import DEMReader
+
+# Import version info (now in same src directory)
+from version import get_metadata_created_by
 from meridian_utils import (
     calculate_longitude_span, 
     map_longitude_to_array_x, 
@@ -677,6 +680,29 @@ class MultiFileDatabase:
                         # Get relative path from folder
                         relative_path = dem_file.relative_to(folder_path)
                         
+                        # Detect actual byte order and data type from DEM reader
+                        byte_order = "little_endian"
+                        bits_per_sample = 16
+                        data_type = "int16"
+                        
+                        if dem_reader.metadata:
+                            # Get byte order from BYTEORDER field
+                            byteorder = dem_reader.metadata.get('BYTEORDER', 'I')
+                            if byteorder == 'M':  # Motorola = big-endian
+                                byte_order = "big_endian"
+                            else:  # Intel = little-endian
+                                byte_order = "little_endian"
+                            
+                            # Get data type from NBITS field
+                            nbits = dem_reader.metadata.get('NBITS', 16)
+                            bits_per_sample = int(nbits)
+                            if nbits == 16:
+                                data_type = "int16"
+                            elif nbits == 32:
+                                data_type = "int32"
+                            else:
+                                data_type = f"int{nbits}"
+                        
                         # Create tile metadata
                         tile_name = dem_file.stem
                         tiles_metadata[tile_name] = {
@@ -686,9 +712,10 @@ class MultiFileDatabase:
                             "bounds_desc": f"{west:.1f}°{'E' if west >= 0 else 'W'}, {north:.1f}°{'N' if north >= 0 else 'S'}, {east:.1f}°{'E' if east >= 0 else 'W'}, {south:.1f}°{'N' if south >= 0 else 'S'}",
                             "resolution_degrees": [tile_width_deg / width, tile_height_deg / height],
                             "nodata_value": getattr(dem_reader, 'no_data_value', -9999),
-                            "byte_order": "little_endian",  # Most modern files
+                            "byte_order": byte_order,
                             "data_format": dem_file.suffix.upper()[1:],  # Remove dot, uppercase
-                            "bits_per_sample": 16  # Most common
+                            "bits_per_sample": bits_per_sample,
+                            "data_type": data_type
                         }
                         
                         # Collect bounds for overall calculation
@@ -730,13 +757,22 @@ class MultiFileDatabase:
         total_width = int((global_east - global_west) / resolution_degrees)
         total_height = int((global_north - global_south) / resolution_degrees)
         
+        # Determine most common data type and byte order from tiles
+        if tiles_metadata:
+            first_tile = list(tiles_metadata.values())[0]
+            common_data_type = first_tile.get("data_type", "int16")
+            common_byte_order = first_tile.get("byte_order", "little_endian")
+        else:
+            common_data_type = "int16"
+            common_byte_order = "little_endian"
+        
         # Create database metadata
-        db_name = database_name or f"Custom Database ({folder_path.name})"
+        db_name = database_name or folder_path.name
         
         metadata = {
             "dataset_info": {
                 "name": db_name,
-                "description": f"Multi-file database created from {folder_path}",
+                "description": f"Multi-file database containing {valid_files} elevation tiles",
                 "resolution_arcsec": 3600.0 / avg_resolution if avg_resolution > 0 else 30,
                 "resolution_degrees": resolution_degrees,
                 "total_dimensions": [total_width, total_height],
@@ -748,10 +784,19 @@ class MultiFileDatabase:
                 "coordinate_system": "Geographic (WGS84)",
                 "datum": "WGS84",
                 "nodata_value": -9999,
-                "data_type": "int16",
-                "byte_order": "little_endian",
+                "data_type": common_data_type,
+                "byte_order": common_byte_order,
                 "created_date": datetime.now().isoformat(),
-                "created_by": "TopoToImage v4.0.0"
+                "created_by": get_metadata_created_by(),
+                # User-defined metadata section (can be manually edited)
+                "user_metadata": {
+                    "source_url": "",
+                    "copyright": "",
+                    "license": "",
+                    "description_extended": "",
+                    "acquisition_date": "",
+                    "processing_notes": ""
+                }
             },
             "tiles": tiles_metadata
         }
