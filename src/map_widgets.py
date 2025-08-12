@@ -559,7 +559,7 @@ class WorldMapWidget(QWidget):
     def draw_selection_rectangle(self, painter):
         """Draw the current selection rectangle(s)"""
         # Use a more visible red pen and brush for better visibility in bundled app
-        pen = QPen(QColor(255, 0, 0), 3, Qt.PenStyle.SolidLine)
+        pen = QPen(QColor(255, 0, 0), 1, Qt.PenStyle.SolidLine)
         brush = QBrush(QColor(255, 0, 0, 80))
         painter.setPen(pen)
         painter.setBrush(brush)
