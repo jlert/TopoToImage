@@ -1077,7 +1077,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     return full_elevation_data
                     
             # Check if we have a multi-file database
-            elif hasattr(self, 'current_database_info') and self.current_database_info:
+            elif hasattr(self, 'current_database_info') and self.current_database_info and self.current_database_info.get('type') == 'multi_file':
                 print(f"📁 Using multi-file database: {self.current_database_info['path']}")
                 # Use multi-file database assembly
                 from multi_file_database import MultiFileDatabase
@@ -1104,6 +1104,40 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                         return None
                 else:
                     print("❌ No tiles found for the selected area in multi-file database")
+                    return None
+                
+            # Check if we have a single-file database
+            elif hasattr(self, 'current_database_info') and self.current_database_info and self.current_database_info.get('type') == 'single_file':
+                print(f"📄 Using single-file database via current_database_info: {self.current_database_info['path']}")
+                # Use single-file database via dem_reader
+                if hasattr(self, 'dem_reader') and self.dem_reader:
+                    # Load elevation data
+                    full_elevation_data = self.dem_reader.load_elevation_data()
+                    if full_elevation_data is None:
+                        print("❌ Failed to load elevation data from single-file database")
+                        return None
+                    
+                    # Crop to bounds
+                    try:
+                        dem_bounds = self.dem_reader.bounds
+                        print(f"📍 Single-file database bounds: W={dem_bounds['west']}, N={dem_bounds['north']}, E={dem_bounds['east']}, S={dem_bounds['south']}")
+                        
+                        # Calculate which portion of the data corresponds to the selection
+                        cropped_data = self.crop_elevation_data_to_geographic_bounds(
+                            full_elevation_data, dem_bounds, bounds
+                        )
+                        
+                        if cropped_data is not None:
+                            print(f"✅ Cropped elevation data from single-file database: {cropped_data.shape}")
+                            return cropped_data
+                        else:
+                            print("⚠️  Selection outside database bounds, using full data")
+                            return full_elevation_data
+                    except Exception as e:
+                        print(f"⚠️  Error cropping single-file database data: {e}, using full data")
+                        return full_elevation_data
+                else:
+                    print("❌ No DEM reader available for single-file database")
                     return None
                 
             else:
@@ -2775,8 +2809,8 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             
             elevation_data = None
             
-            # Try to load elevation data
-            if has_database:
+            # Try to load elevation data based on database type
+            if has_database and self.current_database_info.get('type') == 'multi_file':
                 print(f"🗂️ Loading elevation data from multi-file database...")
                 try:
                     # For multi-file databases, we need to assemble the selection area
@@ -2790,6 +2824,18 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                         print(f"✅ Loaded elevation data from multi-file database: shape {elevation_data.shape if elevation_data is not None else 'None'}")
                 except Exception as e:
                     print(f"❌ Error loading from multi-file database: {e}")
+            
+            elif has_database and self.current_database_info.get('type') == 'single_file':
+                print(f"📄 Loading elevation data from single-file database...")
+                try:
+                    # For single-file databases, use the dem_reader
+                    if hasattr(self, 'dem_reader') and self.dem_reader:
+                        elevation_data = self.dem_reader.load_elevation_data()
+                        print(f"✅ Loaded elevation data from single-file database: shape {elevation_data.shape if elevation_data is not None else 'None'}")
+                    else:
+                        print(f"⚠️ No DEM reader available for single-file database")
+                except Exception as e:
+                    print(f"❌ Error loading from single-file database: {e}")
             
             elif has_dem_file:
                 print(f"📄 Loading elevation data from single DEM file...")
@@ -6155,7 +6201,15 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         try:
             from PyQt6.QtWidgets import QApplication
             
-            if database_info:
+            # Debug: Print what we're working with
+            print(f"🔍 _get_cropped_elevation_data called with:")
+            print(f"   database_info: {database_info}")
+            print(f"   database_info type: {database_info.get('type') if database_info else 'None'}")
+            print(f"   dem_reader: {dem_reader}")
+            print(f"   Has instance dem_reader: {hasattr(self, 'dem_reader') and self.dem_reader is not None}")
+            
+            # Check database type to determine export path
+            if database_info and database_info.get('type') == 'multi_file':
                 # Multi-file database - use assembly system like preview
                 print("📁 Loading from multi-file database using assembly system...")
                 if progress_dialog:
@@ -6170,13 +6224,20 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     progress_dialog.update_progress(40, "Tile assembly completed")
                     QApplication.processEvents()
                     
-            elif dem_reader:
+            elif dem_reader or (database_info and database_info.get('type') == 'single_file'):
                 # Single-file database
                 print("📄 Loading from single-file database...")
                 if progress_dialog:
                     progress_dialog.update_progress(10, "Loading elevation data from file...")
                     QApplication.processEvents()
                     
+                # Ensure we have a dem_reader - if not, use the instance one for single-file databases
+                if not dem_reader and database_info and database_info.get('type') == 'single_file':
+                    dem_reader = getattr(self, 'dem_reader', None)
+                    if not dem_reader:
+                        print("❌ No DEM reader available for single-file database")
+                        return None
+                
                 if dem_reader.elevation_data is None:
                     elevation_data = dem_reader.load_elevation_data()
                 else:
