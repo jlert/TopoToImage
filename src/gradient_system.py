@@ -353,7 +353,7 @@ class GradientManager:
         self.save_gradients()
     
     def load_gradients(self) -> bool:
-        """Load gradients from JSON file."""
+        """Load gradients from JSON file - supports both dictionary and array formats."""
         try:
             if not self.gradients_file.exists():
                 return False
@@ -362,10 +362,26 @@ class GradientManager:
                 data = json.load(f)
             
             self.gradients = {}
-            for gradient_data in data.get('gradients', []):
-                gradient = self._gradient_from_dict(gradient_data)
-                self.gradients[gradient.name] = gradient
             
+            # Support both formats:
+            # Format 1: Array format {"gradients": [gradient_list]} (GradientManager.save_gradients)
+            # Format 2: Dictionary format {gradient_name: gradient_data} (Save List command)
+            
+            if "gradients" in data and isinstance(data["gradients"], list):
+                # Format 1: Array format - main gradients.json structure
+                print("📁 Loading array format gradients")
+                for gradient_data in data["gradients"]:
+                    gradient = self._gradient_from_dict(gradient_data)
+                    self.gradients[gradient.name] = gradient
+            else:
+                # Format 2: Dictionary format - from "Save List" command
+                print("📁 Loading dictionary format gradients")
+                for gradient_name, gradient_data in data.items():
+                    if isinstance(gradient_data, dict) and "name" in gradient_data:
+                        gradient = self._gradient_from_dict(gradient_data)
+                        self.gradients[gradient.name] = gradient
+            
+            print(f"✅ Loaded {len(self.gradients)} gradients")
             return True
         except Exception as e:
             print(f"Error loading gradients: {e}")

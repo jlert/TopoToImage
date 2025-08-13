@@ -6,16 +6,31 @@ Tracks the 10 most recently opened databases and provides startup database manag
 
 import json
 import os
+import sys
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime
+
+# Import bundle-aware path resolution functions
+def get_writable_data_path(relative_path):
+    """Get absolute path to writable data location, works for dev and PyInstaller bundled app"""
+    if hasattr(sys, '_MEIPASS'):
+        # Running as PyInstaller bundle - use writable home directory location
+        data_dir = Path.home() / "TopoToImage_Data"
+        data_dir.mkdir(exist_ok=True)
+        return data_dir / relative_path
+    else:
+        # Running in development - use project assets directory (writable)
+        project_root = Path(__file__).parent.parent  # Go up from src/ to project root
+        return project_root / "assets" / relative_path
 
 class RecentDatabasesManager:
     """Manages recent database history and startup database selection"""
     
     def __init__(self, max_recent: int = 10):
         self.max_recent = max_recent
-        self.config_file = Path.home() / ".dem_visualizer_recent_databases.json"
+        # Use bundle-aware path for recent databases config
+        self.config_file = get_writable_data_path("recent_databases.json")
         self.recent_databases: List[Dict] = []
         self.load_recent_databases()
     
@@ -148,9 +163,9 @@ class StartupDatabaseDialog:
         class DatabaseSelectionDialog(QDialog):
             def __init__(self, parent=None):
                 super().__init__(parent)
-                self.setWindowTitle("DEM Visualizer - Select Database")
+                self.setWindowTitle("TopoToImage - Select Database")
                 self.setModal(True)
-                self.resize(500, 300)
+                self.resize(500, 250)
                 
                 # Result storage
                 self.selected_type = None
@@ -161,15 +176,6 @@ class StartupDatabaseDialog:
             
             def setup_ui(self):
                 layout = QVBoxLayout()
-                
-                # Title
-                title = QLabel("Welcome to DEM Visualizer")
-                title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                font = QFont()
-                font.setPointSize(16)
-                font.setBold(True)
-                title.setFont(font)
-                layout.addWidget(title)
                 
                 # Subtitle
                 subtitle = QLabel("Please select a database to get started:")

@@ -13,6 +13,18 @@ from PyQt6.QtCore import Qt, QRectF, QSizeF
 from PyQt6.QtGui import QPainter, QPixmap, QPen, QBrush, QColor
 from PyQt6.QtSvg import QSvgRenderer
 
+def get_writable_data_path(relative_path):
+    """Get absolute path to writable data location, works for dev and PyInstaller bundled app"""
+    if hasattr(sys, '_MEIPASS'):
+        # Running as PyInstaller bundle - use writable home directory location
+        data_dir = Path.home() / "TopoToImage_Data"
+        data_dir.mkdir(exist_ok=True)
+        return data_dir / relative_path
+    else:
+        # Running in development - use project assets directory (writable)
+        project_root = Path(__file__).parent.parent  # Go up from src/ to project root
+        return project_root / "assets" / relative_path
+
 def get_resource_path(relative_path):
     """Get absolute path to resource, works for dev and PyInstaller bundled app"""
     if hasattr(sys, '_MEIPASS'):
@@ -39,7 +51,8 @@ class MapBackgroundManager:
     """Manages map background images and database-specific overlays."""
     
     def __init__(self, config_file: Optional[Path] = None):
-        self.config_file = config_file or Path("map_backgrounds.json")
+        # Use bundle-aware path for map backgrounds config
+        self.config_file = config_file or get_writable_data_path("map_backgrounds.json")
         self.backgrounds = {}
         self.current_background = None
         self.default_background = None  # Permanent default

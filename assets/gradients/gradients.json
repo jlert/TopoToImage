@@ -169,61 +169,6 @@
       "units": "percent"
     },
     {
-      "name": "Black and White",
-      "description": "Created with gradient editor",
-      "min_elevation": 0.0,
-      "max_elevation": 2000.0,
-      "color_stops": [
-        {
-          "position": 0.0,
-          "red": 255,
-          "green": 255,
-          "blue": 255,
-          "alpha": 255
-        },
-        {
-          "position": 1.0,
-          "red": 0,
-          "green": 0,
-          "blue": 0,
-          "alpha": 255
-        }
-      ],
-      "discrete": false,
-      "created_by": "Gradient Editor",
-      "tags": [
-        "custom",
-        "user_created"
-      ],
-      "shadow_color": {
-        "red": 128,
-        "green": 134,
-        "blue": 150,
-        "alpha": 255
-      },
-      "no_data_color": {
-        "red": 0,
-        "green": 0,
-        "blue": 0,
-        "alpha": 255
-      },
-      "below_gradient_color": {
-        "red": 0,
-        "green": 0,
-        "blue": 255,
-        "alpha": 255
-      },
-      "gradient_type": "gradient",
-      "light_direction": 135,
-      "shading_intensity": 400,
-      "cast_shadows": false,
-      "shadow_drop_distance": 44.0,
-      "shadow_soft_edge": 6,
-      "blending_mode": "Hard Light",
-      "color_mode": "8-bit",
-      "units": "percent"
-    },
-    {
       "name": "Shaded Relief",
       "description": "Created with gradient editor",
       "min_elevation": 369.0,
@@ -1178,6 +1123,131 @@
       "units": "meters"
     },
     {
+      "name": "Ocean Floor Posterized",
+      "description": "Created with gradient editor",
+      "min_elevation": -10000,
+      "max_elevation": 5000,
+      "color_stops": [
+        {
+          "position": 0.0,
+          "red": 223,
+          "green": 207,
+          "blue": 181,
+          "alpha": 255
+        },
+        {
+          "position": 0.19999999999999996,
+          "red": 178,
+          "green": 111,
+          "blue": 73,
+          "alpha": 255
+        },
+        {
+          "position": 0.30000000000000004,
+          "red": 255,
+          "green": 232,
+          "blue": 122,
+          "alpha": 255
+        },
+        {
+          "position": 0.31999999999999995,
+          "red": 129,
+          "green": 201,
+          "blue": 55,
+          "alpha": 255
+        },
+        {
+          "position": 0.32999999999999996,
+          "red": 60,
+          "green": 167,
+          "blue": 52,
+          "alpha": 255
+        },
+        {
+          "position": 0.33333333333333337,
+          "red": 177,
+          "green": 254,
+          "blue": 182,
+          "alpha": 255
+        },
+        {
+          "position": 0.333334,
+          "red": 240,
+          "green": 255,
+          "blue": 252,
+          "alpha": 255
+        },
+        {
+          "position": 0.33499999999999996,
+          "red": 92,
+          "green": 254,
+          "blue": 250,
+          "alpha": 255
+        },
+        {
+          "position": 0.4,
+          "red": 78,
+          "green": 244,
+          "blue": 250,
+          "alpha": 255
+        },
+        {
+          "position": 0.6,
+          "red": 18,
+          "green": 200,
+          "blue": 254,
+          "alpha": 255
+        },
+        {
+          "position": 0.8666666666666667,
+          "red": 22,
+          "green": 117,
+          "blue": 255,
+          "alpha": 255
+        },
+        {
+          "position": 1.0,
+          "red": 0,
+          "green": 5,
+          "blue": 255,
+          "alpha": 255
+        }
+      ],
+      "discrete": false,
+      "created_by": "Gradient Editor",
+      "tags": [
+        "custom",
+        "user_created"
+      ],
+      "shadow_color": {
+        "red": 128,
+        "green": 134,
+        "blue": 150,
+        "alpha": 255
+      },
+      "no_data_color": {
+        "red": 235,
+        "green": 254,
+        "blue": 255,
+        "alpha": 255
+      },
+      "below_gradient_color": {
+        "red": 0,
+        "green": 0,
+        "blue": 255,
+        "alpha": 255
+      },
+      "gradient_type": "posterized",
+      "light_direction": 135,
+      "shading_intensity": 400,
+      "cast_shadows": true,
+      "shadow_drop_distance": 200.0,
+      "shadow_soft_edge": 6,
+      "blending_mode": "Hard Light",
+      "color_mode": "8-bit",
+      "units": "meters"
+    },
+    {
       "name": "World_Posterized",
       "description": "Created with gradient editor",
       "min_elevation": 0,
@@ -1442,6 +1512,82 @@
       "units": "percent"
     },
     {
+      "name": "Red White and Blue",
+      "description": "Created with gradient editor",
+      "min_elevation": -5000,
+      "max_elevation": 2000,
+      "color_stops": [
+        {
+          "position": 0.0,
+          "red": 255,
+          "green": 0,
+          "blue": 7,
+          "alpha": 255
+        },
+        {
+          "position": 0.2142857142857143,
+          "red": 254,
+          "green": 116,
+          "blue": 121,
+          "alpha": 255
+        },
+        {
+          "position": 0.2857142857142857,
+          "red": 254,
+          "green": 253,
+          "blue": 255,
+          "alpha": 255
+        },
+        {
+          "position": 0.28572857142857144,
+          "red": 0,
+          "green": 155,
+          "blue": 255,
+          "alpha": 255
+        },
+        {
+          "position": 1.0,
+          "red": 0,
+          "green": 5,
+          "blue": 16,
+          "alpha": 255
+        }
+      ],
+      "discrete": false,
+      "created_by": "Gradient Editor",
+      "tags": [
+        "custom",
+        "user_created"
+      ],
+      "shadow_color": {
+        "red": 128,
+        "green": 134,
+        "blue": 150,
+        "alpha": 255
+      },
+      "no_data_color": {
+        "red": 0,
+        "green": 0,
+        "blue": 0,
+        "alpha": 255
+      },
+      "below_gradient_color": {
+        "red": 0,
+        "green": 0,
+        "blue": 255,
+        "alpha": 255
+      },
+      "gradient_type": "gradient",
+      "light_direction": 135,
+      "shading_intensity": 400,
+      "cast_shadows": false,
+      "shadow_drop_distance": 44.0,
+      "shadow_soft_edge": 6,
+      "blending_mode": "Hard Light",
+      "color_mode": "8-bit",
+      "units": "meters"
+    },
+    {
       "name": "Hammond",
       "description": "Created with gradient editor",
       "min_elevation": 0,
@@ -1630,6 +1776,103 @@
         "red": 250,
         "green": 253,
         "blue": 253,
+        "alpha": 255
+      },
+      "gradient_type": "shading_and_posterized",
+      "light_direction": 135,
+      "shading_intensity": 400,
+      "cast_shadows": true,
+      "shadow_drop_distance": 44.0,
+      "shadow_soft_edge": 6,
+      "blending_mode": "Hard Light",
+      "color_mode": "8-bit",
+      "units": "meters"
+    },
+    {
+      "name": "Kids Atlas",
+      "description": "Created with gradient editor",
+      "min_elevation": 0,
+      "max_elevation": 10000,
+      "color_stops": [
+        {
+          "position": 0.19999999999999996,
+          "red": 205,
+          "green": 204,
+          "blue": 194,
+          "alpha": 255
+        },
+        {
+          "position": 0.4,
+          "red": 193,
+          "green": 143,
+          "blue": 109,
+          "alpha": 255
+        },
+        {
+          "position": 0.6,
+          "red": 238,
+          "green": 163,
+          "blue": 44,
+          "alpha": 255
+        },
+        {
+          "position": 0.8,
+          "red": 42,
+          "green": 155,
+          "blue": 28,
+          "alpha": 255
+        },
+        {
+          "position": 0.9,
+          "red": 117,
+          "green": 209,
+          "blue": 116,
+          "alpha": 255
+        },
+        {
+          "position": 0.95,
+          "red": 177,
+          "green": 254,
+          "blue": 182,
+          "alpha": 255
+        },
+        {
+          "position": 0.99,
+          "red": 255,
+          "green": 232,
+          "blue": 122,
+          "alpha": 255
+        },
+        {
+          "position": 1.0,
+          "red": 155,
+          "green": 218,
+          "blue": 255,
+          "alpha": 255
+        }
+      ],
+      "discrete": false,
+      "created_by": "Gradient Editor",
+      "tags": [
+        "custom",
+        "user_created"
+      ],
+      "shadow_color": {
+        "red": 128,
+        "green": 134,
+        "blue": 150,
+        "alpha": 255
+      },
+      "no_data_color": {
+        "red": 155,
+        "green": 218,
+        "blue": 255,
+        "alpha": 255
+      },
+      "below_gradient_color": {
+        "red": 255,
+        "green": 253,
+        "blue": 245,
         "alpha": 255
       },
       "gradient_type": "shading_and_posterized",

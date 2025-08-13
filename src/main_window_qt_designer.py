@@ -7,6 +7,7 @@ Loads the main_window_complete.ui file and provides the same interface as the or
 import sys
 import logging
 import os
+import shutil
 from pathlib import Path
 from typing import Optional
 
@@ -35,6 +36,18 @@ def get_resource_path(relative_path):
         else:
             # Default: assume it's in assets
             return project_root / "assets" / relative_path
+
+def get_writable_data_path(relative_path):
+    """Get absolute path to writable data location, works for dev and PyInstaller bundled app"""
+    if hasattr(sys, '_MEIPASS'):
+        # Running as PyInstaller bundle - use writable home directory location
+        data_dir = Path.home() / "TopoToImage_Data"
+        data_dir.mkdir(exist_ok=True)
+        return data_dir / relative_path
+    else:
+        # Running in development - use project assets directory (writable)
+        project_root = Path(__file__).parent.parent  # Go up from src/ to project root
+        return project_root / "assets" / relative_path
 
 def check_essential_maps():
     """Check if essential map files exist and show error dialog if missing"""
@@ -147,9 +160,8 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         self.current_dem_file = None
         self.current_database_info = None  # Information about currently loaded database
         self.multi_tile_loader = MultiTileLoader()
-        # Initialize gradient manager with bundled gradients.json path
-        gradients_file = get_resource_path("gradients.json")
-        self.gradient_manager = GradientManager(gradients_file)
+        # Initialize gradient manager with user-writable path (bundle-safe)
+        self.initialize_gradient_system()
         self.terrain_renderer = TerrainRenderer(self.gradient_manager)
         self.key_file_generator = KeyFileGenerator(self.gradient_manager, self.terrain_renderer)
         self.updating_fields = False  # Flag to prevent signal recursion during field updates
@@ -728,37 +740,277 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             import traceback
             traceback.print_exc()
     
+    def initialize_gradient_system(self):
+        """Initialize gradient system with proper user data path handling"""
+        try:
+            # User gradient file (writable location)
+            user_gradients = get_writable_data_path("gradients.json")
+            
+            # If user gradients don't exist, copy from bundle defaults
+            if not user_gradients.exists():
+                print("🎯 First run detected: Setting up user gradient system...")
+                
+                # Ensure user data directory exists
+                user_gradients.parent.mkdir(parents=True, exist_ok=True)
+                
+                # Copy default gradients from bundle
+                bundle_gradients = get_resource_path("gradients.json")
+                if bundle_gradients.exists():
+                    shutil.copy2(bundle_gradients, user_gradients)
+                    print(f"✅ Copied default gradients: {bundle_gradients} → {user_gradients}")
+                else:
+                    print("⚠️  Bundle gradients not found - gradient manager will create defaults")
+            
+            # Initialize gradient manager with user-writable file
+            print(f"🎨 Initializing gradient system with: {user_gradients}")
+            self.gradient_manager = GradientManager(user_gradients)
+            
+        except Exception as e:
+            print(f"❌ Error initializing gradient system: {e}")
+            # Fallback to bundle gradients if user setup fails
+            bundle_gradients = get_resource_path("gradients.json")
+            print(f"🔄 Falling back to bundle gradients: {bundle_gradients}")
+            self.gradient_manager = GradientManager(bundle_gradients)
+    
+    def is_first_run(self):
+        """Check if this is the first run using a dedicated flag file in home directory"""
+        try:
+            # Check for flag file in the user's home TopoToImage_Data directory
+            user_data_dir = Path.home() / "TopoToImage_Data"
+            first_run_flag = user_data_dir / ".first_run_complete"
+            
+            # If flag file doesn't exist, it's first run
+            return not first_run_flag.exists()
+                
+        except Exception as e:
+            print(f"⚠️  Error checking first run status: {e}")
+            return False  # Assume not first run to avoid errors
+    
+    def setup_first_run_experience(self):
+        """Set up first-run experience with sample data and user directory"""
+        try:
+            print("🚀 Setting up first-run experience...")
+            
+            # Always use home directory for first-run, even in development mode
+            user_data_dir = Path.home() / "TopoToImage_Data"
+            user_data_dir.mkdir(parents=True, exist_ok=True)
+            print(f"📁 Created user data directory: {user_data_dir}")
+            
+            # Create subdirectories
+            user_preview_dir = user_data_dir / "preview_icon_databases"
+            user_preview_dir.mkdir(exist_ok=True)
+            (user_data_dir / "sample_data").mkdir(exist_ok=True)
+            
+            # Copy preview icon databases
+            bundle_preview_dir = get_resource_path("preview_icon_databases")
+            if bundle_preview_dir.exists():
+                print(f"📋 Copying preview icon databases...")
+                copied_count = 0
+                for preview_file in bundle_preview_dir.glob("*.tif"):
+                    user_preview_file = user_preview_dir / preview_file.name
+                    shutil.copy2(preview_file, user_preview_file)
+                    copied_count += 1
+                print(f"✅ Copied {copied_count} preview databases to user directory")
+            
+            # Copy gradient files to user directory
+            user_gradients_file = user_data_dir / "gradients.json"
+            bundle_gradients = get_resource_path("gradients.json")
+            if bundle_gradients.exists() and not user_gradients_file.exists():
+                print(f"📋 Copying gradient configuration...")
+                shutil.copy2(bundle_gradients, user_gradients_file)
+                print(f"✅ Gradient configuration copied to user directory")
+            
+            # Use the correct sample TIF database
+            bundle_sample = get_resource_path("sample_data") / "Gtopo30_reduced_2160x1080.tif"
+            user_sample = user_data_dir / "sample_data" / "Gtopo30_reduced_2160x1080.tif"
+            
+            if bundle_sample.exists():
+                print(f"📋 Copying sample database: {bundle_sample.name}")
+                shutil.copy2(bundle_sample, user_sample)
+                
+                # TIF files don't need separate header files
+                
+                print(f"✅ Sample database copied to: {user_sample}")
+                
+                # Load the sample database automatically
+                print(f"🔄 Auto-loading sample database...")
+                success = self.load_dem_file(str(user_sample))
+                
+                if success:
+                    print(f"✅ Successfully loaded sample database")
+                    welcome_msg = "🎉 Welcome to TopoToImage! Sample terrain loaded - you're ready to create beautiful maps!"
+                    print(f"📢 {welcome_msg}")
+                    self.status_bar.showMessage(welcome_msg, 8000)
+                    
+                    # Add sample database to recent databases so it loads on next run
+                    from recent_databases import recent_db_manager
+                    recent_db_manager.add_recent_database(str(user_sample), 'single_file', 'Gtopo30_reduced_2160x1080.tif')
+                    print(f"📝 Added sample database to recent databases")
+                    
+                    # Also ensure recent database file exists in development assets location
+                    # (since get_writable_data_path points there in development mode)
+                    dev_recent_db_file = get_writable_data_path("recent_databases.json")
+                    if not dev_recent_db_file.exists():
+                        print(f"📝 Creating recent database file in development assets")
+                        recent_db_manager.save_recent_databases()
+                    
+                    # Show proper welcome dialog box
+                    self.show_welcome_dialog()
+                    
+                    # Update window title
+                    self.update_window_title("Gtopo30_reduced_2160x1080.tif - TopoToImage")
+                    
+                    # Mark first run as complete (in home directory)
+                    first_run_flag = user_data_dir / ".first_run_complete"
+                    first_run_flag.touch()
+                    print(f"✅ First run setup completed")
+                    
+                    return True
+                else:
+                    print(f"⚠️  Failed to load sample database")
+                    
+            else:
+                print(f"⚠️  Sample database not found: {bundle_sample}")
+                
+                # Fallback: try the assembled DEM in the root directory
+                fallback_sample = Path("assembled_dem_20250811_194830.dem")
+                if fallback_sample.exists():
+                    print(f"📋 Using fallback sample: {fallback_sample.name}")
+                    success = self.load_dem_file(str(fallback_sample))
+                    if success:
+                        print(f"✅ Successfully loaded fallback sample")
+                        self.status_bar.showMessage("Welcome to TopoToImage! Sample data loaded.", 5000)
+                        self.update_window_title("assembled_dem_20250811_194830.dem")
+                        
+                        # Mark first run as complete (in home directory)
+                        first_run_flag = user_data_dir / ".first_run_complete"
+                        first_run_flag.touch()
+                        print(f"✅ First run setup completed")
+                        
+                        return True
+            
+            return False
+            
+        except Exception as e:
+            print(f"❌ Error setting up first-run experience: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+    
+    def show_welcome_dialog(self):
+        """Show welcome dialog for first-run users"""
+        try:
+            from PyQt6.QtWidgets import QMessageBox
+            from PyQt6.QtCore import Qt
+            from PyQt6.QtGui import QIcon, QPixmap
+            
+            # Create welcome message box
+            msg_box = QMessageBox(self)
+            msg_box.setWindowTitle("TopoToImage - Initial Setup Complete")
+            
+            # Use application icon instead of standard info icon
+            icon_path = get_resource_path("icons/TopoToImage.icns")
+            if icon_path.exists():
+                app_icon = QIcon(str(icon_path))
+                msg_box.setWindowIcon(app_icon)
+                # Try to set a custom icon for the dialog
+                try:
+                    pixmap = QPixmap(str(icon_path)).scaled(64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                    msg_box.setIconPixmap(pixmap)
+                except:
+                    msg_box.setIcon(QMessageBox.Icon.Information)
+            else:
+                msg_box.setIcon(QMessageBox.Icon.Information)
+            
+            # Professional welcome message
+            welcome_text = """<h3>Setup Complete</h3>
+
+<p>Your TopoToImage workspace has been configured at:</p>
+<p><code>~/TopoToImage_Data/</code></p>
+
+<p>This workspace includes:</p>
+<ul>
+<li>Sample terrain database (Gtopo30_reduced_2160x1080.tif)</li>
+<li>Preview icon databases for visualization</li>
+<li>Gradient configurations for map styling</li>
+</ul>
+
+<p>The sample terrain database has been loaded automatically.</p>
+
+<p>You can now:</p>
+<ul>
+<li>Experiment with gradient schemes</li>
+<li>Adjust coordinate selections</li>
+<li>Export high-quality topographic maps</li>
+</ul>"""
+
+            msg_box.setText(welcome_text)
+            msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+            
+            # Professional dialog size
+            msg_box.setMinimumSize(450, 320)
+            
+            # Show the dialog
+            msg_box.exec()
+            
+        except Exception as e:
+            print(f"⚠️  Error showing welcome dialog: {e}")
+    
     def scan_preview_databases(self):
-        """Scan the preview_icon_databases folder for available DEM files"""
+        """Scan preview_icon_databases folders for available DEM files (both bundled and user-created)"""
         try:
             debug_logger.info("📂 === SCANNING PREVIEW DATABASES ===")
             
-            preview_dir = get_resource_path("preview_icon_databases")
-            debug_logger.info(f"📂 Preview directory path: {preview_dir}")
-            debug_logger.info(f"📂 Directory exists: {preview_dir.exists()}")
-            
-            if not preview_dir.exists():
-                debug_logger.error(f"❌ Preview databases directory not found: {preview_dir}")
-                return
-            
-            # List all files in the directory for debugging
-            debug_logger.info("📂 All files in preview directory:")
-            try:
-                for file_path in preview_dir.iterdir():
-                    debug_logger.info(f"  📄 {file_path.name} (is_file: {file_path.is_file()}, suffix: {file_path.suffix})")
-            except Exception as e:
-                debug_logger.error(f"❌ Error listing directory contents: {e}")
-            
-            # Supported DEM file extensions
+            self.preview_databases = []
             dem_extensions = {'.tif', '.tiff', '.dem', '.bil'}
             debug_logger.info(f"📂 Supported extensions: {dem_extensions}")
             
-            # Find all DEM files in the preview directory
-            self.preview_databases = []
-            for file_path in preview_dir.iterdir():
-                if file_path.is_file() and file_path.suffix.lower() in dem_extensions:
-                    debug_logger.info(f"📄 Adding preview database: {file_path.name}")
-                    self.preview_databases.append(file_path)
+            # Get both directory paths
+            bundled_preview_dir = get_resource_path("preview_icon_databases")
+            user_preview_dir = get_writable_data_path("preview_icon_databases")
+            
+            debug_logger.info(f"📂 Bundled preview directory: {bundled_preview_dir}")
+            debug_logger.info(f"📂 User preview directory: {user_preview_dir}")
+            debug_logger.info(f"📂 Same directory?: {bundled_preview_dir == user_preview_dir}")
+            
+            # If both paths are the same (development mode), scan only once
+            if bundled_preview_dir == user_preview_dir:
+                debug_logger.info("📂 Development mode: scanning single directory")
+                if bundled_preview_dir.exists():
+                    debug_logger.info("📂 Scanning preview databases:")
+                    for file_path in bundled_preview_dir.iterdir():
+                        if file_path.is_file() and file_path.suffix.lower() in dem_extensions:
+                            debug_logger.info(f"  📄 Found: {file_path.name}")
+                            self.preview_databases.append(file_path)
+                else:
+                    debug_logger.warning(f"📂 Preview directory does not exist: {bundled_preview_dir}")
+            else:
+                # Different paths (bundle mode) - scan both with duplicate detection
+                debug_logger.info("📂 Bundle mode: scanning both directories with duplicate detection")
+                seen_filenames = set()
+                
+                # Scan bundled first
+                if bundled_preview_dir.exists():
+                    debug_logger.info("📂 Scanning bundled preview databases:")
+                    for file_path in bundled_preview_dir.iterdir():
+                        if file_path.is_file() and file_path.suffix.lower() in dem_extensions:
+                            filename = file_path.name
+                            debug_logger.info(f"  📄 Found bundled: {filename}")
+                            self.preview_databases.append(file_path)
+                            seen_filenames.add(filename)
+                
+                # Scan user directory, skipping duplicates
+                if user_preview_dir.exists():
+                    debug_logger.info("📂 Scanning user-created preview databases:")
+                    for file_path in user_preview_dir.iterdir():
+                        if file_path.is_file() and file_path.suffix.lower() in dem_extensions:
+                            filename = file_path.name
+                            if filename not in seen_filenames:
+                                debug_logger.info(f"  📄 Found user-created: {filename}")
+                                self.preview_databases.append(file_path)
+                                seen_filenames.add(filename)
+                            else:
+                                debug_logger.info(f"  ⚠️  Skipping duplicate: {filename}")
             
             # Sort by name for consistent ordering
             self.preview_databases.sort(key=lambda p: p.name)
@@ -796,22 +1048,49 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     from PyQt6.QtCore import Qt
                     import time  # Move import to top of function
                     
+                    print(f"🖱️  === PREVIEW MOUSE PRESS EVENT ===")
+                    print(f"🖱️  Button: {event.button()}")
+                    print(f"🖱️  Position: {event.position()}")
+                    print(f"🖱️  Global Position: {event.globalPosition()}")
+                    
                     if event.button() == Qt.MouseButton.LeftButton:
+                        print(f"🖱️  Left button pressed")
+                        current_time = time.time()
+                        print(f"🖱️  Current time: {current_time}")
+                        
                         # Check for double-click
                         if hasattr(handle_mouse_press, 'last_click_time'):
-                            current_time = time.time()
-                            if current_time - handle_mouse_press.last_click_time < 0.5:  # 500ms double-click threshold
+                            time_diff = current_time - handle_mouse_press.last_click_time
+                            print(f"🖱️  Last click time: {handle_mouse_press.last_click_time}")
+                            print(f"🖱️  Time difference: {time_diff:.3f}s")
+                            print(f"🖱️  Double-click threshold: 0.5s")
+                            
+                            if time_diff < 0.5:  # 500ms double-click threshold
+                                print(f"🖱️  ✅ DOUBLE-CLICK DETECTED! Cycling preview database...")
                                 self.cycle_to_next_preview_database()
+                                print(f"🖱️  ✅ Double-click handler completed, returning early")
                                 return
+                            else:
+                                print(f"🖱️  ❌ Not a double-click (time diff: {time_diff:.3f}s > 0.5s)")
+                        else:
+                            print(f"🖱️  ❌ No previous click recorded")
                         
-                        handle_mouse_press.last_click_time = time.time()
+                        print(f"🖱️  Recording click time: {current_time}")
+                        handle_mouse_press.last_click_time = current_time
+                        
                     elif event.button() == Qt.MouseButton.RightButton:
+                        print(f"🖱️  Right button pressed - showing context menu")
                         # Handle right-click for context menu
                         self.show_preview_context_menu(event.globalPosition().toPoint())
                     
                     # Call original handler if it exists
                     if original_mouse_press:
+                        print(f"🖱️  Calling original mouse press handler")
                         original_mouse_press(event)
+                    else:
+                        print(f"🖱️  No original mouse press handler to call")
+                    
+                    print(f"🖱️  === END MOUSE PRESS EVENT ===")
                 
                 # Replace the mouse press event handler
                 self.preview_label.mousePressEvent = handle_mouse_press
@@ -986,8 +1265,8 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             # Generate a unique filename
             preview_filename = self.generate_unique_preview_filename()
             
-            # Save as GeoTIFF in the preview databases folder
-            preview_path = get_resource_path("preview_icon_databases") / preview_filename
+            # Save as GeoTIFF in the preview databases folder (use writable location)
+            preview_path = get_writable_data_path("preview_icon_databases") / preview_filename
             self.save_elevation_data_as_geotiff(preview_data, selection_bounds, preview_path)
             
             # Refresh the preview database list
@@ -1518,26 +1797,43 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
     def cycle_to_next_preview_database(self):
         """Cycle to the next preview database and update the preview"""
         try:
+            print(f"🔄 === CYCLE PREVIEW DATABASE CALLED ===")
+            print(f"🔄 Preview databases available: {len(self.preview_databases) if self.preview_databases else 0}")
+            print(f"🔄 Current preview index: {self.current_preview_index}")
+            
             if not self.preview_databases:
                 print("⚠️  No preview databases available for cycling")
                 return
+            
+            # Store old index for comparison
+            old_index = self.current_preview_index
+            old_db = self.preview_databases[old_index] if self.preview_databases else None
             
             # Move to next database (cycle back to 0 if at end)
             self.current_preview_index = (self.current_preview_index + 1) % len(self.preview_databases)
             
             current_db = self.preview_databases[self.current_preview_index]
+            print(f"🔄 Index changed: {old_index} → {self.current_preview_index}")
+            print(f"🔄 Database changed: {old_db.name if old_db else 'None'} → {current_db.name}")
             print(f"🔄 Cycling to preview database: {current_db.name} ({self.current_preview_index + 1} of {len(self.preview_databases)})")
             
             # Update the gradient preview with the new database
+            print(f"🔄 Calling update_gradient_preview()...")
             self.update_gradient_preview()
+            print(f"🔄 update_gradient_preview() completed")
             
             # Update the tooltip to reflect the new database
+            print(f"🔄 Updating preview tooltip...")
             self.update_preview_tooltip()
+            print(f"🔄 Preview tooltip updated")
             
             # Show brief status message
             db_name = current_db.stem  # Filename without extension
             status_msg = f"Preview: {db_name} ({self.current_preview_index + 1} of {len(self.preview_databases)})"
+            print(f"🔄 Setting status message: {status_msg}")
             self.status_bar.showMessage(status_msg, 3000)  # Show for 3 seconds
+            
+            print(f"🔄 === CYCLE PREVIEW DATABASE COMPLETED ===")
             
         except Exception as e:
             print(f"❌ Error cycling preview database: {e}")
@@ -1546,11 +1842,20 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
     
     def get_current_preview_database(self):
         """Get the path to the currently active preview database"""
+        print(f"📂 === GET_CURRENT_PREVIEW_DATABASE CALLED ===")
+        print(f"📂 Preview databases available: {len(self.preview_databases) if self.preview_databases else 0}")
+        print(f"📂 Current preview index: {self.current_preview_index}")
+        
         if self.preview_databases and 0 <= self.current_preview_index < len(self.preview_databases):
-            return self.preview_databases[self.current_preview_index]
+            selected_db = self.preview_databases[self.current_preview_index]
+            print(f"📂 Returning selected database: {selected_db.name}")
+            print(f"📂 Database path: {selected_db}")
+            return selected_db
         
         # Fallback to the original hardcoded database using resource path
-        return get_resource_path("preview_icon_databases") / "pr01_fixed.tif"
+        fallback_db = get_resource_path("preview_icon_databases") / "pr01_fixed.tif"
+        print(f"📂 Using fallback database: {fallback_db}")
+        return fallback_db
     
     def initialize_export_controls(self):
         """Initialize export controls with default values"""
@@ -1604,8 +1909,17 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             traceback.print_exc()
     
     def handle_startup_database_loading(self):
-        """Handle automatic database loading on startup with robust error handling"""
+        """Handle automatic database loading on startup with first-run detection"""
         try:
+            # Check for first-run scenario
+            if self.is_first_run():
+                print("🎉 First run detected - setting up user data directory...")
+                if self.setup_first_run_experience():
+                    print("✅ First run setup completed successfully")
+                    return
+                else:
+                    print("⚠️  First run setup failed, falling back to normal startup")
+            
             # Try to open the last database
             last_database = recent_db_manager.get_last_database()
             
@@ -3408,7 +3722,14 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
     def update_gradient_preview(self):
         """Update the gradient preview with the selected gradient applied to preview database"""
         try:
+            print(f"🎨 === UPDATE_GRADIENT_PREVIEW CALLED ===")
             debug_logger.info("🎨 === STARTING GRADIENT PREVIEW UPDATE ===")
+            
+            # Show current preview database info for debugging
+            print(f"🎨 Current preview index: {self.current_preview_index}")
+            if hasattr(self, 'preview_databases') and self.preview_databases:
+                current_db = self.preview_databases[self.current_preview_index] if 0 <= self.current_preview_index < len(self.preview_databases) else None
+                print(f"🎨 Current preview database: {current_db.name if current_db else 'None'}")
             
             # Get currently selected gradient
             if not hasattr(self, 'gradient_list') or not self.gradient_list.currentItem():
@@ -3422,6 +3743,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             preview_db_path = self.get_current_preview_database()
             debug_logger.info(f"📂 Preview database path: {preview_db_path}")
             debug_logger.info(f"📂 Database exists: {preview_db_path.exists()}")
+            print(f"🎨 Preview database path from get_current_preview_database(): {preview_db_path}")
             
             if not preview_db_path.exists():
                 debug_logger.error(f"❌ Preview database not found: {preview_db_path}")
@@ -3645,6 +3967,10 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 debug_logger.info("🔧 Forcing preview label update...")
                 self.preview_label.update()
                 self.preview_label.repaint()
+                
+                # Force immediate processing of UI events to ensure visual update
+                from PyQt6.QtWidgets import QApplication
+                QApplication.processEvents()
                 
             else:
                 debug_logger.error("❌ Preview label not found or not available")
@@ -6200,13 +6526,6 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         """Get elevation data cropped to selection bounds"""
         try:
             from PyQt6.QtWidgets import QApplication
-            
-            # Debug: Print what we're working with
-            print(f"🔍 _get_cropped_elevation_data called with:")
-            print(f"   database_info: {database_info}")
-            print(f"   database_info type: {database_info.get('type') if database_info else 'None'}")
-            print(f"   dem_reader: {dem_reader}")
-            print(f"   Has instance dem_reader: {hasattr(self, 'dem_reader') and self.dem_reader is not None}")
             
             # Check database type to determine export path
             if database_info and database_info.get('type') == 'multi_file':

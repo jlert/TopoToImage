@@ -41,9 +41,36 @@ def main():
         print(f"❌ Import error: {e}")
         print("🔧 Make sure all dependencies are installed:")
         print("   pip install -r requirements.txt")
+        
+        # For bundled app, show error dialog
+        try:
+            from PyQt6.QtWidgets import QApplication, QMessageBox
+            if not QApplication.instance():
+                app = QApplication(sys.argv)
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Critical)
+            msg.setWindowTitle("TopoToImage Import Error")
+            msg.setText(f"Import error: {e}")
+            msg.setDetailedText("Make sure all dependencies are installed:\npip install -r requirements.txt")
+            msg.exec()
+        except:
+            pass
         sys.exit(1)
     except Exception as e:
         print(f"❌ Application error: {e}")
+        
+        # For bundled app, show error dialog
+        try:
+            from PyQt6.QtWidgets import QApplication, QMessageBox
+            if not QApplication.instance():
+                app = QApplication(sys.argv)
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Icon.Critical)
+            msg.setWindowTitle("TopoToImage Error")
+            msg.setText(f"Application error: {e}")
+            msg.exec()
+        except:
+            pass
         sys.exit(1)
 
 if __name__ == "__main__":

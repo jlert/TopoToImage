@@ -1,0 +1,45 @@
+{
+  "version": "1.0",
+  "default_background": "default_map",
+  "backgrounds": {
+    "simple_world": {
+      "name": "Simple World",
+      "description": "Basic world outline map",
+      "file_path": "maps/simple_world.svg",
+      "type": "svg",
+      "projection": "equirectangular",
+      "bounds": [
+        -180,
+        90,
+        180,
+        -90
+      ]
+    },
+    "natural_earth": {
+      "name": "Natural Earth",
+      "description": "Natural Earth world map",
+      "file_path": "maps/natural_earth_world.svg",
+      "type": "svg",
+      "projection": "equirectangular",
+      "bounds": [
+        -180,
+        90,
+        180,
+        -90
+      ]
+    },
+    "default_map": {
+      "name": "Default Background Map",
+      "description": "User-specified default world map",
+      "file_path": "maps/default_background_map.svg",
+      "type": "svg",
+      "projection": "equirectangular",
+      "bounds": [
+        -180,
+        90,
+        180,
+        -90
+      ]
+    }
+  }
+}

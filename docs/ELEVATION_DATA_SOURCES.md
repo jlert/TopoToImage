@@ -7,7 +7,6 @@ A comprehensive guide to finding and downloading Digital Elevation Model (DEM) d
 TopoToImage 4.0 supports these elevation data formats:
 - **BIL** (.dem, .bil) - Band Interleaved by Line format
 - **GeoTIFF** (.tif, .tiff) - Geographic Tagged Image File Format
-- **GTOPO30** (.dem) - Global 30 arc-second elevation dataset
 
 ## Global Coverage Data Sources
 
