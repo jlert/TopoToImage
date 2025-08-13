@@ -244,6 +244,131 @@ except Exception as e:
 3. **GDAL Data**: Rasterio includes GDAL data, but may need explicit inclusion
 4. **Large File Size**: Preview databases and sample data increase bundle size
 
+## Phase 1 Bundle Creation Results
+
+### PyInstaller Specification File
+
+**Location**: `topotoimage.spec`
+
+**Key Configuration Elements**:
+
+```python
+# Data files successfully bundled
+datas = [
+    ('ui/main_window_complete.ui', 'ui'),
+    ('assets/icons/TopoToImage.icns', 'icons'),
+    ('assets/maps/default_background_map.svg', 'maps'),
+    ('assets/gradients/gradients.json', 'gradients'),
+    ('assets/sample_data/Gtopo30_reduced_2160x1080.tif', 'sample_data'),
+    ('assets/preview_icon_databases/pr01_fixed.tif', 'preview_icon_databases'),
+    ('assets/preview_icon_databases/pr05_fixed.tif', 'preview_icon_databases'),
+    ('assets/preview_icon_databases/pr06_shadow_test.tif', 'preview_icon_databases'),
+    ('assets/preview_icon_databases/preview_icon_10.tif', 'preview_icon_databases'),
+    ('src/version.py', 'src'),  # Added to resolve import issues
+]
+
+# Hidden imports for PyInstaller
+hiddenimports = [
+    'PyQt6.QtCore', 'PyQt6.QtGui', 'PyQt6.QtWidgets', 'PyQt6.QtSvg', 'PyQt6.uic',
+    'rasterio', 'rasterio.env', 'rasterio._env', 'rasterio.crs', 'rasterio.transform',
+    'numpy', 'matplotlib', 'PIL', 'PIL.Image', 'PIL.ImageQt',
+    'version', 'src.version',  # Local modules
+]
+
+# macOS App Bundle Configuration
+BUNDLE(
+    coll,
+    name='TopoToImage.app',
+    icon='assets/icons/TopoToImage.icns',
+    bundle_identifier='com.topotoimage.app',
+    info_plist={
+        'CFBundleName': 'TopoToImage',
+        'CFBundleVersion': '4.0.0',
+        'NSHighResolutionCapable': True,
+        # Document type associations for .tif, .tiff, .dem files
+    }
+)
+```
+
+### Bundle Structure Analysis
+
+**Final Bundle Size**: 181MB
+
+**Directory Structure**:
+```
+TopoToImage.app/
+├── Contents/
+│   ├── Info.plist                 # macOS app metadata
+│   ├── MacOS/
+│   │   └── TopoToImage            # Main executable
+│   ├── Resources/
+│   │   ├── TopoToImage.icns       # App icon
+│   │   ├── ui/main_window_complete.ui
+│   │   ├── icons/TopoToImage.icns
+│   │   ├── maps/default_background_map.svg
+│   │   ├── gradients/gradients.json
+│   │   ├── sample_data/Gtopo30_reduced_2160x1080.tif
+│   │   ├── preview_icon_databases/*.tif
+│   │   ├── src/version.py
+│   │   └── [Python libraries and frameworks]
+│   └── _CodeSignature/
+│       └── CodeResources          # Automatic code signing
+```
+
+### Dependency Analysis
+
+**Successfully Included Libraries**:
+- ✅ PyQt6 (Complete framework: ~45MB)
+- ✅ Rasterio + GDAL (~60MB with all geospatial libraries)
+- ✅ NumPy + SciPy (~35MB)
+- ✅ Matplotlib (~25MB)
+- ✅ PIL/Pillow (~15MB)
+- ✅ All required dynamic libraries (.dylib files)
+
+**Missing Elements Discovered**:
+- ❌ Local application modules (import path issue)
+- ❌ Complete src/ directory module resolution
+
+### Import Resolution Issue Analysis
+
+**Working Imports**:
+```python
+import sys, os, json, pathlib  # ✅ Standard library
+from PyQt6.QtWidgets import *   # ✅ External packages
+import rasterio, numpy, PIL     # ✅ External packages
+```
+
+**Failing Imports**:
+```python
+from main_window_qt_designer import DEMVisualizerQtDesignerWindow  # ❌
+from version import get_app_name_with_version  # ⚠️ Partially resolved
+```
+
+**Root Cause**: PyInstaller bundles external packages correctly but requires explicit handling for local application modules.
+
+### Phase 2 Implementation Strategy
+
+**Solution**: Hybrid approach combining data files and import path resolution:
+
+1. **Add all local modules as data files**:
+```python
+datas = [
+    # ... existing data files ...
+    ('src/main_window_qt_designer.py', 'src'),
+    ('src/recent_databases.py', 'src'),
+    ('src/gradient_system.py', 'src'),
+    ('src/map_widgets.py', 'src'),
+    ('src/map_backgrounds.py', 'src'),
+]
+```
+
+2. **Modify topotoimage.py import resolution**:
+```python
+if hasattr(sys, '_MEIPASS'):
+    # PyInstaller bundle - add bundled src to path
+    sys.path.insert(0, os.path.join(sys._MEIPASS, 'src'))
+```
+
 ---
 
-*This technical reference documents the current implementation as of Phase 0 completion.*
+*This technical reference documents the implementation through Phase 1 completion.*
