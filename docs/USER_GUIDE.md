@@ -64,7 +64,7 @@ For comprehensive information on elevation data sources, formats, and download i
 - **Beginners:** Use included sample data in `assets/sample_data/`
 - **Regional work:** SRTM (30m resolution, good quality)
 - **Global projects:** GMTED2010 (modern, multiple resolutions)
-- **Ocean mapping:** ETOPO or SRTM30+ (includes bathymetry)
+- **Ocean mapping:** GEBCO 2025 (best ocean floor data, high resolution)
 
 ### Single-File vs Multi-File Databases
 
@@ -85,26 +85,28 @@ For comprehensive information on elevation data sources, formats, and download i
 
 ### Opening Single-File Databases
 
-**File → Open Database** (or Cmd+O)
+**File → Open Database** (Cmd+O)
 
 1. Navigate to your elevation file
 2. Select a GeoTIFF file, or the `.tif`, `.bil`, or `.dem` file from a BIL/DEM set
 3. Click Open
 
-The world map displays the database coverage area with a red rectangle. Blue lines show individual tile boundaries for multi-file databases.
+The world map displays the database coverage area as a green rectangle. The selected area within the database is shown as a light red box with a dark red outline.
 
 ### Opening Multi-File Databases
 
-**File → Open Database** (or Cmd+O)
+**File → Open Database** (Cmd+Shift+O)
 
 1. Navigate to the folder containing multiple elevation files
-2. Select any one of the elevation files in the folder
+2. Select the folder
 3. If a `.json` metadata file exists, TopoToImage loads the multi-file database automatically
 4. If no `.json` file exists, use "Create Multi-File Database" first (see below)
 
+Blue lines show individual tile boundaries for multi-file databases.
+
 ### Creating Multi-File Databases
 
-**File → Create Multi-File Database**
+**File → Create Multi-File Database** (Cmd+Shift+N)
 
 Use this command when you have multiple elevation tiles in a folder that should work together as one database.
 
@@ -135,40 +137,38 @@ MyGlobalDatabase/
 └── MyGlobalDatabase.json  ← Created by TopoToImage
 ```
 
+### Reveal Database in Finder
+
+**File → Reveal Database in Finder** (Cmd+R)
+
+Opens Finder and highlights the currently loaded database file or folder. Useful for quickly locating your data files on disk.
+
+### Recent Databases
+
+**File → Recent Databases**
+
+Quick access to previously opened databases. Shows a list of recently used elevation databases for fast reopening without navigating the file system.
+
 ---
 
 ## Main Window Interface
 
-### Map Area
+### World Map
 
-**World Map Display**
-- Political boundaries shown for geographic reference
-- Default background map (professional SVG)
+- Displays the boundary of the currently open database as a **green rectangle**
+- A **red rectangle** displays the selected area (light red fill with dark red outline)
+- If a multi-file database is open, **blue lines** show individual tile boundaries
+- Click and drag within the green rectangle to change the selected area
+- If the open database is not the full world, the selection is limited to within the database area
+- If the open database spans the whole world from -180° to +180°, selections are allowed across the -180° or +180° boundary
+  - Drag out a selection area across the boundary and the other half of the selection area will appear on the other side of the map
+- **Keyboard shortcut:** Cmd+D to select the whole database
 
-**Database Coverage**
-- Red rectangle shows loaded database boundaries
-- Blue lines show individual tile boundaries (multi-file databases only)
+### Selection Coordinates
 
-**Selection Rectangle**
-- Yellow rectangle shows currently selected area for export
-- Drag on map to select area
-- Adjust with coordinate inputs for precision
-
-### Selection & Coordinates Panel
-
-**Coordinate Input**
-- North/South/East/West latitude/longitude fields
-- Enter precise coordinates for selection
-- Supports decimal degrees
-
-**Selection Tools**
-- Select All Database - Sets selection to full database coverage
-- Interactive map clicking and dragging
-
-**Geographic Information**
-- Real-time coordinate conversion
-- Distance calculations
-- Area measurements
+Displays the boundary of the selected area in either:
+- **Decimal Degrees** format (e.g., 45.5°)
+- **Degrees/Minutes/Seconds** format (e.g., 45°30'00")
 
 ### Database Info Panel
 
@@ -190,6 +190,28 @@ Shows information about the image/database that will be exported based on curren
 - **Pixel Height** - Geographic distance of one pixel in output
 
 This allows you to verify output size before exporting and adjust selection or scaling as needed.
+
+### Export File Controls
+
+This panel contains information that controls the scale of the exported image or database and, when relevant to the file type, the resolution of the exported image.
+
+**Export Scale Spin Box**
+
+Controls the resolution scaling of exported data. A convenient pop-up menu provides common scale values, or type a custom scale. When the export scale changes, the Export File Info panel updates to reflect the new output dimensions.
+
+**Export Image Size Controls**
+
+These controls function similarly to Photoshop's Image Size command:
+
+- **Three edit fields:** Width, Height, and Resolution
+- **Lock radio buttons:** Lock one field - as export scale or selected area changes, the locked field remains constant while the other two adjust proportionally
+- **Unit radio buttons:** Choose units for the exported file
+  - Inches
+  - Picas
+  - Points
+  - Centimeters
+
+**Note:** Resolution controls are relevant when exporting JPEG or PNG image files. They determine the physical dimensions and print resolution of the exported image.
 
 ---
 
