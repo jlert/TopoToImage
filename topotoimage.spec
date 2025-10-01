@@ -18,6 +18,8 @@ project_root = Path.cwd()
 datas = [
     # UI files
     ('ui/main_window_complete.ui', 'ui'),
+    ('ui/gradient_editor_02.ui', 'ui'),
+    ('ui/hls_adjustment_dialog.ui', 'ui'),
     
     # Application icons
     ('assets/icons/TopoToImage.icns', 'icons'),
@@ -25,19 +27,58 @@ datas = [
     # Maps and backgrounds
     ('assets/maps/default_background_map.svg', 'maps'),
     
-    # Default gradients (templates for user customization)
-    ('assets/gradients/gradients.json', 'gradients'),
+    # Default gradients (templates for user customization) - Updated to use main assets file with all 27 gradients
+    ('assets/gradients.json', 'gradients'),
     
     # Sample data for first-run experience
     ('assets/sample_data/Gtopo30_reduced_2160x1080.tif', 'sample_data'),
     
-    # Preview icon databases for cycling functionality
+    # Preview icon databases for cycling functionality - include all existing preview icons
     ('assets/preview_icon_databases/pr01_fixed.tif', 'preview_icon_databases'),
-    ('assets/preview_icon_databases/pr05_fixed.tif', 'preview_icon_databases'),
-    ('assets/preview_icon_databases/pr06_shadow_test.tif', 'preview_icon_databases'),
-    ('assets/preview_icon_databases/preview_icon_10.tif', 'preview_icon_databases'),
+    ('assets/preview_icon_databases/pr03_fixed.tif', 'preview_icon_databases'),
+    ('assets/preview_icon_databases/pr04_fixed.tif', 'preview_icon_databases'),
+    ('assets/preview_icon_databases/preview_icon_01.tif', 'preview_icon_databases'),
+    ('assets/preview_icon_databases/preview_icon_02.tif', 'preview_icon_databases'),
+    ('assets/preview_icon_databases/preview_icon_12.tif', 'preview_icon_databases'),
+    ('assets/preview_icon_databases/preview_icon_14.tif', 'preview_icon_databases'),
+    
+    # PROJ data for coordinate reference systems (fixes bundle preview icon creation)
+    ('/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/rasterio/proj_data', 'rasterio/proj_data'),
     
     # Application modules that need to be included as data
+    ('src/__init__.py', 'src'),
+    ('src/coordinate_converter.py', 'src'),
+    ('src/coordinate_validator.py', 'src'),
+    ('src/dem_assembly_system.py', 'src'),
+    ('src/dem_reader.py', 'src'),
+    ('src/dialog_helpers.py', 'src'),
+    ('src/distance_formatter.py', 'src'),
+    ('src/elevation_scaler.py', 'src'),
+    ('src/export_controls_logic.py', 'src'),
+    ('src/gradient_editor_window.py', 'src'),
+    ('src/gradient_system.py', 'src'),
+    ('src/gradient_widgets.py', 'src'),
+    ('src/hls_adjustment_dialog.py', 'src'),
+    ('src/interactive_color_ramp.py', 'src'),
+    ('src/key_file_generator.py', 'src'),
+    ('src/main_window_qt_designer.py', 'src'),
+    ('src/map_backgrounds.py', 'src'),
+    ('src/map_widgets.py', 'src'),
+    ('src/meridian_utils.py', 'src'),
+    ('src/multi_file_database.py', 'src'),
+    ('src/multi_tile_loader.py', 'src'),
+    ('src/nan_aware_interpolation.py', 'src'),
+    ('src/preview_window.py', 'src'),
+    ('src/recent_databases.py', 'src'),
+    ('src/shadow_method_1.py', 'src'),
+    ('src/shadow_method_2.py', 'src'),
+    ('src/shadow_method_3.py', 'src'),
+    ('src/shadow_methods/__init__.py', 'src/shadow_methods'),
+    ('src/shadow_methods/shadow_method_1.py', 'src/shadow_methods'),
+    ('src/shadow_methods/shadow_method_2.py', 'src/shadow_methods'),
+    ('src/shadow_methods/shadow_method_3.py', 'src/shadow_methods'),
+    ('src/terrain_renderer.py', 'src'),
+    ('src/update_checker.py', 'src'),
     ('src/version.py', 'src'),
 ]
 
@@ -59,6 +100,16 @@ hiddenimports = [
     'rasterio.mask',
     'rasterio.features',
     'rasterio.warp',
+    'rasterio.sample',
+    'rasterio._io',
+    'rasterio.dtypes',
+    'rasterio.errors',
+    'rasterio.windows',
+    'rasterio.coords',
+    'rasterio.profiles',
+    'rasterio.merge',
+    'rasterio.enums',
+    'rasterio.vrt',
     
     # GDAL
     'osgeo',
@@ -78,10 +129,30 @@ hiddenimports = [
     'matplotlib.colors',
     'matplotlib.cm',
     
+    # Scipy for scientific computing
+    'scipy',
+    'scipy.special',
+    'scipy.special._cdflib',
+    'scipy.stats',
+    'scipy.linalg',
+    
     # Image processing
     'PIL',
     'PIL.Image',
+    'PIL.ImageDraw',
     'PIL.ImageQt',
+    
+    # PDF generation for key files
+    'reportlab',
+    'reportlab.pdfgen',
+    'reportlab.pdfgen.canvas',
+    'reportlab.lib.pagesizes',
+    'reportlab.lib.units',
+    'reportlab.lib.colors',
+    'reportlab.lib.utils',
+    'reportlab.platypus',
+    'reportlab.lib.styles',
+    'reportlab.lib.enums',
     
     # Standard library modules that might be missed
     'json',

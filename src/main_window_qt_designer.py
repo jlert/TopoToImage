@@ -19,7 +19,34 @@ def get_resource_path(relative_path):
     """Get absolute path to resource, works for dev and PyInstaller bundled app"""
     if hasattr(sys, '_MEIPASS'):
         # Running as PyInstaller bundle
-        return Path(sys._MEIPASS) / relative_path
+        # Resources are in Contents/Resources/, not in _MEIPASS directly
+        bundle_resources = Path(sys._MEIPASS).parent / "Resources"
+        
+        # Handle different resource types in bundle
+        if relative_path.endswith('.ui'):
+            # UI files are in Contents/Resources/ui/
+            return bundle_resources / "ui" / relative_path
+        elif relative_path.startswith('gradients/') or relative_path == 'gradients.json':
+            # Gradients are in Contents/Resources/gradients/
+            if relative_path == 'gradients.json':
+                return bundle_resources / "gradients" / "gradients.json"
+            else:
+                return bundle_resources / "gradients" / relative_path.replace('gradients/', '')
+        elif relative_path.startswith('maps/') or relative_path == 'maps':
+            # Maps are in Contents/Resources/maps/
+            if relative_path == 'maps':
+                return bundle_resources / "maps"
+            else:
+                return bundle_resources / "maps" / relative_path.replace('maps/', '')
+        elif relative_path.startswith('preview_icon_databases/') or relative_path == 'preview_icon_databases':
+            # Preview icons are in Contents/Resources/preview_icon_databases/
+            if relative_path == 'preview_icon_databases':
+                return bundle_resources / "preview_icon_databases"
+            else:
+                return bundle_resources / "preview_icon_databases" / relative_path.replace('preview_icon_databases/', '')
+        else:
+            # Other resources are directly in Resources
+            return bundle_resources / relative_path
     else:
         # Running in development - determine correct path based on resource type
         project_root = Path(__file__).parent.parent  # Go up from src/ to project root
@@ -188,11 +215,11 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         # Initialize export controls with default values (before loading gradients)
         self.initialize_export_controls()
         
+        # Scan and setup preview databases for cycling (BEFORE loading gradients)
+        self.scan_preview_databases()
+        
         # Load gradients into browser
         self.load_gradients_into_browser()
-        
-        # Scan and setup preview databases for cycling
-        self.scan_preview_databases()
         
         # Handle startup database loading (must be after UI setup)
         QTimer.singleShot(100, self.handle_startup_database_loading)
@@ -549,6 +576,33 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         load_list_action.setShortcut("Ctrl+Shift+L")
         load_list_action.triggered.connect(self.load_gradient_list_from_file)
         
+        # Preview Icon menu
+        preview_menu = menubar.addMenu("Preview Icon")
+        
+        # Create preview icon from selection
+        self.create_preview_action = preview_menu.addAction("Create Preview Icon from Selection")
+        self.create_preview_action.setShortcut("Ctrl+Shift+P")
+        self.create_preview_action.triggered.connect(self.menu_create_preview_icon_from_selection)
+        
+        # Next preview icon
+        self.next_preview_action = preview_menu.addAction("Next Preview Icon")
+        self.next_preview_action.setShortcut("Ctrl+Shift+Right")
+        self.next_preview_action.triggered.connect(self.menu_next_preview_icon)
+        
+        preview_menu.addSeparator()
+        
+        # Delete current preview icon
+        self.delete_preview_action = preview_menu.addAction("Delete Current Preview Icon")
+        self.delete_preview_action.setShortcut("Ctrl+Shift+Delete")
+        self.delete_preview_action.triggered.connect(self.menu_delete_current_preview_icon)
+        
+        # Store menu actions for later state updates
+        self.preview_menu_actions = {
+            'create': self.create_preview_action,
+            'next': self.next_preview_action, 
+            'delete': self.delete_preview_action
+        }
+        
         # Help menu
         help_menu = menubar.addMenu("Help")
         
@@ -722,6 +776,10 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     
                     self.gradient_list.setCurrentRow(selected_row)
                     
+                    # Ensure the selection is processed
+                    from PyQt6.QtCore import QCoreApplication
+                    QCoreApplication.processEvents()
+                    
                     # Update controls based on the selected gradient
                     selected_gradient_name = self.gradient_list.item(selected_row).text()
                     self.update_controls_from_gradient(selected_gradient_name)
@@ -811,6 +869,8 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     shutil.copy2(preview_file, user_preview_file)
                     copied_count += 1
                 print(f"✅ Copied {copied_count} preview databases to user directory")
+            else:
+                print(f"⚠️  Bundle preview directory not found: {bundle_preview_dir}")
             
             # Copy gradient files to user directory
             user_gradients_file = user_data_dir / "gradients.json"
@@ -1027,6 +1087,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             debug_logger.info("🔧 Setting up preview double-click handler...")
             self.setup_preview_double_click_handler()
             
+            # Update menu state after scanning preview databases
+            self.update_preview_icon_menu_state()
+            
         except Exception as e:
             debug_logger.error(f"❌ Error scanning preview databases: {e}")
             import traceback
@@ -1226,6 +1289,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             self.status_bar.showMessage(status_msg, 3000)
             
             print(f"✅ Preview database deleted successfully. Now showing: {new_db.name}")
+            
+            # Update menu state after deletion
+            self.update_preview_icon_menu_state()
             
         except Exception as e:
             print(f"❌ Error deleting preview database: {e}")
@@ -1834,6 +1900,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             self.status_bar.showMessage(status_msg, 3000)  # Show for 3 seconds
             
             print(f"🔄 === CYCLE PREVIEW DATABASE COMPLETED ===")
+            
+            # Update menu state after cycling 
+            self.update_preview_icon_menu_state()
             
         except Exception as e:
             print(f"❌ Error cycling preview database: {e}")
@@ -3410,6 +3479,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     print(f"   Dimensions: {database_info['width_pixels']}x{database_info['height_pixels']} pixels")
                     print(f"   Geographic bounds: {west:.2f}°W to {east:.2f}°E, {south:.2f}°S to {north:.2f}°N")
                     print(f"   Tiles: {database_info['tile_count']}")
+                    
+                    # Update menu state after successful database load
+                    self.update_preview_icon_menu_state()
                     
                     return True
                 else:
@@ -7027,6 +7099,307 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 Qt.TransformationMode.SmoothTransformation
             )
             self.preview_label.setPixmap(scaled_pixmap)
+
+
+    # ============================================================================
+    # Helper Methods for Preview Icon Operations
+    # ============================================================================
+    
+    def get_current_selection_from_coordinate_fields(self):
+        """Get current selection bounds from coordinate input fields"""
+        try:
+            # Check if coordinate fields exist and have values
+            if not all(hasattr(self, field) for field in ['north_edit', 'south_edit', 'west_edit', 'east_edit']):
+                print("❌ Coordinate fields not available")
+                return None
+            
+            # Try to parse coordinate values from the input fields
+            try:
+                north_text = self.north_edit.text().strip()
+                south_text = self.south_edit.text().strip()
+                west_text = self.west_edit.text().strip()
+                east_text = self.east_edit.text().strip()
+                
+                # Check if all fields have values
+                if not all([north_text, south_text, west_text, east_text]):
+                    print("❌ One or more coordinate fields are empty")
+                    return None
+                
+                # Parse coordinate values (handle both decimal and DMS formats)
+                north = self.parse_coordinate_value(north_text, True)  # True = latitude
+                south = self.parse_coordinate_value(south_text, True)
+                west = self.parse_coordinate_value(west_text, False)   # False = longitude  
+                east = self.parse_coordinate_value(east_text, False)
+                
+                if None in [north, south, west, east]:
+                    print("❌ Failed to parse one or more coordinate values")
+                    return None
+                
+                # Validate coordinate bounds
+                if north <= south:
+                    print("❌ Invalid coordinates: North must be greater than South")
+                    return None
+                
+                if west >= east:
+                    print("❌ Invalid coordinates: East must be greater than West")  
+                    return None
+                
+                selection_bounds = {
+                    'north': north,
+                    'south': south, 
+                    'west': west,
+                    'east': east
+                }
+                
+                print(f"✅ Parsed selection bounds: {selection_bounds}")
+                return selection_bounds
+                
+            except ValueError as e:
+                print(f"❌ Error parsing coordinate values: {e}")
+                return None
+                
+        except Exception as e:
+            print(f"❌ Error getting current selection from coordinate fields: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+    
+    def parse_coordinate_value(self, text, is_latitude):
+        """Parse coordinate value from text (handles both decimal degrees and DMS format)"""
+        try:
+            text = text.strip()
+            if not text:
+                return None
+            
+            # Try parsing as decimal degrees first
+            try:
+                return float(text)
+            except ValueError:
+                pass
+            
+            # Try parsing as DMS (Degrees/Minutes/Seconds) format
+            # Examples: "45°30'15"N", "45°30'15.5"N", "45°30'N", "45°N"
+            import re
+            dms_pattern = r'(\d+)°(?:(\d+)\'?(?:(\d+(?:\.\d+)?)\"?)?)?([NSEW])?'
+            match = re.match(dms_pattern, text.upper())
+            
+            if match:
+                degrees = int(match.group(1))
+                minutes = int(match.group(2)) if match.group(2) else 0
+                seconds = float(match.group(3)) if match.group(3) else 0
+                direction = match.group(4)
+                
+                # Convert to decimal degrees
+                decimal = degrees + minutes/60.0 + seconds/3600.0
+                
+                # Apply direction (negative for South/West)
+                if direction in ['S', 'W']:
+                    decimal = -decimal
+                
+                return decimal
+            
+            # If all parsing fails, return None
+            print(f"❌ Could not parse coordinate: '{text}'")
+            return None
+            
+        except Exception as e:
+            print(f"❌ Error parsing coordinate '{text}': {e}")
+            return None
+
+    # ============================================================================
+    # Preview Icon Menu Handlers  
+    # ============================================================================
+    
+    def menu_create_preview_icon_from_selection(self):
+        """Menu handler: Create preview icon from current selection"""
+        try:
+            print("📋 Menu: Create Preview Icon from Selection requested")
+            
+            # Check if we have a loaded database
+            has_database = hasattr(self, 'current_database_info') and self.current_database_info
+            has_dem_file = hasattr(self, 'current_dem_file') and self.current_dem_file
+            
+            if not has_database and not has_dem_file:
+                QMessageBox.warning(
+                    self,
+                    "No Database Loaded",
+                    "Cannot create preview icon: No elevation database is loaded.\n\n"
+                    "Please load a GeoTIFF file or database folder first."
+                )
+                return
+            
+            # Get current selection from coordinate fields
+            current_selection = self.get_current_selection_from_coordinate_fields()
+            if current_selection:
+                print(f"🎯 Using current selection from coordinate fields: {current_selection}")
+                self.create_preview_icon_from_selection(current_selection)
+            else:
+                QMessageBox.information(
+                    self,
+                    "No Selection",
+                    "No area is currently selected on the map.\n\n"
+                    "Please drag to select an area on the world map first, or enter coordinates manually in the coordinate fields."
+                )
+                
+        except Exception as e:
+            print(f"❌ Error in menu_create_preview_icon_from_selection: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to create preview icon from selection:\n{str(e)}"
+            )
+    
+    def menu_next_preview_icon(self):
+        """Menu handler: Cycle to next preview icon"""
+        try:
+            print("🔄 Menu: Next Preview Icon requested")
+            
+            if not hasattr(self, 'preview_databases') or not self.preview_databases:
+                QMessageBox.information(
+                    self,
+                    "No Preview Icons",
+                    "No preview icon databases are available for cycling."
+                )
+                return
+            
+            if len(self.preview_databases) <= 1:
+                QMessageBox.information(
+                    self,
+                    "Only One Preview Icon", 
+                    "Only one preview icon database is available. Cannot cycle to next."
+                )
+                return
+            
+            # Call the existing cycle function
+            self.cycle_to_next_preview_database()
+            
+            # Show brief status message
+            current_db = self.preview_databases[self.current_preview_index]
+            db_name = current_db.name if hasattr(current_db, 'name') else str(current_db)
+            self.status_bar.showMessage(f"Switched to preview icon: {db_name}", 2000)
+            
+        except Exception as e:
+            print(f"❌ Error in menu_next_preview_icon: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to cycle to next preview icon:\n{str(e)}"
+            )
+    
+    def menu_delete_current_preview_icon(self):
+        """Menu handler: Delete current preview icon"""
+        try:
+            print("🗑️ Menu: Delete Current Preview Icon requested")
+            
+            if not hasattr(self, 'preview_databases') or not self.preview_databases:
+                QMessageBox.information(
+                    self,
+                    "No Preview Icons",
+                    "No preview icon databases are available to delete."
+                )
+                return
+            
+            if self.current_preview_index < 0 or self.current_preview_index >= len(self.preview_databases):
+                QMessageBox.warning(
+                    self,
+                    "Invalid Selection",
+                    "No valid preview icon is currently selected for deletion."
+                )
+                return
+            
+            current_db = self.preview_databases[self.current_preview_index]
+            db_name = current_db.name if hasattr(current_db, 'name') else str(current_db)
+            
+            # Safety check: don't delete if it's the protected default
+            if db_name == "pr01_fixed.tif":
+                QMessageBox.warning(
+                    self,
+                    "Cannot Delete Default",
+                    "Cannot delete the default preview icon database (pr01_fixed.tif).\n\n"
+                    "This preview icon is protected to ensure the application always has at least one preview available."
+                )
+                return
+            
+            # Safety check: don't delete if it's the last database
+            if len(self.preview_databases) <= 1:
+                QMessageBox.warning(
+                    self,
+                    "Cannot Delete Last Icon",
+                    "Cannot delete the last remaining preview icon.\n\n"
+                    "At least one preview icon must always be available."
+                )
+                return
+            
+            # Ask for confirmation
+            reply = QMessageBox.question(
+                self,
+                "Confirm Deletion",
+                f"Are you sure you want to delete the current preview icon?\n\n"
+                f"Preview icon: {db_name}\n\n"
+                f"This action cannot be undone.",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+            
+            if reply == QMessageBox.StandardButton.Yes:
+                # Call the existing delete function
+                self.delete_current_preview_database()
+                
+                # Show confirmation message
+                self.status_bar.showMessage(f"Deleted preview icon: {db_name}", 3000)
+                print(f"✅ Successfully deleted preview icon via menu: {db_name}")
+            else:
+                print("🚫 Preview icon deletion cancelled by user")
+                
+        except Exception as e:
+            print(f"❌ Error in menu_delete_current_preview_icon: {e}")
+            import traceback
+            traceback.print_exc()
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"Failed to delete preview icon:\n{str(e)}"
+            )
+    
+    def update_preview_icon_menu_state(self):
+        """Update the state of preview icon menu items based on current conditions"""
+        try:
+            if not hasattr(self, 'delete_preview_action'):
+                return
+                
+            # Update delete action state
+            can_delete = False
+            if (hasattr(self, 'preview_databases') and self.preview_databases and 
+                len(self.preview_databases) > 1 and 
+                0 <= self.current_preview_index < len(self.preview_databases)):
+                
+                current_db = self.preview_databases[self.current_preview_index]
+                db_name = current_db.name if hasattr(current_db, 'name') else str(current_db)
+                # Can delete if it's not the protected default
+                can_delete = db_name != "pr01_fixed.tif"
+            
+            self.delete_preview_action.setEnabled(can_delete)
+            
+            # Update next preview action state  
+            can_cycle = (hasattr(self, 'preview_databases') and self.preview_databases and 
+                        len(self.preview_databases) > 1)
+            
+            if hasattr(self, 'next_preview_action'):
+                self.next_preview_action.setEnabled(can_cycle)
+                
+            # Create preview action is always available if we have a database loaded
+            has_database = ((hasattr(self, 'current_database_info') and self.current_database_info) or 
+                           (hasattr(self, 'current_dem_file') and self.current_dem_file))
+            
+            if hasattr(self, 'create_preview_action'):
+                self.create_preview_action.setEnabled(has_database)
+                
+        except Exception as e:
+            print(f"⚠️ Error updating preview icon menu state: {e}")
 
 
 def main():

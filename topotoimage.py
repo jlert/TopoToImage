@@ -12,7 +12,16 @@ def main():
     """Launch TopoToImage application"""
     try:
         # Add src directory to path for imports
-        sys.path.insert(0, str(Path(__file__).parent / "src"))
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller bundle mode - use bundled src directory
+            src_path = os.path.join(sys._MEIPASS, 'src')
+            sys.path.insert(0, src_path)
+            print(f"🧳 Bundle mode: Added {src_path} to Python path")
+        else:
+            # Development mode - use project src directory
+            src_path = str(Path(__file__).parent / "src")
+            sys.path.insert(0, src_path)
+            print(f"🔧 Development mode: Added {src_path} to Python path")
         
         # Import version info (now in src directory)
         from version import get_app_name_with_version, get_version_string, APP_NAME

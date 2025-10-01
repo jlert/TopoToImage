@@ -14,6 +14,16 @@ from typing import Tuple, Dict, Optional, Union, List
 from PIL import Image
 import matplotlib.pyplot as plt
 
+# Global rasterio availability check
+try:
+    import rasterio
+    import rasterio.sample
+    RASTERIO_AVAILABLE = True
+    print("✅ rasterio available - GeoTIFF support enabled")
+except ImportError as e:
+    RASTERIO_AVAILABLE = False
+    print(f"⚠️ rasterio not available - GeoTIFF support disabled: {e}")
+
 
 class DEMReader:
     """
@@ -275,8 +285,15 @@ class DEMReader:
     
     def _load_geotiff_format(self):
         """Load GeoTIFF format using rasterio with validation for elevation data"""
+        if not RASTERIO_AVAILABLE:
+            raise ImportError(
+                "GeoTIFF support requires the 'rasterio' library.\n\n"
+                "To install rasterio, run this command in your terminal:\n"
+                "pip install rasterio\n\n"
+                "Alternative: You can use .dem or .bil format files instead, "
+                "which don't require additional libraries."
+            )
         try:
-            import rasterio
             with rasterio.open(self.file_path) as dataset:
                 # First, validate that this is an elevation database, not an image
                 validation_result = self._validate_geotiff_elevation_data(dataset)
@@ -374,8 +391,9 @@ class DEMReader:
     
     def _load_geotiff_data(self, subsample: Optional[int] = None) -> np.ndarray:
         """Load GeoTIFF elevation data"""
+        if not RASTERIO_AVAILABLE:
+            raise ImportError("rasterio library required for GeoTIFF support")
         try:
-            import rasterio
             with rasterio.open(self.file_path) as dataset:
                 if subsample and subsample > 1:
                     # Read with downsampling
