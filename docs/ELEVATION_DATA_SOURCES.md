@@ -86,7 +86,7 @@ Each tile includes 6-7 different elevation products with specific use cases:
 4. Select your area of interest or download full global dataset
 5. Download includes: .dem (data), .hdr (header), .prj (projection), .stx (statistics)
 
-### 2. SRTM (Shuttle Radar Topography Mission)
+### 3. SRTM (Shuttle Radar Topography Mission)
 **Best for: High-resolution regional mapping between 60°N-60°S**
 
 - **Source**: [NASA Earthdata](https://earthdata.nasa.gov)
@@ -104,7 +104,7 @@ Each tile includes 6-7 different elevation products with specific use cases:
 4. Choose SRTM 1-Arc Second or 3-Arc Second Global
 5. Download individual tiles for your area of interest
 
-### 3. ASTER GDEM (Advanced Spaceborne Thermal Emission)
+### 4. ASTER GDEM (Advanced Spaceborne Thermal Emission)
 **Best for: Detailed regional studies, mountain areas**
 
 - **Source**: [NASA Earthdata](https://earthdata.nasa.gov) or [USGS Earth Explorer](https://earthexplorer.usgs.gov)
@@ -117,7 +117,7 @@ Each tile includes 6-7 different elevation products with specific use cases:
 
 ## Regional High-Resolution Sources
 
-### 4. USGS National Elevation Dataset (NED) - United States
+### 5. USGS National Elevation Dataset (NED) - United States
 **Best for: Detailed US terrain mapping**
 
 - **Source**: [USGS National Map](https://apps.nationalmap.gov/downloader/)
@@ -127,7 +127,7 @@ Each tile includes 6-7 different elevation products with specific use cases:
 - **Coordinate System**: NAD83 Geographic
 - **Quality**: Highest quality for US areas
 
-### 5. CDEM (Canadian Digital Elevation Model)
+### 6. CDEM (Canadian Digital Elevation Model)
 **Best for: Canadian terrain mapping**
 
 - **Source**: [Natural Resources Canada](https://open.canada.ca/data/en/dataset/7f245e4d-76c2-4caa-951a-45d1d2051333)
@@ -136,7 +136,7 @@ Each tile includes 6-7 different elevation products with specific use cases:
 - **Format**: GeoTIFF (.tif)
 - **Quality**: High quality, regularly updated
 
-### 6. EU-DEM (European Digital Elevation Model)
+### 7. EU-DEM (European Digital Elevation Model)
 **Best for: European terrain mapping**
 
 - **Source**: [Copernicus Land Monitoring Service](https://land.copernicus.eu/imagery-in-situ/eu-dem)
@@ -145,7 +145,7 @@ Each tile includes 6-7 different elevation products with specific use cases:
 - **Format**: GeoTIFF (.tif)
 - **Quality**: Very high quality, seamless coverage
 
-### 7. ODP1 (Open Data Portal - European Data)
+### 8. ODP1 (Open Data Portal - European Data)
 **Best for: High-resolution Western European terrain**
 
 - **Source**: [sonny.4lima.de](http://sonny.4lima.de) (Compiled European elevation data)
@@ -157,7 +157,7 @@ Each tile includes 6-7 different elevation products with specific use cases:
 
 ## Specialized and Commercial Sources
 
-### 8. OpenTopography
+### 9. OpenTopography
 **Best for: Research-grade, high-resolution lidar data**
 
 - **Source**: [OpenTopography.org](https://opentopography.org)
@@ -166,7 +166,7 @@ Each tile includes 6-7 different elevation products with specific use cases:
 - **Format**: Various including GeoTIFF
 - **Cost**: Free for research/education, registration required
 
-### 9. GEBCO (General Bathymetric Chart of the Oceans)
+### 10. GEBCO (General Bathymetric Chart of the Oceans)
 **Best for: Ocean depth data, underwater terrain**
 
 - **Source**: [GEBCO.net](https://www.gebco.net)
@@ -175,7 +175,7 @@ Each tile includes 6-7 different elevation products with specific use cases:
 - **Format**: GeoTIFF (.tif)
 - **Specialty**: Combines bathymetry with terrestrial elevation
 
-### 10. SRTM30+ (Global 1km DEM with Bathymetry)
+### 11. SRTM30+ (Global 1km DEM with Bathymetry)
 **Best for: Global mapping equivalent to GTOPO30 but with ocean floor data**
 
 - **Source**: [NOAA Data Catalog](https://catalog.data.gov/dataset/srtm30-global-1-km-digital-elevation-model-dem-version-11-land-surface) / [PacIOOS](https://www.pacioos.hawaii.edu/metadata/srtm30plus_v11_land.html)
@@ -188,7 +188,7 @@ Each tile includes 6-7 different elevation products with specific use cases:
 - **Versions**: Version 11 (current), Version 6.0 (older)
 - **Specialty**: Combines SRTM/GTOPO30 land data with comprehensive ocean bathymetry
 
-### 11. ETOPO (Earth Topography and Ocean Bathymetry)
+### 12. ETOPO (Earth Topography and Ocean Bathymetry)
 **Best for: High-resolution ocean floor mapping, global relief**
 
 - **Source**: [NOAA National Centers for Environmental Information](https://www.ncei.noaa.gov/products/etopo-global-relief-model)
