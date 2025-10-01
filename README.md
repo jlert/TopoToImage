@@ -10,7 +10,7 @@
 
 See [Installation Guide](docs/INSTALLATION.md) for setup instructions including how to bypass macOS Gatekeeper.
 
-**Windows/Linux Users:** Run from source (see Quick Start below)
+**Windows/Linux Users:** The application is built with cross-platform libraries (PyQt6, NumPy, GDAL) but has not been tested on these systems. You can try running from source (see Quick Start below). **Testers wanted!** If you successfully run TopoToImage on Windows or Linux, please open an issue to let us know.
 
 ---
 
