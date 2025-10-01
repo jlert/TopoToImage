@@ -12,6 +12,10 @@ See [Installation Guide](docs/INSTALLATION.md) for setup instructions including 
 
 **Windows/Linux Users:** The application is built with cross-platform libraries (PyQt6, NumPy, GDAL) but has not been tested on these systems. You can try running from source (see Quick Start below). **Testers wanted!** If you successfully run TopoToImage on Windows or Linux, please open an issue to let us know.
 
+## 🐛 Report Issues
+
+Found a bug? [Report it here](https://github.com/jlert/TopoToImage/issues/new) or browse [existing issues](https://github.com/jlert/TopoToImage/issues).
+
 ---
 
 TopoToImage recreates the classic cartographic software from the 1990s and used by professional cartographers and Time Magazine. 
