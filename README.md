@@ -4,6 +4,16 @@
 
 **⚠️ BETA SOFTWARE**: This is pre-release software under active development. Please report bugs and provide feedback!
 
+## 📥 Download
+
+**macOS Users:** [Download TopoToImage v4.0.0-beta.1 (DMG)](https://github.com/jlert/TopoToImage/releases/latest) - 386 MB
+
+See [Installation Guide](docs/INSTALLATION.md) for setup instructions including how to bypass macOS Gatekeeper.
+
+**Windows/Linux Users:** Run from source (see Quick Start below)
+
+---
+
 TopoToImage recreates the classic cartographic software from the 1990s and used by professional cartographers and Time Magazine. 
 
 ## ✨ Key Features
