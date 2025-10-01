@@ -255,9 +255,9 @@ Each tile includes 6-7 different elevation products with specific use cases:
 ```
 
 ### Loading in TopoToImage 4.0
-1. **File → Open DEM File...** - Load individual files
-2. **File → Open Database Folder...** - Load entire directories
-3. **Recent Databases** - Quick access to previously used datasets
+1. **File → Open Database** - Load single-file or multi-file databases
+2. **File → Create Multi-File Database** - Create metadata for folder of elevation tiles
+3. **File → Recent Databases** - Quick access to previously used datasets
 
 ## Data Quality Considerations
 

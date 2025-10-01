@@ -58,14 +58,13 @@ Elevation databases are files containing height values for geographic locations.
 
 ### Where to Get Data
 
-**USGS Earth Explorer** - https://earthexplorer.usgs.gov/
-- GTOPO30 (global, 1km resolution)
-- SRTM (near-global, 30m-90m resolution)
-- NED (US only, 10m-30m resolution)
+For comprehensive information on elevation data sources, formats, and download instructions, see the **[Elevation Data Sources Guide](ELEVATION_DATA_SOURCES.md)**.
 
-**OpenTopography** - https://opentopography.org/
-- High-resolution lidar data
-- Regional datasets
+**Quick recommendations:**
+- **Beginners:** Use included sample data in `assets/sample_data/`
+- **Regional work:** SRTM (30m resolution, good quality)
+- **Global projects:** GMTED2010 (modern, multiple resolutions)
+- **Ocean mapping:** ETOPO or SRTM30+ (includes bathymetry)
 
 ### Single-File vs Multi-File Databases
 
