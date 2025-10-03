@@ -211,70 +211,67 @@ These controls function similarly to Photoshop's Image Size command:
   - Points
   - Centimeters
 
-**Note:** Resolution controls are relevant when exporting JPEG or PNG image files. They determine the physical dimensions and print resolution of the exported image.
+**Note:** Resolution controls are relevant when exporting TIFF, JPEG or PNG image files. They determine the physical dimensions and print resolution of the exported image.
 
 ---
 
 ## Gradient Style Panel
 
-### Preview Icon Databases
+### Preview Icons
 
 **Purpose:** Small terrain preview thumbnails showing what the currently selected gradient looks like when applied to real elevation data.
 
 **Cycling Through Previews:**
-- Double-click any preview icon to cycle through available preview databases
+- Double-click the preview icon to cycle through available preview databases
 - Shows same gradient on different terrain types
 - Helps evaluate gradient effectiveness before applying to full database
+- The status bar at the bottom left of the main window will show the name of the preview icon database and its sequence number within the full sequence of preview databases
 
 **Preview Icon Menu Commands:**
 
 **Create Preview Icon Database**
 - Renders current map selection as a new preview database
 - Useful for testing gradients on specific terrain in your project
+- A square section at the center of the currently selected area will be scaled down to be 128 pixels wide and tall and saved as a new preview database
+
+**Next Preview Icon**
+- Cycles through the previews the same as double-clicking on the preview icon
+- Keyboard shortcut: Cmd+Shift+Right Arrow
 
 **Delete Preview Icon Database**
 - Removes preview databases you no longer need
 - First (default) preview cannot be deleted
 
-**Set as Database 1/2/3/4**
-- Assigns specific preview databases to cycle positions
-- Organizes your most-used terrain types
-
 ### Gradient Management Buttons
 
 Eight buttons control gradient creation, editing, and organization:
 
-**New Gradient**
+**New Gradient (Cmd+G)**
 - Opens gradient editor window
 - Creates copy of currently selected gradient
 - Gradient name shows "_copy" suffix to indicate new gradient will be saved separately
 
-**Edit Gradient**
+**Edit Gradient (Cmd+E)**
 - Opens gradient editor for currently selected gradient
-- Click OK to update gradient with new settings
 - Changes affect the existing gradient
 
-**Delete Gradient**
+**Delete Gradient (Delete)**
 - Removes currently selected gradient from list
 - Cannot be undone
 
-**Move Up / Move Down**
+**Move Up / Move Down (Cmd+Up Arrow / Cmd+Down Arrow)**
 - Rearranges gradient position in list
-- Affects display order in gradient list
 
-**Sort List**
+**Sort List (Cmd+L)**
 - Sorts all gradients alphabetically by name
-- Useful for organizing large gradient collections
 
-**Save List**
+**Save List (Cmd+Shift+S)**
 - Exports current gradient list to file
-- Saves all gradients and their settings
-- Standard file format for sharing gradient collections
 
-**Load List**
+**Load List (Cmd+Shift+L)**
 - Imports gradients from saved file
-- Options:
-  - **Append** - Adds loaded gradients to end of current list
+- A dialogue window will show these options:
+  - **Append** - Adds loaded gradients to end of current list. If there are duplicate names, the duplicates will not be loaded. Only gradients with unique names will be loaded.
   - **Replace** - Replaces entire gradient list with loaded gradients
 
 **Note:** Gradient menu also provides access to these commands.
@@ -300,6 +297,7 @@ Critical setting that controls how gradients are applied to elevation data.
 - Scales gradient to fit between these values
 - Lowest elevation = bottom gradient color
 - Highest elevation = top gradient color
+- After previewing or saving an image, the maximum and minimum elevations are recorded in the Maximum and Minimum spin boxes
 - **Best for:** Areas with unknown elevation range, ensuring full gradient is always visible
 
 **Meters Mode (Fixed Thresholds)**
@@ -309,11 +307,23 @@ Critical setting that controls how gradients are applied to elevation data.
 - Elevations above gradient maximum use top color
 - **Best for:** Precise control, comparing multiple areas at same scale, bathymetric/topographic boundaries
 
-**Example:**
+**Example 1: Percent mode vs Meters mode**
 - Gradient set to 0m (bottom) → 100m (top)
 - Selected area contains mountains up to 2000m elevation
 - **Percent mode:** 0m gets bottom color, 2000m gets top color, gradient scales across full range
 - **Meters mode:** 0-100m shows gradient, everything above 100m shows top color
+
+**Example 2: Discovering elevations in one area and using those elevations on subsequent maps**
+- An area of the map is selected and the Preview button is clicked
+- A window with the preview map is created and the gradient colors are fit between the maximum and minimum elevations found in the selected area
+- The maximum and minimum elevations found in the selected area are recorded in the Maximum and Minimum spin boxes
+- The user clicks the Meters radio button
+- Selecting new areas on the map will now share the gradient range as the first map
+- Maximum and minimum elevations in a selected area can be discovered and those same values can be used on new selected areas to make different maps with the same gradient range applied to each
+
+### Save Legend File
+
+If this radio button is checked when an image file is saved, a separate PDF file with the same name is saved containing metadata for the saved image. This metadata includes the width, height, pixels per degree for the selected area. It also contains information about the gradient elevations including the elevation of each color and its RGB values.
 
 ---
 
@@ -321,19 +331,21 @@ Critical setting that controls how gradients are applied to elevation data.
 
 ### Preview Button
 
-**Quick Preview Window**
 - Renders current selection with current gradient settings
 - Opens in separate window
-- Fast way to test gradient and shading before full export
+- Pay attention to the export file info pixel width and height. These elevation databases can be quite large, so if a huge area is accidentally selected and the Preview button is clicked, it could take a very long time for the preview to generate a large image. Use the export scale spin box to reduce a large selected area to a manageable size.
+- Note that this program has been designed to work with huge elevation databases. The program has successfully processed the full GEBCO database and reduced it to a manageable size to show the full world. However, this took many hours. Working with huge databases has not been fully tested.
 - Does not save file - for evaluation only
 
 ### Save Image File Button
 
 **Also available:** File → Save Image File (Cmd+S)
 
+When this option is selected, a pop-up window will be available in the file requester window with the following options:
+
 **Export Options:**
 - **GeoTIFF** - Georeferenced image for GIS applications (QGIS, ArcGIS, etc.)
-- **Geocart Image** - Specialized cartographic database format
+- **Geocart Image** - These images can be used with Geocart, professional mapping projection software, to reproject the images into any one of dozens or hundreds of available projections
 - **PNG** - Standard image format, high quality
 - **JPG** - Compressed image format, smaller file size
 - **Multiple PNG Files** - Exports separate layers:
@@ -343,34 +355,13 @@ Critical setting that controls how gradients are applied to elevation data.
   - Elevation data
   - Ideal for compositing in Photoshop, Illustrator, or other image editors
 
-**PDF Key Files:**
-- Automatically generates legend with gradient information
-- Adobe Illustrator compatible
-- Contains metadata for the exported image
-
 ### Export Elevation Database Button
 
 **Purpose:** Create cropped and/or scaled versions of source elevation data
 
-**Cropping:**
-- Uses current map selection as crop area
-- Extract specific regions from large global databases
-- Reduces file size for distribution or faster processing
-
-**Resolution Scaling:**
-- Adjust pixels per degree (resolution)
-- Create lower-resolution versions for testing
-- Reduce file size while maintaining geographic coverage
-
 **Format Options (in Save dialog):**
 - **GeoTIFF** - Standard georeferenced format
 - **DEM** - BIL format with header and projection files
-
-**Common Uses:**
-- Extract country/region from global dataset
-- Create test databases at lower resolution
-- Prepare data for sharing or distribution
-- Focus on specific study areas
 
 ---
 
@@ -382,6 +373,8 @@ The gradient editor provides complete control over terrain visualization appeara
 
 ### Gradient Types
 
+There is a preview icon that shows the current gradient settings applied to the currently selected preview icon database. This icon is redrawn as changes are made to the gradient options.
+
 Five visualization modes for different cartographic needs:
 
 **1. Shaded Relief**
@@ -389,93 +382,105 @@ Five visualization modes for different cartographic needs:
 - Grayscale representation of terrain
 - Light and shadow based on surface angles
 
-**2. Colored Shaded Relief**
+**2. Gradient**
 - Color gradient based on elevation
-- Hillshading applied for 3D effect
-- Most common cartographic style
-- Combines elevation information with terrain texture
+- Up to 64 color stops can be added to the gradient
+- Elevations between color stops are blended between the color stop above and below
 
 **3. Posterized**
 - Discrete elevation bands (stepped colors)
-- No hillshading
-- Hypsometric tint style
-- Clear elevation zone visualization
+- Colors are not blended between color stops
+- Each color stop defines the color at the stop's elevation and elevations down to the next lower stop
+- For colors above the topmost color stop, the color of the "Above Posterized" color chip is used
 
-**4. Posterized with Shading**
-- Discrete elevation bands with hillshading
-- Combines zone clarity with terrain texture
-- Professional topographic map style
+**4. Shading and Gradient**
+- Shaded relief is mixed with the Gradient image
 
-**5. Posterized with Shading and Shadows**
-- Full-featured visualization
-- Discrete elevation bands
-- Hillshading for surface detail
-- Cast shadows for dramatic relief
-- Maximum visual information
+**5. Shading and Posterized**
+- Shaded relief is mixed with the Posterized image
 
-### Color Ramp Controls
+### Shading and Shadow Options
+
+If the Shaded Relief, Shading and Gradient, or Shading and Posterized options are selected, the shading and shadow options become active.
+
+**Light Direction**
+- The light direction controls determine the direction of the light and dark side of the hillshading
+- The light direction can be set to any angle between 0° and 360°
+
+**Percent Shading Intensity**
+- This controls the intensity of the hillshading
+- This number can be set to any value. It is not limited to the 0 to 100% range
+
+**Draw Cast Shadows**
+- When this box is checked, the shadow options become available
+
+**Drop Distance**
+- This control determines the length of cast shadows. Lower numbers in this field create longer cast shadows
+- The shadows are created by scanning across the elevation database in the direction of the light direction. Each elevation value is compared to the previous elevation value in the scan direction. If the previous elevation value is lower than or equal to the current pixel's elevation value, then the current pixel is not in shadow. If the previous elevation value is lower than the current elevation minus the drop distance, then the current pixel is in shadow. This shadow elevation is remembered and used for the next comparison in the scan direction. This continues in the scan direction, subtracting the drop distance on each iteration and recording shadow pixels, until the shadow distance becomes lower than the current pixel's elevation. Once the shadow elevation is lower than the current elevation, the pixel is no longer in shadow.
+
+**Shadow Soft Edge Size**
+- When the height of the shadow above the current elevation is less than this value, then the color of the shadow is reduced in proportion to the distance of the shadow from the elevation divided by this value
+
+**Shadow Color**
+- This color chip represents the color of the shadow. This color is multiplied over the shading or gradient colors
+- Click on this color chip to get a color selector to change the shadow color
+
+### Gradient Options
+
+**Number of Colors**
+- Enter the number of color points on the gradient bar. Values can range from 2 to 64
+- Use the spin box up and down controls to add or remove points
+- Added points will appear midway between the topmost point and the point below
+- Removed points will be deleted from the top of the gradient bar
+
+**Maximum and Minimum Elevation**
+- These two spin box edit fields control the elevation of the top and bottom of the gradient bar
+- There are two options for the units:
+  - Clicking the **Percent** radio button makes the gradient bar stretch between the maximum and minimum elevation in a selected area of the map. When images of this type are created, the selected area of the map is scanned to find the maximum and minimum elevation. Then the gradient is stretched to fit between these two elevation values
+  - Clicking the **Meters** radio button sets the gradient type to use the maximum and minimum elevation specified in the edit fields above
 
 **Interactive Gradient Bar**
-- Drag color control points to adjust elevation thresholds
-- Click to add new color points
-- Right-click to remove points
-- 2-64 colors supported
+- The gradient bar represents colors as they will be applied to elevations found in the selected area of the currently open database between the maximum elevation and the minimum elevation
+- Color points and their elevation are represented by small circles pointing to the gradient bar
+- There is one currently selected point which is a larger circle
+- The elevation of the current point can be changed by dragging the current point up or down on the gradient bar
+- The elevation of the current point can also be changed by adjusting the number in the point elevation spin box edit field
+- Clicking on one of the small circles will make it the currently selected point
+- The currently selected point can also be changed by changing the number in the point number spin box edit field. The numbers are generally numbered from one at the bottom up to the maximum number of colors
+- The color of the currently selected point can be changed either by double-clicking on the selected point circle or by clicking the selected point color chip
+- Clicking directly on the color bar adds a new color point
+- To remove a point, drag it by 100 pixels to the left or the right of the gradient bar. The point will be deleted
 
-**Color Selection**
-- Double-click color point to change color
-- Standard color picker interface
-- Supports RGB color values
+**No Data Color**
+- Pixels in the elevation database that are marked as having no data will be colored with this color. Many databases that just have data for land have ocean values set to no data. In that case, this color can be used to color the oceans
 
-**Elevation Assignment**
-- Each color point has elevation value (meters or percent)
-- Displayed in gradient editor
-- Defines where colors transition
+**Above Posterized Color**
+- The Posterized gradient type and the Shading and Posterized gradient type use this additional color. This color is applied to all pixels that have an elevation higher than the color point at the top of the gradient bar
 
-### Shading Options
+### Elevation Effects Buttons
 
-**Hillshading (Gradient Types 2, 4, 5)**
-- **Light Direction** - 360° control (0° = North, 90° = East, etc.)
-- **Light Angle** - Altitude of light source above horizon
-- **Intensity** - Strength of hillshading effect
-- **Exaggeration** - Vertical exaggeration multiplier for dramatic effect
+**Spread Button**
+- This button spreads the points on the color bar evenly between the top of the color bar and the bottom of the color bar
 
-**Azimuth Control:**
-- Circular dial for intuitive light direction selection
-- Numeric input for precise angles
-- Real-time preview updates
+**Square Button**
+- The effect of this button is to compress the elevation of points towards the bottom of the gradient bar. This can be useful because elevation databases tend to have many more pixels at lower elevations than higher elevations. So compressing the color stops towards the bottom can add more color variation to lower elevations
 
-### Shadow Options
+**Flip Button**
+- This button causes the color points and their elevation to be flipped on the gradient bar
 
-**Cast Shadows (Gradient Type 5)**
-- **Enable Shadows** - Toggle shadow rendering
-- **Shadow Direction** - Follows light direction setting
-- **Soft Edges** - Anti-aliased shadow boundaries
-- **Shadow Length** - Distance shadows extend from terrain
-- **Shadow Opacity** - Transparency of shadow overlay
+### Color Effects Buttons
 
-**Shadow Methods:**
-- Multiple algorithms available
-- Different performance/quality tradeoffs
-- Method 2 recommended for production use
+**Random**
+- A random color is generated for each color point
 
-### Gradient-Specific Options
+**Rainbow**
+- The colors of the points are changed to sequential RGB values corresponding to a 360° circle around the color wheel divided by the number of points
 
-**Color Blending**
-- Linear interpolation (smooth gradients)
-- Step interpolation (hard edges between colors)
+**Roll**
+- Each point on the gradient bar takes on the color of the point above it. The topmost point takes on the color of the bottom point
 
-**Elevation Mode**
-- Matches Percent/Meters mode in main window
-- Can be set independently for each gradient
-
-**Naming**
-- Descriptive gradient names for organization
-- Displayed in gradient list
-
-**QGIS Compatibility**
-- Import gradients from QGIS color ramp files
-- Export TopoToImage gradients to QGIS format
-- Cross-application workflow support
+**HLS**
+- Opens a window where the hue, lightness, and saturation of the colors can be adjusted. There is an option to adjust all colors or just the current point
 
 ---
 
