@@ -2,6 +2,8 @@
 
 **Version 4.0.0-beta.1**
 
+![TopoToImage Banner](images/banner_image.png)
+
 ---
 
 ## Table of Contents
