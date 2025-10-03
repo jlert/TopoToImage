@@ -29,7 +29,7 @@ TopoToImage creates colored terrain visualization images from elevation database
 **Visualize:** Select geographic area, apply color gradients, configure shading and shadows
 
 **Export:**
-- **Images:** GeoTIFF, PNG, JPG, PDF with full georeferencing
+- **Images:** GeoTIFF, Geocart Image Databases, PNG, JPG, PDF with full georeferencing
 - **Elevation Databases:** Cropped and/or scaled versions of the source data
 
 The elevation export feature allows you to create smaller, cropped, or reduced-resolution versions of large databases for faster testing or distribution.
