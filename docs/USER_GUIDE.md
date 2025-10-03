@@ -180,7 +180,7 @@ Shows information about the currently loaded elevation database:
 - **Pixels per Degree** - Resolution of the data
 - **Latitude/Longitude Boundaries** - Geographic coverage (N/S/E/W)
 - **File Size** - Storage size of the database
-- **Pixel Height** - Geographic distance (in meters or km) of one pixel's height
+- **Pixel Height** - Geographic distance (in miles or km) of one pixel's height
 
 ### Export File Info Panel
 
