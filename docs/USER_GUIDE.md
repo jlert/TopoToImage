@@ -189,7 +189,7 @@ Shows information about the image/database that will be exported based on curren
 - **Width/Height** - Output dimensions in pixels
 - **Pixels per Degree** - Output resolution
 - **File Size Estimate** - Approximate output file size
-- **Pixel Height** - Geographic distance of one pixel in output
+- **Pixel Height** - Geographic distance (in miles or km) of one pixel's height
 
 This allows you to verify output size before exporting and adjust selection or scaling as needed.
 
