@@ -41,6 +41,11 @@ datas = [
     ('assets/preview_icon_databases/preview_icon_02.tif', 'preview_icon_databases'),
     ('assets/preview_icon_databases/preview_icon_12.tif', 'preview_icon_databases'),
     ('assets/preview_icon_databases/preview_icon_14.tif', 'preview_icon_databases'),
+
+    # Documentation files
+    ('docs/USER_GUIDE.md', 'docs'),
+    ('docs/ELEVATION_DATA_SOURCES.md', 'docs'),
+    ('README.md', '.'),
     
     # PROJ data for coordinate reference systems (fixes bundle preview icon creation)
     ('/Library/Frameworks/Python.framework/Versions/3.12/lib/python3.12/site-packages/rasterio/proj_data', 'rasterio/proj_data'),
