@@ -408,6 +408,7 @@ If the Shaded Relief, Shading and Gradient, or Shading and Posterized options ar
 **Light Direction**
 - The light direction controls determine the direction of the light and dark side of the hillshading
 - The light direction can be set to any angle between 0° and 360°
+- Note that this is not the true light direction from the sun. It's a decorative hillshading effect that reveals the terrains topography.
 
 **Percent Shading Intensity**
 - This controls the intensity of the hillshading

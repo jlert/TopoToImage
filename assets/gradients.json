@@ -2784,6 +2784,110 @@
       "units": "percent"
     },
     {
+      "name": "amazon_bluegreen",
+      "description": "Created with gradient editor",
+      "min_elevation": -116.0,
+      "max_elevation": 3681.0,
+      "color_stops": [
+        {
+          "position": 0.0,
+          "red": 89,
+          "green": 118,
+          "blue": 23,
+          "alpha": 255
+        },
+        {
+          "position": 0.3757049230300258,
+          "red": 217,
+          "green": 226,
+          "blue": 67,
+          "alpha": 255
+        },
+        {
+          "position": 0.8024691358024691,
+          "red": 113,
+          "green": 188,
+          "blue": 117,
+          "alpha": 255
+        },
+        {
+          "position": 0.9047401310775796,
+          "red": 207,
+          "green": 241,
+          "blue": 191,
+          "alpha": 255
+        },
+        {
+          "position": 0.9652590724065362,
+          "red": 60,
+          "green": 213,
+          "blue": 86,
+          "alpha": 255
+        },
+        {
+          "position": 0.9876543209876543,
+          "red": 188,
+          "green": 242,
+          "blue": 239,
+          "alpha": 255
+        },
+        {
+          "position": 0.9980660606566462,
+          "red": 56,
+          "green": 177,
+          "blue": 183,
+          "alpha": 255
+        },
+        {
+          "position": 0.9998475842097241,
+          "red": 216,
+          "green": 251,
+          "blue": 251,
+          "alpha": 255
+        },
+        {
+          "position": 1.0,
+          "red": 115,
+          "green": 230,
+          "blue": 234,
+          "alpha": 255
+        }
+      ],
+      "discrete": false,
+      "created_by": "Gradient Editor",
+      "tags": [
+        "custom",
+        "user_created"
+      ],
+      "shadow_color": {
+        "red": 186,
+        "green": 194,
+        "blue": 211,
+        "alpha": 255
+      },
+      "no_data_color": {
+        "red": 255,
+        "green": 255,
+        "blue": 255,
+        "alpha": 255
+      },
+      "below_gradient_color": {
+        "red": 116,
+        "green": 70,
+        "blue": 29,
+        "alpha": 255
+      },
+      "gradient_type": "shading_and_gradient",
+      "light_direction": 270,
+      "shading_intensity": 400,
+      "cast_shadows": true,
+      "shadow_drop_distance": 100.0,
+      "shadow_soft_edge": 6,
+      "blending_mode": "Hard Light",
+      "color_mode": "8-bit",
+      "units": "percent"
+    },
+    {
       "name": "Mordor",
       "description": "Created with gradient editor",
       "min_elevation": 0,
