@@ -4,6 +4,9 @@ Preview Window for DEM Visualizer
 Displays terrain preview images in a non-modal, scrollable window
 """
 
+# Debug control - set to True only when actively debugging
+_DEBUG = False
+
 import sys
 from pathlib import Path
 from typing import Optional
@@ -32,7 +35,8 @@ try:
     from dem_reader import DEMReader
     ASSEMBLY_SYSTEM_AVAILABLE = True
 except ImportError as e:
-    print(f"⚠️ Assembly system not available: {e}")
+    if _DEBUG:
+        print(f"⚠️ Assembly system not available: {e}")
     ASSEMBLY_SYSTEM_AVAILABLE = False
 
 def get_dev_workspace_log_path(filename: str) -> str:
@@ -155,19 +159,22 @@ class PreviewGenerationThread(QThread):
                         debug_mode=True,
                         log_file=get_dev_workspace_log_path(f"preview_assembly_{TESTING_MEMORY_LIMIT_MB}mb_test.log")
                     )
-                    print(f"🧪 Assembly system initialized with {TESTING_MEMORY_LIMIT_MB}MB limit")
+                    if _DEBUG:
+                        print(f"🧪 Assembly system initialized with {TESTING_MEMORY_LIMIT_MB}MB limit")
                 else:
                     assembly_config = AssemblyConfig(
                         force_universal_chunking=True,  # Use Option 2 by default
                         debug_mode=PreviewConfig.DEBUG_MODE,
                         log_file=get_dev_workspace_log_path("preview_assembly_debug.log")
                     )
-                    print("✅ Assembly system initialized with Option 2 (Universal Chunking)")
-                
+                    if _DEBUG:
+                        print("✅ Assembly system initialized with Option 2 (Universal Chunking)")
+
                 self.assembler = DEMAssembler(assembly_config)
-                
+
             except Exception as e:
-                print(f"⚠️ Failed to initialize assembly system: {e}")
+                if _DEBUG:
+                    print(f"⚠️ Failed to initialize assembly system: {e}")
                 self.assembler = None
         
     def run(self):
@@ -191,18 +198,21 @@ class PreviewGenerationThread(QThread):
                 if pixels > 50_000_000:  # 50M pixel limit
                     should_use_assembly = True
                     if PreviewConfig.DEBUG_MODE:
-                        print(f"🔄 Large single file detected ({pixels:,} pixels) - using assembly system")
+                        if _DEBUG:
+                            print(f"🔄 Large single file detected ({pixels:,} pixels) - using assembly system")
             
             if should_use_assembly:
                 # Use new assembly system
                 if PreviewConfig.DEBUG_MODE:
-                    print("🔧 Using new assembly system for preview generation")
+                    if _DEBUG:
+                        print("🔧 Using new assembly system for preview generation")
                 cropped_elevation_data = self._generate_preview_with_assembly()
                 used_assembly_system = True
             else:
                 # Use legacy system (small single files)
                 if PreviewConfig.DEBUG_MODE:
-                    print("🔧 Using legacy system for preview generation")
+                    if _DEBUG:
+                        print("🔧 Using legacy system for preview generation")
                 cropped_elevation_data = self._generate_preview_legacy()
                 used_assembly_system = False
                 
@@ -212,13 +222,15 @@ class PreviewGenerationThread(QThread):
             # Log full dataset info but don't reject based on it yet
             total_pixels = cropped_elevation_data.size
             memory_mb = (total_pixels * 4) / (1024 * 1024)  # Rough estimate
-            print(f"📊 Elevation data for preview: {cropped_elevation_data.shape}, {total_pixels:,} pixels, ~{memory_mb:.1f}MB")
-                
+            if _DEBUG:
+                print(f"📊 Elevation data for preview: {cropped_elevation_data.shape}, {total_pixels:,} pixels, ~{memory_mb:.1f}MB")
+
             self.progress_updated.emit(25, "Loading Data")
-            
+
             # NOTE: Cropping is now handled inside _generate_preview_legacy() and _generate_preview_with_assembly()
             # No additional cropping needed here to avoid duplicate processing
-            print(f"📏 Using processed data: {cropped_elevation_data.shape} (cropping handled by generation method)")
+            if _DEBUG:
+                print(f"📏 Using processed data: {cropped_elevation_data.shape} (cropping handled by generation method)")
             
             # Apply export scale with NaN-aware interpolation (only if scale is different from 100%)
             # Skip this for assembly system since it handles scaling internally
@@ -227,48 +239,57 @@ class PreviewGenerationThread(QThread):
                 original_shape = cropped_elevation_data.shape
                 target_height = int(original_shape[0] * scale_factor)
                 target_width = int(original_shape[1] * scale_factor)
-                
-                print(f"📏 Applying {self.export_scale}% scale with NaN-aware interpolation: {original_shape} → ({target_height}, {target_width})")
-                
+
+                if _DEBUG:
+                    print(f"📏 Applying {self.export_scale}% scale with NaN-aware interpolation: {original_shape} → ({target_height}, {target_width})")
+
                 # Check for NaN values before interpolation
                 valid_data_before = np.sum(~np.isnan(cropped_elevation_data))
-                print(f"   Valid pixels before scaling: {valid_data_before:,}")
+                if _DEBUG:
+                    print(f"   Valid pixels before scaling: {valid_data_before:,}")
                 
                 # Use NaN-aware interpolation to properly handle no-data areas
                 try:
                     cropped_elevation_data = resize_with_nan_exclusion(
-                        cropped_elevation_data, 
+                        cropped_elevation_data,
                         (target_height, target_width),
                         method='lanczos'
                     )
-                    
+
                     # Validate results
                     valid_data_after = np.sum(~np.isnan(cropped_elevation_data))
-                    print(f"✅ NaN-aware interpolation complete: {cropped_elevation_data.shape}")
-                    print(f"   Valid pixels after scaling: {valid_data_after:,}")
-                    
+                    if _DEBUG:
+                        print(f"✅ NaN-aware interpolation complete: {cropped_elevation_data.shape}")
+                        print(f"   Valid pixels after scaling: {valid_data_after:,}")
+
                     if valid_data_after == 0:
                         raise ValueError("Interpolation resulted in no valid data")
-                    
+
                 except Exception as e:
                     # Fallback: simple subsampling (preserves data integrity)
-                    print(f"⚠️ NaN-aware interpolation failed ({e}), using simple subsampling")
+                    if _DEBUG:
+                        print(f"⚠️ NaN-aware interpolation failed ({e}), using simple subsampling")
                     subsample_factor = max(1, int(1.0 / scale_factor))
                     if subsample_factor > 1:
                         cropped_elevation_data = cropped_elevation_data[::subsample_factor, ::subsample_factor]
-                        print(f"✅ Simple subsampling complete: {cropped_elevation_data.shape}")
+                        if _DEBUG:
+                            print(f"✅ Simple subsampling complete: {cropped_elevation_data.shape}")
                     else:
-                        print(f"⚠️ Scale factor too large for subsampling, using original data")
+                        if _DEBUG:
+                            print(f"⚠️ Scale factor too large for subsampling, using original data")
                     
             elif self.export_scale > 100.0:
-                print(f"⚠️ Export scale >100% not supported for preview (would be too large)")
+                if _DEBUG:
+                    print(f"⚠️ Export scale >100% not supported for preview (would be too large)")
             else:
-                print(f"📏 Export scale: {self.export_scale}% (no scaling needed)")
-            
+                if _DEBUG:
+                    print(f"📏 Export scale: {self.export_scale}% (no scaling needed)")
+
             # Now check if the cropped/processed data is still too large
             final_pixels = cropped_elevation_data.size
             final_memory_mb = (final_pixels * 4) / (1024 * 1024)
-            print(f"📋 Final data for rendering: {cropped_elevation_data.shape}, {final_pixels:,} pixels, ~{final_memory_mb:.1f}MB")
+            if _DEBUG:
+                print(f"📋 Final data for rendering: {cropped_elevation_data.shape}, {final_pixels:,} pixels, ~{final_memory_mb:.1f}MB")
             
             # Size limit check - reasonable limit for preview generation
             # Assembly system can handle larger areas, so only check for legacy system
@@ -280,7 +301,8 @@ class PreviewGenerationThread(QThread):
             else:
                 # Assembly system handles its own size limits
                 if PreviewConfig.DEBUG_MODE:
-                    print(f"✅ Assembly system handled size management: {final_pixels:,} pixels")
+                    if _DEBUG:
+                        print(f"✅ Assembly system handled size management: {final_pixels:,} pixels")
             
             self.progress_updated.emit(30, "Preparing Data")
             
@@ -294,7 +316,8 @@ class PreviewGenerationThread(QThread):
             
             # Show different progress steps based on gradient type
             gradient_type = getattr(gradient, 'gradient_type', 'gradient')
-            print(f"🎨 Rendering {gradient_type} gradient: {self.gradient_name}")
+            if _DEBUG:
+                print(f"🎨 Rendering {gradient_type} gradient: {self.gradient_name}")
             
             # Get gradient information for detailed progress reporting
             gradient = self.gradient_manager.get_gradient(self.gradient_name)
@@ -308,16 +331,18 @@ class PreviewGenerationThread(QThread):
             
             def terrain_progress_callback(progress, phase=None):
                 current_time = time.time()
-                
+
                 if phase:
                     # New phase started
                     if hasattr(self, 'current_phase') and self.current_phase != "Starting":
                         phase_time = current_time - self.phase_start_time
-                        print(f"✓ {self.current_phase} completed in {phase_time:.1f}s")
-                    
+                        if _DEBUG:
+                            print(f"✓ {self.current_phase} completed in {phase_time:.1f}s")
+
                     self.current_phase = phase
                     self.phase_start_time = current_time
-                    print(f"🔄 Starting: {phase}")
+                    if _DEBUG:
+                        print(f"🔄 Starting: {phase}")
                 
                 # Each phase shows 0-100% progress for that specific phase
                 ui_progress = int(progress * 100)  # Always 0-100% for current phase
@@ -331,20 +356,22 @@ class PreviewGenerationThread(QThread):
                     elapsed = current_time - self.phase_start_time
                     estimated_total = elapsed / progress if progress > 0.05 else elapsed * 20
                     remaining = max(0, estimated_total - elapsed)
-                    
+
                     # Update status with time estimate
                     time_status = f"{ui_progress}% (elapsed: {elapsed:.0f}s, remaining: ~{remaining:.0f}s)"
                     self.status_updated.emit(time_status)
-                    
-                    print(f"   Shadow progress: {progress*100:.1f}% (elapsed: {elapsed:.0f}s, remaining: ~{remaining:.0f}s)")
+
+                    if _DEBUG:
+                        print(f"   Shadow progress: {progress*100:.1f}% (elapsed: {elapsed:.0f}s, remaining: ~{remaining:.0f}s)")
                 else:
                     # For other phases, just show percentage
                     self.status_updated.emit(f"{ui_progress}%")
             
-            print(f"🎨 Starting terrain rendering:")
-            print(f"   Gradient type: {gradient_type}")
-            print(f"   Has shadows: {has_shadows}")
-            print(f"   Data size: {cropped_elevation_data.shape}")
+            if _DEBUG:
+                print(f"🎨 Starting terrain rendering:")
+                print(f"   Gradient type: {gradient_type}")
+                print(f"   Has shadows: {has_shadows}")
+                print(f"   Data size: {cropped_elevation_data.shape}")
             
             # Determine elevation range to use for rendering
             min_elev_override = None
@@ -353,13 +380,15 @@ class PreviewGenerationThread(QThread):
             if self.elevation_range_override:
                 # Use spinbox values when "Scale gradient to maximum and minimum elevation" is selected
                 min_elev_override, max_elev_override = self.elevation_range_override
-                print(f"📏 Passing elevation range override to terrain renderer: {min_elev_override:.1f}-{max_elev_override:.1f}m")
+                if _DEBUG:
+                    print(f"📏 Passing elevation range override to terrain renderer: {min_elev_override:.1f}-{max_elev_override:.1f}m")
             else:
                 # Detect elevation range from crop area when "Scale gradient to elevation found in crop area" is selected
                 detected_range = self._detect_elevation_range_for_rendering(gradient, cropped_elevation_data)
                 if detected_range:
                     min_elev_override, max_elev_override = detected_range
-                    print(f"📏 Using detected elevation range for terrain rendering: {min_elev_override:.1f}-{max_elev_override:.1f}m")
+                    if _DEBUG:
+                        print(f"📏 Using detected elevation range for terrain rendering: {min_elev_override:.1f}-{max_elev_override:.1f}m")
             
             # Render the terrain image using the full rendering pipeline with detailed progress
             rendered_image = self.terrain_renderer.render_terrain(
@@ -425,53 +454,61 @@ class PreviewGenerationThread(QThread):
             # Check if we have an elevation range override from the main window spinboxes
             if self.elevation_range_override:
                 override_min, override_max = self.elevation_range_override
-                print(f"📏 Using elevation range override from spinboxes: {override_min:.1f}-{override_max:.1f}m")
-                print(f"   (Ignoring crop area elevation range auto-detection)")
-                
+                if _DEBUG:
+                    print(f"📏 Using elevation range override from spinboxes: {override_min:.1f}-{override_max:.1f}m")
+                    print(f"   (Ignoring crop area elevation range auto-detection)")
+
                 # Emit the override values to update the main window controls
                 self.elevation_range_detected.emit(override_min, override_max, "meters")
-                print(f"✅ Elevation range override applied - signaled to main window")
+                if _DEBUG:
+                    print(f"✅ Elevation range override applied - signaled to main window")
                 return
             
             # If no elevation range override, this means "Scale gradient to elevation found in crop area" is selected
             # We should scan the terrain data and update the spinboxes for ANY gradient type
             gradient_units = getattr(gradient, 'units', 'meters')
-            print(f"🔧 No elevation override - scanning crop area for elevation range")
-            print(f"   Gradient units: {gradient_units}, will scan terrain data")
-            
+            if _DEBUG:
+                print(f"🔧 No elevation override - scanning crop area for elevation range")
+                print(f"   Gradient units: {gradient_units}, will scan terrain data")
+
             # Scan terrain data for elevation range (works for any gradient type)
             gradient_type = getattr(gradient, 'gradient_type', 'gradient')
-            print(f"🎯 Auto-detecting elevation range for gradient: {self.gradient_name}")
-            print(f"   Gradient type: {gradient_type}")
-            print(f"   Gradient units: {gradient_units}")
-            
+            if _DEBUG:
+                print(f"🎯 Auto-detecting elevation range for gradient: {self.gradient_name}")
+                print(f"   Gradient type: {gradient_type}")
+                print(f"   Gradient units: {gradient_units}")
+
             # Find valid elevation data (exclude NaN values)
             valid_elevations = elevation_data[~np.isnan(elevation_data)]
-            
+
             if len(valid_elevations) == 0:
-                print("⚠️ No valid elevation data found in selection area")
+                if _DEBUG:
+                    print("⚠️ No valid elevation data found in selection area")
                 return
             
             # Calculate min/max elevations from the actual data
             detected_min = float(np.min(valid_elevations))
             detected_max = float(np.max(valid_elevations))
-            
-            print(f"📊 Auto-detected elevation range in selection area:")
-            print(f"   Min elevation: {detected_min:.1f}m")
-            print(f"   Max elevation: {detected_max:.1f}m")
-            print(f"   Valid pixels: {len(valid_elevations):,}")
-            
+
+            if _DEBUG:
+                print(f"📊 Auto-detected elevation range in selection area:")
+                print(f"   Min elevation: {detected_min:.1f}m")
+                print(f"   Max elevation: {detected_max:.1f}m")
+                print(f"   Valid pixels: {len(valid_elevations):,}")
+
             # Determine the database units (assume meters for now, but this could be enhanced)
             # TODO: This could be enhanced to detect actual database units from DEM metadata
             database_units = "meters"
-            
+
             # Emit the detected elevation range to update the main window controls
             self.elevation_range_detected.emit(detected_min, detected_max, database_units)
-            
-            print(f"✅ Auto-detection complete - signaled to main window")
-            
+
+            if _DEBUG:
+                print(f"✅ Auto-detection complete - signaled to main window")
+
         except Exception as e:
-            print(f"⚠️ Error detecting elevation ranges: {e}")
+            if _DEBUG:
+                print(f"⚠️ Error detecting elevation ranges: {e}")
             # Don't fail the preview generation for this - it's a nice-to-have feature
     
     def _detect_elevation_range_for_rendering(self, gradient, elevation_data):
@@ -480,28 +517,32 @@ class PreviewGenerationThread(QThread):
         Returns (min_elev, max_elev) tuple or None if detection fails.
         """
         try:
-            print(f"🔧 Detecting elevation range from crop area for rendering")
-            
+            if _DEBUG:
+                print(f"🔧 Detecting elevation range from crop area for rendering")
+
             # Find valid elevation data (exclude NaN values)
             valid_elevations = elevation_data[~np.isnan(elevation_data)]
-            
+
             if len(valid_elevations) == 0:
-                print("⚠️ No valid elevation data found for rendering - using gradient defaults")
+                if _DEBUG:
+                    print("⚠️ No valid elevation data found for rendering - using gradient defaults")
                 return None
-            
+
             # Calculate min/max elevations from the actual data
             detected_min = float(np.min(valid_elevations))
             detected_max = float(np.max(valid_elevations))
-            
-            print(f"📊 Detected elevation range for rendering:")
-            print(f"   Min elevation: {detected_min:.1f}m")
-            print(f"   Max elevation: {detected_max:.1f}m")
-            print(f"   Valid pixels: {len(valid_elevations):,}")
-            
+
+            if _DEBUG:
+                print(f"📊 Detected elevation range for rendering:")
+                print(f"   Min elevation: {detected_min:.1f}m")
+                print(f"   Max elevation: {detected_max:.1f}m")
+                print(f"   Valid pixels: {len(valid_elevations):,}")
+
             return (detected_min, detected_max)
-            
+
         except Exception as e:
-            print(f"⚠️ Error detecting elevation range for rendering: {e}")
+            if _DEBUG:
+                print(f"⚠️ Error detecting elevation range for rendering: {e}")
             return None
     
     def _update_spinboxes_if_needed(self, gradient, elevation_data, min_elev_used, max_elev_used):
@@ -512,30 +553,35 @@ class PreviewGenerationThread(QThread):
         try:
             # Only update spinboxes if we detected elevation range (not using spinbox override)
             if not self.elevation_range_override and min_elev_used is not None and max_elev_used is not None:
-                print(f"📊 Updating spinboxes with values used for rendering: {min_elev_used:.1f}-{max_elev_used:.1f}m")
-                
+                if _DEBUG:
+                    print(f"📊 Updating spinboxes with values used for rendering: {min_elev_used:.1f}-{max_elev_used:.1f}m")
+
                 # Emit the values to update the main window controls
                 self.elevation_range_detected.emit(min_elev_used, max_elev_used, "meters")
-                print(f"✅ Spinbox update complete - signaled to main window")
-                
+                if _DEBUG:
+                    print(f"✅ Spinbox update complete - signaled to main window")
+
         except Exception as e:
-            print(f"⚠️ Error updating spinboxes: {e}")
+            if _DEBUG:
+                print(f"⚠️ Error updating spinboxes: {e}")
     
     def _crop_elevation_data(self):
         """Crop elevation data to selected bounds, handling prime meridian crossing"""
         # Get the bounds
         dem_west, dem_north, dem_east, dem_south = self.dem_bounds
         sel_west, sel_north, sel_east, sel_south = self.bounds
-        
-        print(f"🗺️ DEM bounds: W={dem_west}, N={dem_north}, E={dem_east}, S={dem_south}")
-        print(f"🔲 Selection bounds: W={sel_west}, N={sel_north}, E={sel_east}, S={sel_south}")
-        
+
+        if _DEBUG:
+            print(f"🗺️ DEM bounds: W={dem_west}, N={dem_north}, E={dem_east}, S={dem_south}")
+            print(f"🔲 Selection bounds: W={sel_west}, N={sel_north}, E={sel_east}, S={sel_south}")
+
         # Check if selection crosses prime meridian
         sel_span = calculate_longitude_span(sel_west, sel_east)
         dem_span = calculate_longitude_span(dem_west, dem_east)
-        
+
         height, width = self.elevation_data.shape
-        print(f"📐 Full data dimensions: {height} x {width}")
+        if _DEBUG:
+            print(f"📐 Full data dimensions: {height} x {width}")
         
         if sel_span.crosses_meridian and dem_span.crosses_meridian:
             # Both selection and DEM cross meridian - handle complex case
@@ -560,16 +606,18 @@ class PreviewGenerationThread(QThread):
         x_max = int((sel_east - dem_west) / (dem_east - dem_west) * width)
         y_min = int((dem_north - sel_north) / (dem_north - dem_south) * height)
         y_max = int((dem_north - sel_south) / (dem_north - dem_south) * height)
-        
-        print(f"🧮 Simple crop coords: x={x_min}-{x_max}, y={y_min}-{y_max}")
-        
+
+        if _DEBUG:
+            print(f"🧮 Simple crop coords: x={x_min}-{x_max}, y={y_min}-{y_max}")
+
         # Clamp to valid ranges
         x_min = max(0, min(x_min, width - 1))
         x_max = max(x_min + 1, min(x_max, width))
         y_min = max(0, min(y_min, height - 1))
         y_max = max(y_min + 1, min(y_max, height))
-        
-        print(f"✂️ Clamped coords: x={x_min}-{x_max}, y={y_min}-{y_max}")
+
+        if _DEBUG:
+            print(f"✂️ Clamped coords: x={x_min}-{x_max}, y={y_min}-{y_max}")
         
         if x_max <= x_min or y_max <= y_min:
             raise ValueError("Invalid selection bounds - results in zero or negative crop size")
@@ -588,8 +636,9 @@ class PreviewGenerationThread(QThread):
         # Use simple linear mapping for latitude (no meridian issues)
         y_min = int((dem_north - sel_north) / (dem_north - dem_south) * height)
         y_max = int((dem_north - sel_south) / (dem_north - dem_south) * height)
-        
-        print(f"🧮 Meridian-aware simple crop: x={x_min}-{x_max}, y={y_min}-{y_max}")
+
+        if _DEBUG:
+            print(f"🧮 Meridian-aware simple crop: x={x_min}-{x_max}, y={y_min}-{y_max}")
         
         # Clamp to valid ranges
         x_min = max(0, min(x_min, width - 1))
@@ -606,16 +655,18 @@ class PreviewGenerationThread(QThread):
         """Crop from DEM that crosses meridian using meridian-aware coordinate mapping"""
         dem_west, dem_north, dem_east, dem_south = self.dem_bounds
         height, width = self.elevation_data.shape
-        
-        print(f"🌍 DEM crosses meridian, selection doesn't - using meridian-aware mapping")
-        
+
+        if _DEBUG:
+            print(f"🌍 DEM crosses meridian, selection doesn't - using meridian-aware mapping")
+
         # Use meridian-aware coordinate mapping
         x_min = map_longitude_to_array_x(sel_west, dem_west, dem_east, width, crosses_meridian=True)
         x_max = map_longitude_to_array_x(sel_east, dem_west, dem_east, width, crosses_meridian=True)
         y_min = int((dem_north - sel_north) / (dem_north - dem_south) * height)
         y_max = int((dem_north - sel_south) / (dem_north - dem_south) * height)
-        
-        print(f"🧮 Meridian-aware coords: x={x_min}-{x_max}, y={y_min}-{y_max}")
+
+        if _DEBUG:
+            print(f"🧮 Meridian-aware coords: x={x_min}-{x_max}, y={y_min}-{y_max}")
         
         # Clamp to valid ranges
         x_min = max(0, min(x_min, width - 1))
@@ -630,7 +681,8 @@ class PreviewGenerationThread(QThread):
     
     def _crop_meridian_crossing_selection_only(self, sel_west: float, sel_north: float, sel_east: float, sel_south: float):
         """Handle selection that crosses meridian by splitting into two regions and stitching"""
-        print(f"🌍 Selection crosses meridian - splitting into regions")
+        if _DEBUG:
+            print(f"🌍 Selection crosses meridian - splitting into regions")
         
         # Split selection into non-crossing regions
         regions = split_meridian_crossing_bounds(sel_west, sel_north, sel_east, sel_south)
@@ -649,26 +701,31 @@ class PreviewGenerationThread(QThread):
             dem_spans_360 = abs(dem_east - dem_west) >= 359.9
             
             if dem_spans_360:
-                print(f"   Using meridian-aware cropping for 360° DEM")
+                if _DEBUG:
+                    print(f"   Using meridian-aware cropping for 360° DEM")
                 crop1 = self._crop_simple_meridian_aware(*region1_bounds)
                 crop2 = self._crop_simple_meridian_aware(*region2_bounds)
             else:
-                print(f"   Using simple cropping for non-360° DEM")
+                if _DEBUG:
+                    print(f"   Using simple cropping for non-360° DEM")
                 crop1 = self._crop_simple(*region1_bounds)
                 crop2 = self._crop_simple(*region2_bounds)
-            
-            print(f"   Region 1: {crop1.shape} from {region1_bounds}")
-            print(f"   Region 2: {crop2.shape} from {region2_bounds}")
-            
+
+            if _DEBUG:
+                print(f"   Region 1: {crop1.shape} from {region1_bounds}")
+                print(f"   Region 2: {crop2.shape} from {region2_bounds}")
+
             # Stitch the two regions horizontally
             # Region 1 (western) goes on the left, Region 2 (eastern) goes on the right
             stitched = np.concatenate([crop1, crop2], axis=1)
-            
-            print(f"✅ Stitched meridian-crossing selection: {stitched.shape}")
+
+            if _DEBUG:
+                print(f"✅ Stitched meridian-crossing selection: {stitched.shape}")
             return stitched
-            
+
         except Exception as e:
-            print(f"⚠️ Failed to crop meridian-crossing selection: {e}")
+            if _DEBUG:
+                print(f"⚠️ Failed to crop meridian-crossing selection: {e}")
             # Fallback to meridian-aware crop for 360° DEM
             dem_west, dem_north, dem_east, dem_south = self.dem_bounds
             if abs(dem_east - dem_west) >= 359.9:
@@ -678,7 +735,8 @@ class PreviewGenerationThread(QThread):
     
     def _crop_meridian_crossing_both(self, sel_west: float, sel_north: float, sel_east: float, sel_south: float):
         """Handle case where both DEM and selection cross meridian (complex case)"""
-        print(f"🌍 Both DEM and selection cross meridian - using complex meridian handling")
+        if _DEBUG:
+            print(f"🌍 Both DEM and selection cross meridian - using complex meridian handling")
         
         # Check if DEM spans 360° (most common case for "both cross meridian")
         dem_west, dem_north, dem_east, dem_south = self.dem_bounds
@@ -697,17 +755,20 @@ class PreviewGenerationThread(QThread):
             try:
                 self.assembler.cleanup_temp_dem(self.temp_dem_path)
                 if PreviewConfig.DEBUG_MODE:
-                    print(f"🧹 Cleaned up temporary DEM: {self.temp_dem_path}")
+                    if _DEBUG:
+                        print(f"🧹 Cleaned up temporary DEM: {self.temp_dem_path}")
                 self.temp_dem_path = None
             except Exception as e:
                 if PreviewConfig.DEBUG_MODE:
-                    print(f"⚠️ Failed to cleanup temp files: {e}")
+                    if _DEBUG:
+                        print(f"⚠️ Failed to cleanup temp files: {e}")
 
     def _generate_preview_with_assembly(self) -> Optional[np.ndarray]:
         """Generate preview using new assembly system with automatic memory management"""
         try:
             if PreviewConfig.DEBUG_MODE:
-                print("🔧 Starting new assembly system preview generation")
+                if _DEBUG:
+                    print("🔧 Starting new assembly system preview generation")
             
             # Handle both multi-file databases and large single files
             if self.database_path:
@@ -743,25 +804,28 @@ class PreviewGenerationThread(QThread):
                 return None
                 
             if PreviewConfig.LOG_ASSEMBLY_DETAILS:
-                print(f"🗂️ Database: {len(database.tiles)} tiles, type: {database.database_type}")
-            
+                if _DEBUG:
+                    print(f"🗂️ Database: {len(database.tiles)} tiles, type: {database.database_type}")
+
             # Get intersecting tiles
             west, north, east, south = self.bounds
             tiles = database.get_tiles_for_bounds(west, north, east, south)
-            
+
             if not tiles:
                 self.error_occurred.emit(f"No tiles found for selected area")
                 return None
-                
+
             if PreviewConfig.LOG_ASSEMBLY_DETAILS:
-                print(f"📍 Found {len(tiles)} intersecting tiles for bounds: W={west:.2f}°, N={north:.2f}°, E={east:.2f}°, S={south:.2f}°")
+                if _DEBUG:
+                    print(f"📍 Found {len(tiles)} intersecting tiles for bounds: W={west:.2f}°, N={north:.2f}°, E={east:.2f}°, S={south:.2f}°")
             
             # Use assembly system to create single DEM
             def assembly_progress_callback(message):
                 """Progress callback for assembly system"""
                 self.progress_updated.emit(50, message)
                 if PreviewConfig.LOG_ASSEMBLY_DETAILS:
-                    print(f"   {message}")
+                    if _DEBUG:
+                        print(f"   {message}")
             
             export_scale_fraction = self.export_scale / 100.0
             self.temp_dem_path = self.assembler.assemble_tiles_to_dem(
@@ -774,7 +838,8 @@ class PreviewGenerationThread(QThread):
             if not self.temp_dem_path:
                 # Assembly failed - fall back to legacy system
                 if PreviewConfig.DEBUG_MODE:
-                    print("⚠️ Assembly failed, falling back to legacy system")
+                    if _DEBUG:
+                        print("⚠️ Assembly failed, falling back to legacy system")
                 return self._generate_preview_legacy()
                 
             self.progress_updated.emit(75, "📖 Loading assembled DEM...")
@@ -791,18 +856,20 @@ class PreviewGenerationThread(QThread):
                 return None
                 
             if PreviewConfig.LOG_ASSEMBLY_DETAILS:
-                print(f"✅ Loaded assembled DEM: {elevation_data.shape} ({self.temp_dem_path})")
-                print(f"📐 Final assembly size: {elevation_data.shape[1]}×{elevation_data.shape[0]} pixels")
-                export_scale_percent = self.export_scale
-                print(f"📐 Export scale applied in assembly: {export_scale_percent}%")
+                if _DEBUG:
+                    print(f"✅ Loaded assembled DEM: {elevation_data.shape} ({self.temp_dem_path})")
+                    print(f"📐 Final assembly size: {elevation_data.shape[1]}×{elevation_data.shape[0]} pixels")
+                    export_scale_percent = self.export_scale
+                    print(f"📐 Export scale applied in assembly: {export_scale_percent}%")
                 
             return elevation_data
             
         except Exception as e:
             if PreviewConfig.DEBUG_MODE:
-                print(f"❌ Assembly system failed: {e}, falling back to legacy")
-                import traceback
-                traceback.print_exc()
+                if _DEBUG:
+                    print(f"❌ Assembly system failed: {e}, falling back to legacy")
+                    import traceback
+                    traceback.print_exc()
             # Fall back to legacy system on any error
             return self._generate_preview_legacy()
     
@@ -810,7 +877,8 @@ class PreviewGenerationThread(QThread):
         """Generate preview from large single file using assembly system for memory management"""
         try:
             if PreviewConfig.DEBUG_MODE:
-                print(f"🔧 Using assembly system for large single file ({self.elevation_data.size:,} pixels)")
+                if _DEBUG:
+                    print(f"🔧 Using assembly system for large single file ({self.elevation_data.size:,} pixels)")
             
             self.progress_updated.emit(15, "🔍 Preparing large file processing...")
             
@@ -822,7 +890,8 @@ class PreviewGenerationThread(QThread):
                 # For now, use placeholder values - this should be improved
                 west, north, east, south = -180, 90, 180, -90
                 if PreviewConfig.DEBUG_MODE:
-                    print("⚠️ No bounds specified - using full file (placeholder bounds)")
+                    if _DEBUG:
+                        print("⚠️ No bounds specified - using full file (placeholder bounds)")
             
             # Check if we can process this in memory or need chunking
             export_scale_fraction = self.export_scale / 100.0
@@ -832,19 +901,22 @@ class PreviewGenerationThread(QThread):
             if approach == "in_memory":
                 # Can process in memory
                 if PreviewConfig.DEBUG_MODE:
-                    print(f"📦 Processing in memory ({estimated_memory_gb:.1f}GB estimated)")
-                
+                    if _DEBUG:
+                        print(f"📦 Processing in memory ({estimated_memory_gb:.1f}GB estimated)")
+
                 return self._process_single_file_in_memory(west, north, east, south, export_scale_fraction)
             else:
-                # Use chunking approach  
+                # Use chunking approach
                 if PreviewConfig.DEBUG_MODE:
-                    print(f"🗂️ Using chunked processing ({estimated_memory_gb:.1f}GB estimated)")
-                
+                    if _DEBUG:
+                        print(f"🗂️ Using chunked processing ({estimated_memory_gb:.1f}GB estimated)")
+
                 return self._process_single_file_with_chunking(west, north, east, south, export_scale_fraction)
-                
+
         except Exception as e:
             if PreviewConfig.DEBUG_MODE:
-                print(f"❌ Single file assembly failed: {e}")
+                if _DEBUG:
+                    print(f"❌ Single file assembly failed: {e}")
             self.error_occurred.emit(f"Error in single file assembly: {str(e)}")
             return None
     
@@ -877,7 +949,8 @@ class PreviewGenerationThread(QThread):
             
         except Exception as e:
             if PreviewConfig.DEBUG_MODE:
-                print(f"❌ In-memory processing failed: {e}")
+                if _DEBUG:
+                    print(f"❌ In-memory processing failed: {e}")
             return None
     
     def _process_single_file_with_chunking(self, west: float, north: float, east: float, south: float,
@@ -885,11 +958,12 @@ class PreviewGenerationThread(QThread):
         """Process single large file using TRUE chunking for memory management"""
         try:
             self.progress_updated.emit(30, "🗂️ Initializing TRUE chunked processing...")
-            
+
             if PreviewConfig.DEBUG_MODE:
-                print(f"🗂️ Starting TRUE chunked processing for single file")
-                print(f"   Selection: W={west:.3f}, N={north:.3f}, E={east:.3f}, S={south:.3f}")
-                print(f"   Export scale: {export_scale:.1%}")
+                if _DEBUG:
+                    print(f"🗂️ Starting TRUE chunked processing for single file")
+                    print(f"   Selection: W={west:.3f}, N={north:.3f}, E={east:.3f}, S={south:.3f}")
+                    print(f"   Export scale: {export_scale:.1%}")
             
             # Calculate memory requirements and chunking strategy
             memory_limit_mb = getattr(self, 'TESTING_MEMORY_LIMIT_MB', None) or 512  # Default 512MB limit
@@ -907,16 +981,18 @@ class PreviewGenerationThread(QThread):
             total_memory_mb = (total_width * total_height * 4) / (1024 * 1024)
             
             if PreviewConfig.DEBUG_MODE:
-                print(f"📊 Chunking analysis:")
-                print(f"   Output dimensions: {total_width}×{total_height}")
-                print(f"   Total memory required: {total_memory_mb:.1f}MB")
-                print(f"   Memory limit: {memory_limit_mb}MB")
-                print(f"   Chunk size: {chunk_size_mb}MB")
-            
+                if _DEBUG:
+                    print(f"📊 Chunking analysis:")
+                    print(f"   Output dimensions: {total_width}×{total_height}")
+                    print(f"   Total memory required: {total_memory_mb:.1f}MB")
+                    print(f"   Memory limit: {memory_limit_mb}MB")
+                    print(f"   Chunk size: {chunk_size_mb}MB")
+
             # Check if chunking is needed
             if total_memory_mb <= memory_limit_mb:
                 if PreviewConfig.DEBUG_MODE:
-                    print(f"✅ Data fits in memory - using direct processing")
+                    if _DEBUG:
+                        print(f"✅ Data fits in memory - using direct processing")
                 return self._process_single_file_in_memory(west, north, east, south, export_scale)
             
             # Calculate chunk grid
@@ -928,9 +1004,10 @@ class PreviewGenerationThread(QThread):
             total_chunks = chunks_x * chunks_y
             
             if PreviewConfig.DEBUG_MODE:
-                print(f"📦 Chunk configuration:")
-                print(f"   Chunk dimension: {chunk_dimension}×{chunk_dimension}")
-                print(f"   Chunk grid: {chunks_y}×{chunks_x} = {total_chunks} chunks")
+                if _DEBUG:
+                    print(f"📦 Chunk configuration:")
+                    print(f"   Chunk dimension: {chunk_dimension}×{chunk_dimension}")
+                    print(f"   Chunk grid: {chunks_y}×{chunks_x} = {total_chunks} chunks")
             
             self.progress_updated.emit(40, f"🗂️ Processing {total_chunks} chunks...")
             
@@ -958,8 +1035,9 @@ class PreviewGenerationThread(QThread):
                     chunk_south = north - (end_y / total_height) * deg_height
                     
                     if PreviewConfig.DEBUG_MODE and chunk_num <= 3:  # Log first few chunks
-                        print(f"   Chunk {chunk_num}: [{start_y}:{end_y}, {start_x}:{end_x}] "
-                              f"geo({chunk_west:.3f},{chunk_south:.3f},{chunk_east:.3f},{chunk_north:.3f})")
+                        if _DEBUG:
+                            print(f"   Chunk {chunk_num}: [{start_y}:{end_y}, {start_x}:{end_x}] "
+                                  f"geo({chunk_west:.3f},{chunk_south:.3f},{chunk_east:.3f},{chunk_north:.3f})")
                     
                     # Load and process this chunk
                     try:
@@ -985,26 +1063,29 @@ class PreviewGenerationThread(QThread):
                             
                     except Exception as e:
                         if PreviewConfig.DEBUG_MODE:
-                            print(f"   ⚠️ Chunk {chunk_num} failed: {e}")
+                            if _DEBUG:
+                                print(f"   ⚠️ Chunk {chunk_num} failed: {e}")
                         # Leave this chunk as NaN
                         continue
             
             self.progress_updated.emit(90, "🗂️ Finalizing chunked result...")
             
             if PreviewConfig.DEBUG_MODE:
-                valid_pixels = np.count_nonzero(~np.isnan(output_array))
-                total_pixels = output_array.size
-                coverage = (valid_pixels / total_pixels) * 100
-                print(f"✅ Chunking complete: {output_array.shape}, {coverage:.1f}% coverage")
-            
+                if _DEBUG:
+                    valid_pixels = np.count_nonzero(~np.isnan(output_array))
+                    total_pixels = output_array.size
+                    coverage = (valid_pixels / total_pixels) * 100
+                    print(f"✅ Chunking complete: {output_array.shape}, {coverage:.1f}% coverage")
+
             return output_array
-                
+
         except Exception as e:
             if PreviewConfig.DEBUG_MODE:
-                print(f"❌ Chunked processing failed: {e}")
-                import traceback
-                traceback.print_exc()
-            
+                if _DEBUG:
+                    print(f"❌ Chunked processing failed: {e}")
+                    import traceback
+                    traceback.print_exc()
+
             # Fallback to in-memory processing
             return self._process_single_file_in_memory(west, north, east, south, export_scale)
     
@@ -1048,14 +1129,16 @@ class PreviewGenerationThread(QThread):
             
         except Exception as e:
             if PreviewConfig.DEBUG_MODE:
-                print(f"   ⚠️ Failed to load chunk: {e}")
+                if _DEBUG:
+                    print(f"   ⚠️ Failed to load chunk: {e}")
             return None
     
     def _generate_preview_legacy(self) -> Optional[np.ndarray]:
         """Generate preview using legacy system (original method)"""
         try:
             if PreviewConfig.DEBUG_MODE:
-                print("🔧 Using legacy preview generation system")
+                if _DEBUG:
+                    print("🔧 Using legacy preview generation system")
                 
             # Handle multi-file database vs single-file elevation data
             if self.elevation_data is None and self.database_path is not None:
@@ -1076,15 +1159,18 @@ class PreviewGenerationThread(QThread):
                     original_data = cropped_elevation_data
                     cropped_elevation_data = self._crop_elevation_data()
                     if PreviewConfig.DEBUG_MODE:
-                        print(f"🔪 Cropped elevation data from {original_data.shape} to {cropped_elevation_data.shape}")
+                        if _DEBUG:
+                            print(f"🔪 Cropped elevation data from {original_data.shape} to {cropped_elevation_data.shape}")
                 except Exception as e:
                     if PreviewConfig.DEBUG_MODE:
-                        print(f"⚠️ Could not crop elevation data: {e}")
-            
+                        if _DEBUG:
+                            print(f"⚠️ Could not crop elevation data: {e}")
+
             # NOTE: Export scaling is now handled in the run() method to avoid duplicate scaling
             # No scaling applied here - just return the cropped data
             if PreviewConfig.DEBUG_MODE:
-                print(f"📏 Skipping scaling in legacy method (handled by main run() method)")
+                if _DEBUG:
+                    print(f"📏 Skipping scaling in legacy method (handled by main run() method)")
             
             # Check size limits (original logic)
             final_pixels = cropped_elevation_data.size
@@ -1113,14 +1199,16 @@ class PreviewGenerationThread(QThread):
                 self.error_occurred.emit(f"Database path does not exist: {db_path}")
                 return None
             
-            print(f"🗂️ Loading multi-file database: {db_path}")
+            if _DEBUG:
+                print(f"🗂️ Loading multi-file database: {db_path}")
             database = MultiFileDatabase(db_path)
-            
+
             if not database.tiles:
                 self.error_occurred.emit(f"No tiles found in database: {db_path}")
                 return None
-                
-            print(f"📋 Database info: {len(database.tiles)} tiles, type: {database.database_type}")
+
+            if _DEBUG:
+                print(f"📋 Database info: {len(database.tiles)} tiles, type: {database.database_type}")
             
             self.progress_updated.emit(25, "Finding Intersecting Tiles")
             
@@ -1130,7 +1218,8 @@ class PreviewGenerationThread(QThread):
                 return None
                 
             west, north, east, south = self.bounds
-            print(f"🎯 Selection bounds: W={west:.2f}°, N={north:.2f}°, E={east:.2f}°, S={south:.2f}°")
+            if _DEBUG:
+                print(f"🎯 Selection bounds: W={west:.2f}°, N={north:.2f}°, E={east:.2f}°, S={south:.2f}°")
             
             # Check for reasonable area size before proceeding
             area_width = abs(east - west) if west <= east else (180 - west) + (east + 180)
@@ -1154,24 +1243,27 @@ class PreviewGenerationThread(QThread):
             valid_pixels = np.sum(~np.isnan(assembled_data))
             total_pixels = assembled_data.size
             coverage_percent = (valid_pixels / total_pixels) * 100 if total_pixels > 0 else 0
-            
-            print(f"✅ Multi-file assembly complete:")
-            print(f"   Data shape: {assembled_data.shape}")
-            print(f"   Coverage: {valid_pixels:,}/{total_pixels:,} pixels ({coverage_percent:.1f}%)")
-            
+
+            if _DEBUG:
+                print(f"✅ Multi-file assembly complete:")
+                print(f"   Data shape: {assembled_data.shape}")
+                print(f"   Coverage: {valid_pixels:,}/{total_pixels:,} pixels ({coverage_percent:.1f}%)")
+
             if valid_pixels == 0:
                 self.error_occurred.emit("No valid data in selected area - area may be entirely ocean or no-data")
                 return None
-            
+
             if coverage_percent < 5:
-                print(f"⚠️ Warning: Low data coverage ({coverage_percent:.1f}%) in selected area")
+                if _DEBUG:
+                    print(f"⚠️ Warning: Low data coverage ({coverage_percent:.1f}%) in selected area")
             
             self.progress_updated.emit(50, "Data Assembly Complete")
             return assembled_data
             
         except Exception as e:
             error_msg = f"Error loading multi-file database: {str(e)}"
-            print(f"❌ {error_msg}")
+            if _DEBUG:
+                print(f"❌ {error_msg}")
             self.error_occurred.emit(error_msg)
             return None
 
@@ -1282,7 +1374,8 @@ class TerrainPreviewWindow(QDialog):
         
     def handle_elevation_range_detected(self, min_elevation, max_elevation, units):
         """Relay elevation range data to main window"""
-        print(f"🔗 Preview window relaying elevation range: {min_elevation:.1f} to {max_elevation:.1f} {units}")
+        if _DEBUG:
+            print(f"🔗 Preview window relaying elevation range: {min_elevation:.1f} to {max_elevation:.1f} {units}")
         self.elevation_range_detected.emit(min_elevation, max_elevation, units)
     
     def _resize_window_for_image(self, pixmap):
@@ -1294,15 +1387,17 @@ class TerrainPreviewWindow(QDialog):
             screen = QGuiApplication.primaryScreen()
             if screen is None:
                 # Fallback if no screen detected
-                print("⚠️ Could not detect screen - using default window size")
+                if _DEBUG:
+                    print("⚠️ Could not detect screen - using default window size")
                 return
-            
+
             available_geometry = screen.availableGeometry()
             screen_width = available_geometry.width()
             screen_height = available_geometry.height()
-            
-            print(f"📺 Available screen space: {screen_width}×{screen_height}")
-            print(f"🖼️ Image size: {pixmap.width()}×{pixmap.height()}")
+
+            if _DEBUG:
+                print(f"📺 Available screen space: {screen_width}×{screen_height}")
+                print(f"🖼️ Image size: {pixmap.width()}×{pixmap.height()}")
             
             # Calculate padding for window decorations and controls
             padding_width = 50    # Space for scroll bars and window border
@@ -1333,25 +1428,29 @@ class TerrainPreviewWindow(QDialog):
             min_height = 300
             new_width = max(new_width, min_width)
             new_height = max(new_height, min_height)
-            
-            print(f"🔧 Resizing window: {new_width}×{new_height} ({resize_reason})")
-            
+
+            if _DEBUG:
+                print(f"🔧 Resizing window: {new_width}×{new_height} ({resize_reason})")
+
             # Resize the window
             self.resize(new_width, new_height)
-            
+
             # If image is larger than window, inform user about scrolling
             content_width = new_width - padding_width
             content_height = new_height - padding_height
-            
+
             if pixmap.width() > content_width or pixmap.height() > content_height:
-                print(f"📜 Image larger than window - scrollbars will be available")
-                print(f"   Visible area: {content_width}×{content_height}")
-                print(f"   Total image: {pixmap.width()}×{pixmap.height()}")
+                if _DEBUG:
+                    print(f"📜 Image larger than window - scrollbars will be available")
+                    print(f"   Visible area: {content_width}×{content_height}")
+                    print(f"   Total image: {pixmap.width()}×{pixmap.height()}")
             else:
-                print(f"✅ Full image visible in window")
-            
+                if _DEBUG:
+                    print(f"✅ Full image visible in window")
+
         except Exception as e:
-            print(f"⚠️ Error resizing window: {e}")
+            if _DEBUG:
+                print(f"⚠️ Error resizing window: {e}")
             # Fallback to original logic
             if pixmap.width() < 800 and pixmap.height() < 600:
                 new_width = min(pixmap.width() + 50, 1200)
@@ -1372,11 +1471,13 @@ class TerrainPreviewWindow(QDialog):
         self.progress_bar.setVisible(False)
         self.status_bar.showMessage("Error")
         self.image_label.setText(f"Preview Error:\n{error_message}")
-        print(f"❌ Preview error: {error_message}")
+        if _DEBUG:
+            print(f"❌ Preview error: {error_message}")
     
     def handle_timeout(self):
         """Handle preview generation timeout"""
-        print("⏰ Preview generation timed out after 30 minutes")
+        if _DEBUG:
+            print("⏰ Preview generation timed out after 30 minutes")
         if hasattr(self, 'generation_thread') and self.generation_thread.isRunning():
             self.generation_thread.terminate()
             self.generation_thread.wait(5000)  # Wait up to 5 seconds for cleanup
@@ -1440,9 +1541,10 @@ class TerrainPreviewWindow(QDialog):
             # Hide progress bar and update status
             self.progress_bar.setVisible(False)
             self.status_bar.showMessage(f"Preview: {pil_image.width}×{pil_image.height} pixels")
-            
-            print(f"✅ Preview displayed: {pil_image.width}×{pil_image.height} pixels")
-            
+
+            if _DEBUG:
+                print(f"✅ Preview displayed: {pil_image.width}×{pil_image.height} pixels")
+
         except Exception as e:
             self.handle_error(f"Error displaying preview: {str(e)}")
 

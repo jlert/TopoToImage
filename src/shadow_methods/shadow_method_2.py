@@ -2,7 +2,7 @@
 """
 Shadow Method 2: TopoToImage Height-Propagation Algorithm
 
-This implements the original TopoToImage shadow calculation method using 
+This implements the original TopoToImage shadow calculation method using
 height propagation for optimal performance and visual quality.
 
 Algorithm: Propagate maximum heights line-by-line based on light direction.
@@ -11,6 +11,9 @@ Soft edges are calculated during shadow generation, not as post-process.
 Performance: O(n²) complexity - significantly faster than ray-casting
 Visual Quality: Geometrically accurate soft edges confined within shadow boundaries
 """
+
+# Debug control - set to True only when actively debugging
+_DEBUG = False
 
 import numpy as np
 import math
@@ -64,8 +67,9 @@ class ShadowMethod2:
         # Flip direction by 180° to cast shadows away from light (same as ShadowMethod1)
         shadow_direction = (snapped_direction + 180) % 360
         
-        print(f"🌑 ShadowMethod2: drop_distance={shadow_drop_distance}, light_dir={light_direction}° → {snapped_direction}° → shadow_dir={shadow_direction}°")
-        print(f"   Height-propagation for {height:,} rows × {width:,} columns = {height*width:,} pixels")
+        if _DEBUG:
+            print(f"🌑 ShadowMethod2: drop_distance={shadow_drop_distance}, light_dir={light_direction}° → {snapped_direction}° → shadow_dir={shadow_direction}°")
+            print(f"   Height-propagation for {height:,} rows × {width:,} columns = {height*width:,} pixels")
         
         # Get direction offsets for the shadow direction (not light direction)
         dx, dy = self._get_direction_offsets(shadow_direction)
@@ -95,13 +99,15 @@ class ShadowMethod2:
         else:  # Diagonal directions (45, 135, 225, 315) - add another 180° flip
             # For diagonal directions, add an additional 180° rotation to fix direction
             diagonal_shadow_direction = (shadow_direction + 180) % 360
-            print(f"   Diagonal fix: {shadow_direction}° → {diagonal_shadow_direction}° (added 180°)")
+            if _DEBUG:
+                print(f"   Diagonal fix: {shadow_direction}° → {diagonal_shadow_direction}° (added 180°)")
             shadow_map = self._calculate_diagonal_shadows(
                 clean_elevation, diagonal_shadow_direction, shadow_drop_distance, 
                 shadow_gray_step, progress_callback
             )
         
-        print(f"🌑 ShadowMethod2 complete: {np.sum(shadow_map > 0)} pixels in shadow")
+        if _DEBUG:
+            print(f"🌑 ShadowMethod2 complete: {np.sum(shadow_map > 0)} pixels in shadow")
         return shadow_map
     
     def _snap_to_8_directions(self, angle: int) -> int:
@@ -291,8 +297,9 @@ class ShadowMethod2:
         """
         height, width = elevation_data.shape
         shadow_map = np.zeros((height, width), dtype=np.float32)
-        
-        print(f"   Diagonal shadow: direction={direction}°")
+
+        if _DEBUG:
+            print(f"   Diagonal shadow: direction={direction}°")
         
         # For diagonal directions, we need to scan along diagonal lines
         # The approach: scan each diagonal line from the light source edge towards the shadow edge

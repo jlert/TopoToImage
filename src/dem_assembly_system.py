@@ -2,11 +2,14 @@
 """
 DEM Assembly System for Large Area Preview Support
 
-This module implements a comprehensive system for assembling multiple DEM tiles 
+This module implements a comprehensive system for assembling multiple DEM tiles
 into a single DEM file, with automatic memory management and disk spooling capabilities.
 
 Week 1 Implementation: Foundation with logging, fallback, and basic assembly
 """
+
+# Debug control - set to True only when actively debugging
+_DEBUG = False
 
 import os
 import psutil
@@ -447,8 +450,10 @@ class DEMAssembler:
             
             if safe_scale < export_scale:
                 self.logger.logger.warning(f"Export too large for memory. Reducing scale from {export_scale:.1%} to {safe_scale:.1%}")
-                print(f"⚠️ MEMORY LIMITATION: Reducing export scale from {export_scale*100:.1f}% to {safe_scale*100:.1f}%")
-                print(f"   Estimated memory: {estimated_memory:.1f}GB, Available: {memory_info['available_gb']:.1f}GB")
+                if _DEBUG:
+                    print(f"⚠️ MEMORY LIMITATION: Reducing export scale from {export_scale*100:.1f}% to {safe_scale*100:.1f}%")
+                if _DEBUG:
+                    print(f"   Estimated memory: {estimated_memory:.1f}GB, Available: {memory_info['available_gb']:.1f}GB")
                 export_scale = safe_scale
             
         # Try in-memory assembly with the (possibly adjusted) scale
@@ -886,16 +891,20 @@ class AssemblyDiagnostics:
         try:
             with open(filename, 'w') as f:
                 json.dump(report, f, indent=2)
-            print(f"Diagnostic report saved: {filename}")
+            if _DEBUG:
+                print(f"Diagnostic report saved: {filename}")
         except Exception as e:
-            print(f"Failed to save diagnostic report: {e}")
+            if _DEBUG:
+                print(f"Failed to save diagnostic report: {e}")
 
 
 def test_assembly_system():
     """Test the assembly system with basic functionality"""
-    
-    print("🧪 Testing DEM Assembly System")
-    print("=" * 50)
+
+    if _DEBUG:
+        print("🧪 Testing DEM Assembly System")
+    if _DEBUG:
+        print("=" * 50)
     
     # Create assembler
     config = AssemblyConfig(debug_mode=True)
@@ -904,20 +913,26 @@ def test_assembly_system():
     # Run diagnostics
     diagnostics = AssemblyDiagnostics(assembler)
     report = diagnostics.run_health_check()
-    
-    print("\n📊 Health Check Results:")
+
+    if _DEBUG:
+        print("\n📊 Health Check Results:")
     for test_name, result in report['tests'].items():
         status = "✅" if result.startswith('PASS') else "❌"
-        print(f"   {status} {test_name}: {result}")
-    
-    print(f"\n💾 Memory: {report['system_info']['available_gb']:.1f}GB available")
-    print(f"💿 Disk: {report['disk_space_gb']:.1f}GB free")
+        if _DEBUG:
+            print(f"   {status} {test_name}: {result}")
+
+    if _DEBUG:
+        print(f"\n💾 Memory: {report['system_info']['available_gb']:.1f}GB available")
+    if _DEBUG:
+        print(f"💿 Disk: {report['disk_space_gb']:.1f}GB free")
     
     # Save diagnostic report
     diagnostics.save_diagnostic_report(report)
-    
-    print(f"\n📝 Detailed logs: {assembler.config.log_file}")
-    print("✅ Assembly system test complete")
+
+    if _DEBUG:
+        print(f"\n📝 Detailed logs: {assembler.config.log_file}")
+    if _DEBUG:
+        print("✅ Assembly system test complete")
 
 
 if __name__ == "__main__":

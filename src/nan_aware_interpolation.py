@@ -4,6 +4,9 @@ NaN-aware interpolation for DEM data scaling.
 Properly handles no-data values during downsampling to prevent interpolation artifacts.
 """
 
+# Debug control - set to True only when actively debugging
+_DEBUG = False
+
 import numpy as np
 from scipy import ndimage
 from typing import Tuple
@@ -28,27 +31,32 @@ def resize_with_nan_exclusion(data: np.ndarray, target_shape: Tuple[int, int], m
     original_shape = data.shape
     target_height, target_width = target_shape
     
-    print(f"🔧 NaN-aware resize: {original_shape} → {target_shape}")
+    if _DEBUG:
+        print(f"🔧 NaN-aware resize: {original_shape} → {target_shape}")
     
     # Create mask for valid data (not NaN)
     valid_mask = ~np.isnan(data)
     valid_count_before = np.sum(valid_mask)
     
     if valid_count_before == 0:
-        print("⚠️ No valid data found, returning NaN array")
+        if _DEBUG:
+            print("⚠️ No valid data found, returning NaN array")
         return np.full(target_shape, np.nan, dtype=np.float32)
     
-    print(f"   Valid pixels before: {valid_count_before:,}")
+    if _DEBUG:
+        print(f"   Valid pixels before: {valid_count_before:,}")
     
     # Method 1: Distance-weighted interpolation with NaN exclusion
     if method == 'lanczos' or method == 'bicubic':
         try:
             result = _resize_with_weights(data, target_shape)
             valid_count_after = np.sum(~np.isnan(result))
-            print(f"✅ NaN-aware resize complete: {valid_count_after:,} valid pixels")
+            if _DEBUG:
+                print(f"✅ NaN-aware resize complete: {valid_count_after:,} valid pixels")
             return result
         except Exception as e:
-            print(f"⚠️ NaN-aware resize failed ({e}), falling back to simple method")
+            if _DEBUG:
+                print(f"⚠️ NaN-aware resize failed ({e}), falling back to simple method")
     
     # Fallback: Simple block averaging with NaN exclusion
     return _resize_with_block_averaging(data, target_shape)
@@ -78,7 +86,8 @@ def _resize_with_weights(data: np.ndarray, target_shape: Tuple[int, int]) -> np.
         mask_zoomed = zoom(valid_mask.astype(float), (zoom_y, zoom_x), order=3, mode='nearest')
     except Exception as e:
         # Fallback to bilinear if bicubic fails
-        print(f"   ⚠️ Bicubic NaN-aware resize failed ({e}), using bilinear")
+        if _DEBUG:
+            print(f"   ⚠️ Bicubic NaN-aware resize failed ({e}), using bilinear")
         data_zoomed = zoom(data_filled, (zoom_y, zoom_x), order=1, mode='nearest')
         mask_zoomed = zoom(valid_mask.astype(float), (zoom_y, zoom_x), order=1, mode='nearest')
     
@@ -132,8 +141,10 @@ def _resize_with_block_averaging(data: np.ndarray, target_shape: Tuple[int, int]
 def test_nan_aware_interpolation():
     """Test the NaN-aware interpolation with a synthetic dataset"""
     
-    print("🧪 Testing NaN-aware Interpolation")
-    print("=" * 50)
+    if _DEBUG:
+        print("🧪 Testing NaN-aware Interpolation")
+    if _DEBUG:
+        print("=" * 50)
     
     # Create test data with no-data areas
     data = np.random.rand(100, 100) * 1000  # Random elevations 0-1000m
@@ -143,16 +154,22 @@ def test_nan_aware_interpolation():
     data[:, -15:] = np.nan  # Right stripe  
     data[40:60, 30:50] = np.nan  # Central block
     
-    print(f"Original data: {data.shape}")
-    print(f"Valid pixels: {np.sum(~np.isnan(data)):,}")
-    print(f"NaN pixels: {np.sum(np.isnan(data)):,}")
+    if _DEBUG:
+        print(f"Original data: {data.shape}")
+    if _DEBUG:
+        print(f"Valid pixels: {np.sum(~np.isnan(data)):,}")
+    if _DEBUG:
+        print(f"NaN pixels: {np.sum(np.isnan(data)):,}")
     
     # Test resize to 50x50 (50% scale)
     result = resize_with_nan_exclusion(data, (50, 50), method='lanczos')
     
-    print(f"\nResult data: {result.shape}")
-    print(f"Valid pixels: {np.sum(~np.isnan(result)):,}")
-    print(f"NaN pixels: {np.sum(np.isnan(result)):,}")
+    if _DEBUG:
+        print(f"\nResult data: {result.shape}")
+    if _DEBUG:
+        print(f"Valid pixels: {np.sum(~np.isnan(result)):,}")
+    if _DEBUG:
+        print(f"NaN pixels: {np.sum(np.isnan(result)):,}")
     
     # Check that no-data boundaries are preserved
     boundary_check_passed = True
@@ -160,10 +177,12 @@ def test_nan_aware_interpolation():
     # Check that areas that were entirely NaN are still NaN
     if not np.all(np.isnan(result[:10, :])):  # Top area should be all NaN
         boundary_check_passed = False
-        print("❌ No-data area was contaminated with interpolated values")
+        if _DEBUG:
+            print("❌ No-data area was contaminated with interpolated values")
     
     if boundary_check_passed:
-        print("✅ No-data boundaries properly preserved")
+        if _DEBUG:
+            print("✅ No-data boundaries properly preserved")
     
     return result
 
