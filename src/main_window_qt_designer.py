@@ -2451,6 +2451,57 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 f"An unexpected error occurred:\n\n{str(e)}"
             )
 
+    def show_save_complete_dialog(self, title: str, message: str, file_path: str):
+        """Show save complete dialog with 'Reveal in Finder' button"""
+        import subprocess
+        from pathlib import Path
+        from PyQt6.QtWidgets import QMessageBox, QPushButton
+
+        # Create custom message box
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(title)
+        msg_box.setText(message)
+        msg_box.setIcon(QMessageBox.Icon.Information)
+
+        # Add standard OK button
+        ok_button = msg_box.addButton(QMessageBox.StandardButton.Ok)
+
+        # Add custom Reveal in Finder button
+        reveal_button = msg_box.addButton("Reveal in Finder", QMessageBox.ButtonRole.ActionRole)
+
+        # Set OK as default button
+        msg_box.setDefaultButton(ok_button)
+
+        # Show dialog and get user response
+        msg_box.exec()
+
+        # If user clicked Reveal in Finder, open Finder
+        if msg_box.clickedButton() == reveal_button:
+            try:
+                path_obj = Path(file_path)
+                if path_obj.exists():
+                    subprocess.run(['open', '-R', str(path_obj)], check=True)
+                    print(f"✅ Revealed file in Finder: {path_obj.name}")
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "File Not Found",
+                        f"The file no longer exists:\n{path_obj}\n\n"
+                        f"It may have been moved or deleted."
+                    )
+            except subprocess.CalledProcessError as e:
+                QMessageBox.critical(
+                    self,
+                    "Finder Error",
+                    f"Failed to open Finder:\n\n{str(e)}"
+                )
+            except Exception as e:
+                QMessageBox.critical(
+                    self,
+                    "Error",
+                    f"An unexpected error occurred:\n\n{str(e)}"
+                )
+
     def open_recent_database(self, path: str, db_type: str):
         """Open a recent database"""
         try:
@@ -4583,9 +4634,8 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             # Save to file
             with open(file_path, 'w') as f:
                 json.dump(gradients_data, f, indent=2)
-            
-            from PyQt6.QtWidgets import QMessageBox
-            QMessageBox.information(self, "Save Complete", f"Gradient list saved to:\n{file_path}")
+
+            self.show_save_complete_dialog("Save Complete", f"Gradient list saved to:\n{file_path}", file_path)
             
         except Exception as e:
             print(f"❌ Error saving gradient list: {e}")
@@ -5155,9 +5205,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                         export_scale=export_scale,
                         is_geotiff_elevation=is_geotiff_elevation_export
                     )
-                    
+
                     if success:
-                        QMessageBox.information(self, "Export Complete", f"Elevation database exported to:\n{file_path}")
+                        self.show_save_complete_dialog("Export Complete", f"Elevation database exported to:\n{file_path}", file_path)
                         self.status_bar.showMessage("Elevation database export completed successfully")
                     else:
                         QMessageBox.warning(self, "Export Failed", "Failed to export elevation database.")
@@ -5298,8 +5348,8 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                             print("❌ Key file generation failed")
                     else:
                         print("ℹ️ Key file generation skipped (checkbox not checked)")
-                    
-                    QMessageBox.information(self, "Export Complete", f"Image saved to:\n{file_path}{key_file_status}")
+
+                    self.show_save_complete_dialog("Export Complete", f"Image saved to:\n{file_path}{key_file_status}", file_path)
                     self.status_bar.showMessage("Image export completed successfully")
                 else:
                     QMessageBox.warning(self, "Export Failed", "Failed to save image file.")
@@ -5464,9 +5514,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     is_geocart=False,
                     is_elevation_database=True
                 )
-                
+
                 if success:
-                    QMessageBox.information(self, "Export Complete", f"Elevation database exported to:\n{file_path}")
+                    self.show_save_complete_dialog("Export Complete", f"Elevation database exported to:\n{file_path}", file_path)
                     self.status_bar.showMessage("Elevation database export completed successfully")
                 else:
                     QMessageBox.warning(self, "Export Failed", "Failed to export elevation database.")

@@ -348,7 +348,7 @@ class GradientEditorWindow(QDialog):
             self.light_direction_spin_box.setValue(int(self.gradient_data.get('light_direction', 315)))
             self.light_direction_dial.setRange(0, 360)
             self.light_direction_dial.setValue(int(self.gradient_data.get('light_direction', 315)))
-            self.shading_intensity_spin_box.setRange(-1000, 1000)  # Full experimental range
+            self.shading_intensity_spin_box.setRange(-999999, 999999)  # No practical limit
             self.shading_intensity_spin_box.setValue(int(self.gradient_data.get('shading_intensity', 50)))
             
             # Cast shadows
@@ -459,7 +459,7 @@ class GradientEditorWindow(QDialog):
         self.light_direction_spin_box.setValue(315)  # Northwest
         self.light_direction_dial.setRange(0, 360)
         self.light_direction_dial.setValue(315)
-        self.shading_intensity_spin_box.setRange(-1000, 1000)  # Full experimental range
+        self.shading_intensity_spin_box.setRange(-999999, 999999)  # No practical limit
         self.shading_intensity_spin_box.setValue(50)
         
         # Default cast shadows
