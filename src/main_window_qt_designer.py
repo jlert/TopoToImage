@@ -4315,26 +4315,23 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 success = self.gradient_manager.remove_gradient(gradient_name)
                 
                 if success:
-                    # Refresh gradient list
-                    self.load_gradients_into_browser()
-                    
-                    # Select next appropriate gradient
-                    total_items = self.gradient_list.count()
-                    if total_items > 0:
+                    # Determine which gradient to select after deletion
+                    # Get all remaining gradient names
+                    remaining_gradients = self.gradient_manager.get_gradient_names()
+
+                    # Determine the gradient to select
+                    gradient_to_select = None
+                    if remaining_gradients:
                         # If we deleted the last item, select the new last item
-                        if current_row >= total_items:
-                            new_row = total_items - 1
+                        if current_row >= len(remaining_gradients):
+                            gradient_to_select = remaining_gradients[-1]
                         else:
                             # Select the item that took the place of the deleted one
-                            new_row = current_row
-                        
-                        # Select the new item and update preview
-                        self.gradient_list.setCurrentRow(new_row)
-                        selected_item = self.gradient_list.currentItem()
-                        if selected_item:
-                            new_gradient_name = selected_item.text()
-                            self.update_controls_from_gradient(new_gradient_name)
-                            self.update_gradient_preview()
+                            gradient_to_select = remaining_gradients[current_row]
+
+                    # Refresh gradient list with proper selection
+                    # Note: load_gradients_into_browser already handles setting the selection
+                    self.load_gradients_into_browser(select_gradient_name=gradient_to_select)
                     
                     print(f"✅ Gradient '{gradient_name}' deleted successfully")
                 else:
@@ -4524,12 +4521,10 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             
             # Update the gradient manager's order
             self.gradient_manager.reorder_gradients(gradient_names)
-            
+
             # Reload the list and maintain selection
+            # Note: load_gradients_into_browser already handles setting the selection
             self.load_gradients_into_browser(select_gradient_name=gradient_name)
-            
-            # Set selection to the new position
-            self.gradient_list.setCurrentRow(current_row - 1)
             
         except Exception as e:
             print(f"❌ Error moving gradient up: {e}")
@@ -4563,12 +4558,10 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             
             # Update the gradient manager's order
             self.gradient_manager.reorder_gradients(gradient_names)
-            
+
             # Reload the list and maintain selection
+            # Note: load_gradients_into_browser already handles setting the selection
             self.load_gradients_into_browser(select_gradient_name=gradient_name)
-            
-            # Set selection to the new position
-            self.gradient_list.setCurrentRow(current_row + 1)
             
         except Exception as e:
             print(f"❌ Error moving gradient down: {e}")
@@ -4714,12 +4707,17 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 gradients_to_load = gradients_data
             
             print(f"📊 Found {len(gradients_to_load)} gradients to load")
-            
+
+            # If replace mode, clear all existing gradients first
+            if replace_mode:
+                print("🗑️ Replace mode: Clearing all existing gradients")
+                self.gradient_manager.gradients.clear()
+
             for gradient_name, gradient_data in gradients_to_load.items():
                 try:
-                    # Check if gradient already exists
+                    # In append mode, check if gradient already exists
                     if not replace_mode and self.gradient_manager.get_gradient(gradient_name):
-                        # Skip duplicate
+                        # Skip duplicate in append mode
                         skipped_count += 1
                         continue
                     
@@ -4762,10 +4760,8 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     )
                     
                     # Add to gradient manager
-                    if replace_mode:
-                        self.gradient_manager.gradients[gradient_name] = gradient
-                    else:
-                        self.gradient_manager.add_gradient(gradient)
+                    # Both modes can use add_gradient since replace mode already cleared the dict
+                    self.gradient_manager.add_gradient(gradient)
                     
                     loaded_count += 1
                     
