@@ -1,16 +1,27 @@
-# TopoToImage 4.0.0-beta.1
+# TopoToImage 4.0.0-beta.2
 
 > **Modern recreation of the 1990s Macintosh terrain visualization software**
 
 **⚠️ BETA SOFTWARE**: This is pre-release software under active development. Please report bugs and provide feedback!
 
-## 📥 Download
+## 📥 Two Ways to Use TopoToImage
 
-**macOS Users:** [Download TopoToImage v4.0.0-beta.1 (DMG)](https://github.com/jlert/TopoToImage/releases/latest) - 386 MB
+### Option 1: Download the macOS App Bundle (Easiest for Mac Users)
 
-See [Installation Guide](docs/INSTALLATION.md) for setup instructions including how to bypass macOS Gatekeeper.
+**[Download TopoToImage v4.0.0-beta.2 (DMG)](https://github.com/jlert/TopoToImage/releases/latest) - 388 MB**
 
-**Windows/Linux Users:** The application is built with cross-platform libraries (PyQt6, NumPy, GDAL) but has not been tested on these systems. You can try running from source (see Quick Start below). **Testers wanted!** If you successfully run TopoToImage on Windows or Linux, please open an issue to let us know.
+- Simple installation - drag and drop
+- No Python or dependencies required
+- See [Installation Guide](docs/INSTALLATION.md) for Gatekeeper bypass instructions
+
+### Option 2: Run from Source (All Platforms - Bypasses Gatekeeper!)
+
+**Recommended for:**
+- Windows/Linux users
+- Developers
+- Anyone wanting to avoid macOS Gatekeeper issues
+
+See Quick Start below for instructions.
 
 ## 🐛 Report Issues
 
@@ -39,13 +50,17 @@ TopoToImage produces publication-quality terrain visualizations suitable for:
 - **GIS Workflows** - QGIS-compatible GeoTIFF files
 - **Design Projects** - Export a series of PNG files to be loaded as layers in photo editing software
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Running from Source)
+
+### Prerequisites
+- Python 3.8 or later
+- pip (Python package installer)
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/josephlertola/TopoToImage.git
+git clone https://github.com/jlert/TopoToImage.git
 cd TopoToImage
 
 # Install dependencies
@@ -54,6 +69,8 @@ pip install -r requirements.txt
 # Launch the application
 python topotoimage.py
 ```
+
+**Note:** Running from source completely bypasses macOS Gatekeeper restrictions - no security warnings!
 
 ### Basic Usage
 
@@ -112,6 +129,13 @@ TopoToImage is built with:
 - **NumPy/SciPy** - High-performance numerical computing
 - **Rasterio** - Geospatial data I/O
 - **Pillow** - Image processing and export
+
+**Platform Status:**
+- **macOS**: ✅ Fully tested and supported
+- **Windows**: ⚠️ Not tested - contributors needed!
+- **Linux**: ⚠️ Not tested - contributors needed!
+
+The codebase uses cross-platform libraries, so Windows/Linux support should work but needs testing and documentation. See [CONTRIBUTING.md](docs/CONTRIBUTING.md) if you'd like to help!
 
 ## 🎯 Historical Context
 

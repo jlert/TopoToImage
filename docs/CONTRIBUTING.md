@@ -8,7 +8,7 @@ Thank you for your interest in contributing to TopoToImage! This document provid
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/[username]/TopoToImage.git
+   git clone https://github.com/jlert/TopoToImage.git
    cd TopoToImage
    ```
 
@@ -45,7 +45,7 @@ Thank you for your interest in contributing to TopoToImage! This document provid
 
 ## 🎯 Areas for Contribution
 
-- **Cross-platform creation** - Create  Windows and Linux versions
+- **Windows/Linux Support** - The application is built with cross-platform libraries (PyQt6) but has only been tested on macOS. We need contributors to test and create installers for Windows and Linux. If you successfully run TopoToImage on Windows or Linux, please document the process and contribute installation instructions!
 - **Performance optimization** - Improve rendering speed for large datasets
 - **Rendering improvements** - Antialias map images
 - **Documentation improvements** - User guides and tutorials
@@ -93,8 +93,8 @@ For new features:
 ## 🗺️ Project Philosophy
 
 TopoToImage 4.0 aims to:
-- **Preserve the original's features while modernizing the implementation
-- **Maintain professional cartographic quality
+- **Preserve the original's features** while modernizing the implementation
+- **Maintain professional cartographic quality**
 
 ## 📞 Getting Help
 
