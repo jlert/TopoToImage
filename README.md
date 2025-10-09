@@ -6,13 +6,16 @@
 
 ## 📥 Two Ways to Use TopoToImage
 
-### Option 1: Download the macOS App Bundle (Easiest for Mac Users)
+### Option 1: Download the macOS App Bundle (Apple Silicon Macs Only)
 
-**[Download TopoToImage v4.0.0-beta.2 (DMG)](https://github.com/jlert/TopoToImage/releases/latest) - 388 MB**
+**[Download TopoToImage v4.0.0-beta.2 (DMG)](https://github.com/jlert/TopoToImage/releases/latest) - 201 MB**
 
 - Simple installation - drag and drop
 - No Python or dependencies required
+- **Requires Apple Silicon Mac (M1, M2, M3, M4)**
 - See [Installation Guide](docs/INSTALLATION.md) for Gatekeeper bypass instructions
+
+**Intel Mac users:** Please use Option 2 below (run from source)
 
 ### Option 2: Run from Source (All Platforms - Bypasses Gatekeeper!)
 
@@ -131,7 +134,8 @@ TopoToImage is built with:
 - **Pillow** - Image processing and export
 
 **Platform Status:**
-- **macOS**: ✅ Fully tested and supported
+- **macOS (Apple Silicon)**: ✅ Fully tested and supported (app bundle available)
+- **macOS (Intel)**: ✅ Works from source (Python required)
 - **Windows**: ⚠️ Not tested - contributors needed!
 - **Linux**: ⚠️ Not tested - contributors needed!
 
