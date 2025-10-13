@@ -1119,10 +1119,116 @@ class TerrainRenderer:
         
         return cropped_data
     
+    def _preflight_memory_check(
+        self,
+        west: float,
+        north: float,
+        east: float,
+        south: float,
+        export_scale: float,
+        pixels_per_degree: float,
+        gradient_name: str
+    ) -> dict:
+        """
+        Pre-flight memory check BEFORE any slow operations (assembly/loading)
+
+        This calculates expected output dimensions and memory requirements
+        without actually loading or processing any data.
+
+        Args:
+            west, north, east, south: Geographic bounds
+            export_scale: Scale factor
+            pixels_per_degree: Database resolution
+            gradient_name: Gradient name (to check if shading/shadows needed)
+
+        Returns:
+            Dict with keys: 'safe' (bool), 'error' (str), 'suggestion' (str),
+                           'expected_width' (int), 'expected_height' (int)
+        """
+        import psutil
+
+        # Calculate expected output dimensions
+        deg_width = east - west
+        deg_height = north - south
+        expected_width = int(deg_width * pixels_per_degree * export_scale)
+        expected_height = int(deg_height * pixels_per_degree * export_scale)
+        total_pixels = expected_width * expected_height
+
+        # Get gradient to check what layers will be created
+        gradient = self.gradient_manager.get_gradient(gradient_name)
+        has_shading = False
+        has_shadows = False
+
+        if gradient:
+            has_shading = hasattr(gradient, 'gradient_type') and gradient.gradient_type in [
+                'shaded_relief', 'shading_and_gradient', 'shading_and_posterized'
+            ]
+            has_shadows = has_shading and hasattr(gradient, 'cast_shadows') and gradient.cast_shadows
+
+        # Calculate memory requirements for rendering (same as _check_rendering_memory_safety)
+        elevation_memory_mb = (total_pixels * 4) / (1024**2)  # float32
+        gradient_memory_mb = (total_pixels * 4) / (1024**2)   # RGBA uint8
+        hillshade_memory_mb = (total_pixels * 1) / (1024**2) if has_shading else 0
+        shadow_memory_mb = (total_pixels * 1) / (1024**2) if has_shadows else 0
+        compositing_memory_mb = (total_pixels * 8) / (1024**2)
+
+        total_memory_mb = (elevation_memory_mb + gradient_memory_mb + hillshade_memory_mb +
+                          shadow_memory_mb + compositing_memory_mb)
+        total_memory_gb = total_memory_mb / 1024
+
+        # Get system memory
+        memory = psutil.virtual_memory()
+        available_gb = memory.available / (1024**3)
+        total_system_gb = memory.total / (1024**3)
+
+        # Hard limits
+        MAX_PIXELS = 500_000_000
+        MAX_MEMORY_PERCENT = 0.85
+
+        # Check 1: Pixel count limit
+        if total_pixels > MAX_PIXELS:
+            safe_scale = np.sqrt(MAX_PIXELS / total_pixels)
+            safe_percent = int(safe_scale * 100)
+
+            return {
+                'safe': False,
+                'error': f"Output too large: {expected_width:,}×{expected_height:,} = {total_pixels:,} pixels (max: {MAX_PIXELS:,})",
+                'suggestion': f"Reduce export scale to ~{safe_percent}% or select a smaller area",
+                'expected_width': expected_width,
+                'expected_height': expected_height
+            }
+
+        # Check 2: Memory availability for rendering
+        max_safe_memory_gb = total_system_gb * MAX_MEMORY_PERCENT
+
+        if total_memory_gb > max_safe_memory_gb:
+            safe_scale = np.sqrt(max_safe_memory_gb / total_memory_gb)
+            safe_percent = int(safe_scale * 100)
+
+            return {
+                'safe': False,
+                'error': (f"Insufficient memory for rendering: needs {total_memory_gb:.1f}GB, "
+                         f"only {available_gb:.1f}GB available (system has {total_system_gb:.1f}GB total)"),
+                'suggestion': f"Reduce export scale to ~{safe_percent}% or close other applications",
+                'expected_width': expected_width,
+                'expected_height': expected_height
+            }
+
+        # All checks passed
+        print(f"✅ Pre-flight check: {expected_width:,}×{expected_height:,} output will need {total_memory_gb:.1f}GB (available: {available_gb:.1f}GB)")
+
+        return {
+            'safe': True,
+            'error': None,
+            'suggestion': None,
+            'expected_width': expected_width,
+            'expected_height': expected_height
+        }
+
     def export_terrain(
         self,
         west: float,
-        north: float, 
+        north: float,
         east: float,
         south: float,
         file_path: str,
@@ -1137,19 +1243,19 @@ class TerrainRenderer:
     ) -> bool:
         """
         Export terrain to image file (JPEG, PNG, etc.)
-        
+
         Args:
             west, north, east, south: Geographic bounds for export
             file_path: Output file path (determines format by extension)
             gradient_name: Name of gradient to apply
             database_info: Database information (for multi-file databases)
-            dem_reader: DEM reader instance (for single-file databases) 
+            dem_reader: DEM reader instance (for single-file databases)
             export_scale: Scale factor (1.0 = 100%, 0.5 = 50%, etc.)
             min_elevation: Override minimum elevation for gradient scaling
             max_elevation: Override maximum elevation for gradient scaling
             dpi: Dots per inch for exported image (default: 72)
             progress_callback: Optional progress callback function
-            
+
         Returns:
             True if export successful, False otherwise
         """
@@ -1160,7 +1266,41 @@ class TerrainRenderer:
             print(f"   Scale: {export_scale * 100:.1f}%")
             if dpi:
                 print(f"   DPI: {dpi:.1f}")
-            
+
+            # PRE-FLIGHT MEMORY CHECK (prevents wasting time on assembly)
+            # Get database resolution to calculate expected dimensions
+            pixels_per_degree = None
+
+            if database_info and database_info.get('pixels_per_degree'):
+                pixels_per_degree = database_info['pixels_per_degree']
+            elif dem_reader and hasattr(dem_reader, 'pixels_per_degree'):
+                pixels_per_degree = dem_reader.pixels_per_degree
+            else:
+                # Try to detect from database
+                if database_info and database_info.get('type') == 'multi_file':
+                    from multi_file_database import MultiFileDatabase
+                    from pathlib import Path
+                    database_path = Path(database_info.get('path', ''))
+                    if database_path.exists():
+                        database = MultiFileDatabase(database_path)
+                        pixels_per_degree = database.pixels_per_degree if hasattr(database, 'pixels_per_degree') else 120
+                else:
+                    pixels_per_degree = 120  # Default fallback
+
+            print(f"📏 Database resolution: {pixels_per_degree:.1f} pixels/degree")
+
+            # Run pre-flight check
+            preflight = self._preflight_memory_check(
+                west, north, east, south, export_scale,
+                pixels_per_degree, gradient_name
+            )
+
+            if not preflight['safe']:
+                print(f"❌ Export cancelled before processing: {preflight['error']}")
+                if preflight.get('suggestion'):
+                    print(f"💡 Suggestion: {preflight['suggestion']}")
+                return False
+
             # Determine if we're working with multi-file database
             is_multi_file = (database_info and database_info.get('type') == 'multi_file')
             
