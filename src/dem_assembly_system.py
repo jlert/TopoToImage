@@ -193,31 +193,38 @@ class DEMAssembler:
     
     def estimate_assembly_memory_gb(self, west: float, north: float, east: float, south: float,
                                    export_scale: float, pixels_per_degree: float = 120) -> float:
-        """Estimate memory requirements for assembly"""
-        
+        """Estimate memory requirements for assembly
+
+        Args:
+            west, north, east, south: Geographic bounds
+            export_scale: Scale factor (e.g., 0.25 for 25%)
+            pixels_per_degree: Resolution of the data (e.g., 120 for GTOPO30, 240 for GEBCO)
+        """
+
         # Calculate target dimensions
         deg_width = east - west
         deg_height = north - south
-        
+
         # Calculate output array size at full resolution first
         # Then apply export scale to get final dimensions
         full_width_pixels = int(deg_width * pixels_per_degree)
         full_height_pixels = int(deg_height * pixels_per_degree)
-        
+
         # Apply export scale to final dimensions (not to resolution)
         width_pixels = int(full_width_pixels * export_scale)
         height_pixels = int(full_height_pixels * export_scale)
         total_pixels = width_pixels * height_pixels
-        
+
         # Memory calculation (float32 = 4 bytes per pixel)
         array_memory_gb = (total_pixels * 4) / (1024**3)
-        
+
         # Add overhead for intermediate processing (factor of 2.5 for safety)
         estimated_memory_gb = array_memory_gb * 2.5
-        
+
         self.logger.logger.debug(f"Memory estimation: {width_pixels}×{height_pixels} = "
-                               f"{total_pixels:,} pixels = {estimated_memory_gb:.2f}GB")
-        
+                               f"{total_pixels:,} pixels = {estimated_memory_gb:.2f}GB "
+                               f"(resolution: {pixels_per_degree:.1f} px/deg)")
+
         return estimated_memory_gb
     
     def select_assembly_approach(self, estimated_memory_gb: float) -> str:
@@ -282,6 +289,104 @@ class DEMAssembler:
         self.logger.log_strategy_selection(strategy, estimated_memory_gb)
         return strategy
     
+    def _detect_resolution_from_tiles(self, tiles: List[TileInfo]) -> float:
+        """Detect the actual resolution from tile information (FIX BUG #1)
+
+        Args:
+            tiles: List of tiles with resolution information
+
+        Returns:
+            Pixels per degree (e.g., 120 for GTOPO30, 240 for GEBCO 2025)
+        """
+        if not tiles:
+            self.logger.logger.warning("No tiles provided, using default resolution 120 px/deg")
+            return 120.0
+
+        # Collect resolutions from all tiles that have this information
+        resolutions = []
+        for tile in tiles:
+            if hasattr(tile, 'pixels_per_degree') and tile.pixels_per_degree > 0:
+                resolutions.append(tile.pixels_per_degree)
+
+        if resolutions:
+            # Use the maximum resolution (highest detail) found across all tiles
+            detected_resolution = max(resolutions)
+            self.logger.logger.info(f"📏 Detected resolution from {len(resolutions)} tiles: {detected_resolution:.1f} px/deg")
+            return detected_resolution
+        else:
+            # Fallback: try to calculate from tile dimensions
+            self.logger.logger.warning("No pixels_per_degree in tiles, attempting to calculate from dimensions")
+            for tile in tiles:
+                if hasattr(tile, 'width_pixels') and hasattr(tile, 'bounds'):
+                    tile_width_deg = tile.bounds.east - tile.bounds.west
+                    if tile_width_deg > 0 and tile.width_pixels > 0:
+                        calculated_res = tile.width_pixels / tile_width_deg
+                        self.logger.logger.info(f"📏 Calculated resolution from tile dimensions: {calculated_res:.1f} px/deg")
+                        return calculated_res
+
+            # Ultimate fallback
+            self.logger.logger.warning("Could not detect resolution, using default 120 px/deg (GTOPO30)")
+            return 120.0
+
+    def _check_memory_safety(self, estimated_memory_gb: float, west: float, north: float,
+                            east: float, south: float, export_scale: float,
+                            pixels_per_degree: float) -> Dict:
+        """Check if export is safe to proceed given memory constraints (FIX BUG #2)
+
+        Returns:
+            Dict with keys: 'safe' (bool), 'error' (str), 'suggestion' (str)
+        """
+        memory_info = self.get_system_memory_info()
+        available_gb = memory_info['available_gb']
+        total_gb = memory_info['total_gb']
+
+        # Calculate output dimensions
+        deg_width = east - west
+        deg_height = north - south
+        output_width = int(deg_width * pixels_per_degree * export_scale)
+        output_height = int(deg_height * pixels_per_degree * export_scale)
+        total_pixels = output_width * output_height
+
+        # Hard limits
+        MAX_PIXELS = 500_000_000  # 500 million pixels (e.g., ~22,000 x 22,000)
+        MAX_MEMORY_PERCENT = 0.9  # Never use more than 90% of total system memory
+
+        # Check 1: Pixel count limit
+        if total_pixels > MAX_PIXELS:
+            # Calculate a safe scale factor
+            safe_scale_factor = np.sqrt(MAX_PIXELS / (output_width * output_height / (export_scale ** 2)))
+            safe_scale_percent = int(safe_scale_factor * 100)
+
+            return {
+                'safe': False,
+                'error': f"Output too large: {output_width}×{output_height} = {total_pixels:,} pixels (max: {MAX_PIXELS:,})",
+                'suggestion': f"Try reducing export scale to {safe_scale_percent}% or select a smaller area"
+            }
+
+        # Check 2: Memory availability
+        max_safe_memory = total_gb * MAX_MEMORY_PERCENT
+        if estimated_memory_gb > max_safe_memory:
+            # Calculate a safe scale factor based on memory
+            safe_scale = export_scale * np.sqrt(max_safe_memory / estimated_memory_gb)
+            safe_scale_percent = int(safe_scale * 100)
+
+            return {
+                'safe': False,
+                'error': f"Insufficient memory: needs {estimated_memory_gb:.1f}GB, only {available_gb:.1f}GB available (system has {total_gb:.1f}GB total)",
+                'suggestion': f"Try reducing export scale to {safe_scale_percent}% or close other applications to free memory"
+            }
+
+        # Check 3: Warning for low available memory (still safe but risky)
+        if estimated_memory_gb > available_gb * 0.7:
+            self.logger.logger.warning(f"⚠️  Memory usage will be high: {estimated_memory_gb:.1f}GB of {available_gb:.1f}GB available")
+            self.logger.logger.warning(f"   Close other applications if export fails")
+
+        return {
+            'safe': True,
+            'error': None,
+            'suggestion': None
+        }
+
     def create_temp_dem_path(self, prefix: str = "assembled_dem") -> str:
         """Create path for temporary DEM file"""
         if self.config.temp_dem_location == "project":
@@ -290,67 +395,80 @@ class DEMAssembler:
         else:
             # Use system temp directory
             temp_dir = Path(tempfile.gettempdir())
-        
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         temp_path = temp_dir / f"{prefix}_{timestamp}.dem"
-        
+
         self.logger.logger.debug(f"Temp DEM path: {temp_path}")
         return str(temp_path)
     
-    def assemble_tiles_to_dem(self, tiles: List[TileInfo], west: float, north: float, 
+    def assemble_tiles_to_dem(self, tiles: List[TileInfo], west: float, north: float,
                              east: float, south: float, export_scale: float = 1.0,
                              progress_callback=None) -> Optional[str]:
         """
         Assemble multiple tiles into a single DEM file
-        
+
         Args:
             tiles: List of tiles to assemble
             west, north, east, south: Geographic bounds
             export_scale: Scale factor (0.1 to 1.0)
             progress_callback: Optional progress reporting function
-            
+
         Returns:
             Path to assembled DEM file, or None if failed
         """
-        
+
         if not tiles:
             self.logger.logger.error("No tiles provided for assembly")
             return None
-        
+
         # Start timing and logging
         self.metrics.start_timing()
         self.logger.log_assembly_request(west, north, east, south, export_scale, len(tiles))
         self.logger.log_memory_state("Assembly Start")
-        
+
         try:
+            # Detect actual resolution from tiles (FIX BUG #1)
+            pixels_per_degree = self._detect_resolution_from_tiles(tiles)
+            self.logger.logger.info(f"📏 Detected resolution: {pixels_per_degree:.1f} pixels/degree")
+
             # Phase 1: Estimate memory and select strategy
             if progress_callback:
                 progress_callback("🔍 Analyzing memory requirements...")
-            
-            estimated_memory = self.estimate_assembly_memory_gb(west, north, east, south, export_scale)
+
+            estimated_memory = self.estimate_assembly_memory_gb(west, north, east, south, export_scale, pixels_per_degree)
+
+            # MEMORY SAFETY CHECK (FIX BUG #2)
+            memory_check_result = self._check_memory_safety(estimated_memory, west, north, east, south, export_scale, pixels_per_degree)
+            if not memory_check_result['safe']:
+                self.logger.logger.error(f"❌ {memory_check_result['error']}")
+                if memory_check_result.get('suggestion'):
+                    self.logger.logger.info(f"💡 {memory_check_result['suggestion']}")
+                return None
+
             strategy = self.select_assembly_strategy(estimated_memory)
-            
+
             # Phase 2: Execute assembly based on approach
             approach = self.select_assembly_approach(estimated_memory)
-            
+
             if approach == "in_memory":
                 # Option 1: Fast path for data that fits in memory
-                result_path = self._assemble_in_memory(tiles, west, north, east, south, 
+                result_path = self._assemble_in_memory(tiles, west, north, east, south,
                                                       export_scale, progress_callback)
             else:  # universal_chunked
                 # Option 2: Universal chunked system for any size data
                 result_path = self._assemble_universal_chunks(tiles, west, north, east, south,
-                                                            export_scale, progress_callback)
-            
+                                                            export_scale, progress_callback, pixels_per_degree)
+
             # Log completion
             if result_path:
                 self.logger.log_assembly_completion(self.metrics, result_path)
                 self.logger.logger.info(f"✅ Assembly successful: {result_path}")
             else:
                 self.logger.logger.error("❌ Assembly failed")
-                
+
             return result_path
-            
+
         except Exception as e:
             self.logger.logger.error(f"Assembly error: {e}")
             import traceback
@@ -462,22 +580,22 @@ class DEMAssembler:
     
     def _assemble_universal_chunks(self, tiles: List[TileInfo], west: float, north: float,
                                   east: float, south: float, export_scale: float,
-                                  progress_callback=None) -> Optional[str]:
+                                  progress_callback=None, pixels_per_degree: float = 120) -> Optional[str]:
         """
         Option 2: Universal chunked assembly system
         Handles any size data through intelligent chunking and disk spooling
         """
-        
+
         self.logger.logger.info("🚀 Starting universal chunked assembly (Option 2)")
         self.logger.log_memory_state("Universal Chunked Assembly Start")
-        
+
         try:
             # Phase 1: Calculate optimal chunk configuration
             if progress_callback:
                 progress_callback("🔍 Calculating optimal chunk configuration...")
-            
-            chunk_config = self._calculate_chunk_configuration(west, north, east, south, export_scale)
-            
+
+            chunk_config = self._calculate_chunk_configuration(west, north, east, south, export_scale, pixels_per_degree)
+
             if chunk_config['num_chunks'] == 1:
                 # Single chunk = effectively in-memory processing
                 self.logger.logger.info("📦 Single chunk detected - using optimized single-chunk processing")
@@ -486,34 +604,39 @@ class DEMAssembler:
                 # Multiple chunks = true disk spooling
                 self.logger.logger.info(f"📦 Multiple chunks detected ({chunk_config['num_chunks']}) - using disk spooling")
                 return self._process_multiple_chunks(tiles, chunk_config, west, north, east, south, export_scale, progress_callback)
-                
+
         except Exception as e:
             self.logger.logger.error(f"Universal chunked assembly failed: {e}")
             import traceback
             self.logger.logger.debug(traceback.format_exc())
             return None
     
-    def _calculate_chunk_configuration(self, west: float, north: float, east: float, south: float, 
-                                     export_scale: float) -> Dict:
-        """Calculate optimal chunk configuration based on available memory"""
-        
+    def _calculate_chunk_configuration(self, west: float, north: float, east: float, south: float,
+                                     export_scale: float, pixels_per_degree: float = 120) -> Dict:
+        """Calculate optimal chunk configuration based on available memory (FIX BUG #1)
+
+        Args:
+            west, north, east, south: Geographic bounds
+            export_scale: Scale factor
+            pixels_per_degree: Actual resolution from tiles (no longer hardcoded!)
+        """
+
         # Get memory information
         memory_info = self.get_system_memory_info()
         available_gb = memory_info['available_gb']
-        
+
         # Apply artificial limits for testing
         if self.config.artificial_memory_limit_mb:
             available_gb = min(available_gb, self.config.artificial_memory_limit_mb / 1024)
-        
+
         # Calculate target chunk size in MB
         target_chunk_size_mb = self.config.chunk_size_mb
         target_chunk_size_gb = target_chunk_size_mb / 1024
-        
-        # Calculate total output dimensions
+
+        # Calculate total output dimensions using ACTUAL resolution (not hardcoded)
         deg_width = east - west
         deg_height = north - south
-        pixels_per_degree = 120  # Approximate for GTOPO30
-        
+
         total_width_pixels = int(deg_width * pixels_per_degree * export_scale)
         total_height_pixels = int(deg_height * pixels_per_degree * export_scale)
         
