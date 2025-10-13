@@ -1238,7 +1238,18 @@ class TerrainRenderer:
             
             if progress_callback:
                 progress_callback(0.3, "Rendering terrain")
-            
+
+            # MEMORY SAFETY CHECK (FIX BUG #2 - CORRECTED)
+            # Check if rendering can complete given available memory
+            print(f"🔍 Checking memory safety for rendering {elevation_data.shape[1]}×{elevation_data.shape[0]} image...")
+            memory_check = self._check_rendering_memory_safety(elevation_data, gradient_name)
+
+            if not memory_check['safe']:
+                print(f"❌ Export aborted: {memory_check['error']}")
+                if memory_check.get('suggestion'):
+                    print(f"💡 Suggestion: {memory_check['suggestion']}")
+                return False
+
             # Render terrain using existing pipeline
             def export_progress_callback(progress, message="Rendering"):
                 if progress_callback:
@@ -1317,6 +1328,101 @@ class TerrainRenderer:
             import traceback
             traceback.print_exc()
             return False
+
+    def _check_rendering_memory_safety(
+        self,
+        elevation_data: np.ndarray,
+        gradient_name: str
+    ) -> dict:
+        """
+        Check if rendering can proceed given memory constraints (FIX BUG #2 - CORRECTED)
+
+        This checks the RENDERING stage, not assembly. Assembly uses chunking which can
+        handle huge outputs. Rendering currently loads everything into memory.
+
+        Args:
+            elevation_data: The assembled elevation data to render
+            gradient_name: Name of gradient (to check if it needs hillshade/shadows)
+
+        Returns:
+            Dict with keys: 'safe' (bool), 'error' (str), 'suggestion' (str)
+        """
+        import psutil
+
+        height, width = elevation_data.shape
+        total_pixels = height * width
+
+        # Get gradient to check what layers will be created
+        gradient = self.gradient_manager.get_gradient(gradient_name)
+        has_shading = False
+        has_shadows = False
+
+        if gradient:
+            has_shading = hasattr(gradient, 'gradient_type') and gradient.gradient_type in [
+                'shaded_relief', 'shading_and_gradient', 'shading_and_posterized'
+            ]
+            has_shadows = has_shading and hasattr(gradient, 'cast_shadows') and gradient.cast_shadows
+
+        # Calculate memory requirements for rendering
+        # Each layer that will be created:
+        elevation_memory_mb = (total_pixels * 4) / (1024**2)  # float32
+        gradient_memory_mb = (total_pixels * 4) / (1024**2)   # RGBA uint8
+        hillshade_memory_mb = (total_pixels * 1) / (1024**2) if has_shading else 0  # grayscale uint8
+        shadow_memory_mb = (total_pixels * 1) / (1024**2) if has_shadows else 0     # grayscale uint8
+        compositing_memory_mb = (total_pixels * 8) / (1024**2)  # temporary arrays during blending
+
+        # Total memory needed
+        total_memory_mb = (elevation_memory_mb + gradient_memory_mb + hillshade_memory_mb +
+                          shadow_memory_mb + compositing_memory_mb)
+        total_memory_gb = total_memory_mb / 1024
+
+        # Get system memory
+        memory = psutil.virtual_memory()
+        available_gb = memory.available / (1024**3)
+        total_system_gb = memory.total / (1024**3)
+
+        # Hard limits
+        MAX_PIXELS = 500_000_000  # 500 million pixels
+        MAX_MEMORY_PERCENT = 0.85  # Use max 85% of total system memory
+
+        # Check 1: Pixel count limit
+        if total_pixels > MAX_PIXELS:
+            safe_scale = np.sqrt(MAX_PIXELS / total_pixels)
+            safe_percent = int(safe_scale * 100)
+
+            return {
+                'safe': False,
+                'error': f"Output too large: {width:,}×{height:,} = {total_pixels:,} pixels (max: {MAX_PIXELS:,})",
+                'suggestion': f"Reduce export scale to ~{safe_percent}% or select a smaller area"
+            }
+
+        # Check 2: Memory availability for rendering
+        max_safe_memory_gb = total_system_gb * MAX_MEMORY_PERCENT
+
+        if total_memory_gb > max_safe_memory_gb:
+            # Calculate safe scale
+            safe_scale = np.sqrt(max_safe_memory_gb / total_memory_gb)
+            safe_percent = int(safe_scale * 100)
+
+            return {
+                'safe': False,
+                'error': (f"Insufficient memory for rendering: needs {total_memory_gb:.1f}GB, "
+                         f"only {available_gb:.1f}GB available (system has {total_system_gb:.1f}GB total)"),
+                'suggestion': f"Reduce export scale to ~{safe_percent}% or close other applications"
+            }
+
+        # Check 3: Warning for high memory usage
+        if total_memory_gb > available_gb * 0.7:
+            print(f"⚠️  High memory usage: rendering will use {total_memory_gb:.1f}GB of {available_gb:.1f}GB available")
+            print(f"   Consider closing other applications if export fails")
+
+        # All checks passed
+        print(f"✅ Memory check passed: {total_memory_gb:.1f}GB needed, {available_gb:.1f}GB available")
+        return {
+            'safe': True,
+            'error': None,
+            'suggestion': None
+        }
 
     def render_normalized_elevation_layer(
         self,

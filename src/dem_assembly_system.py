@@ -438,13 +438,8 @@ class DEMAssembler:
 
             estimated_memory = self.estimate_assembly_memory_gb(west, north, east, south, export_scale, pixels_per_degree)
 
-            # MEMORY SAFETY CHECK (FIX BUG #2)
-            memory_check_result = self._check_memory_safety(estimated_memory, west, north, east, south, export_scale, pixels_per_degree)
-            if not memory_check_result['safe']:
-                self.logger.logger.error(f"❌ {memory_check_result['error']}")
-                if memory_check_result.get('suggestion'):
-                    self.logger.logger.info(f"💡 {memory_check_result['suggestion']}")
-                return None
+            # NOTE: Memory safety check removed from assembly stage (was too restrictive for chunked processing)
+            # Memory check now happens before rendering stage in terrain_renderer.py
 
             strategy = self.select_assembly_strategy(estimated_memory)
 
