@@ -5491,7 +5491,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 "Export Elevation Database",
                 initial_filename,
                 filter_string,
-                file_filters[0]  # Default to DEM
+                file_filters[1]  # Default to GeoTIFF Elevation
             )
             
             if file_path:
