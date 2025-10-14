@@ -225,18 +225,31 @@ class MultiFileDatabase:
         """Calculate the overall bounds of all tiles"""
         if not self.tiles:
             return
-            
+
         west_values = [tile.bounds.west for tile in self.tiles.values()]
         east_values = [tile.bounds.east for tile in self.tiles.values()]
         north_values = [tile.bounds.north for tile in self.tiles.values()]
         south_values = [tile.bounds.south for tile in self.tiles.values()]
-        
+
         self.global_bounds = TileBounds(
             west=min(west_values),
             north=max(north_values),
             east=max(east_values),
             south=min(south_values)
         )
+
+    @property
+    def pixels_per_degree(self) -> float:
+        """Get the maximum resolution from all tiles (used for memory checks)"""
+        if not self.tiles:
+            return 120.0  # Default fallback
+
+        max_resolution = 120.0  # Default fallback
+        for tile in self.tiles.values():
+            if hasattr(tile, 'pixels_per_degree') and tile.pixels_per_degree > 0:
+                max_resolution = max(max_resolution, tile.pixels_per_degree)
+
+        return max_resolution
     
     def get_tiles_for_bounds(self, west: float, north: float, east: float, south: float) -> List[TileInfo]:
         """Get all tiles that intersect with the given bounds"""

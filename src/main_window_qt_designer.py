@@ -6583,11 +6583,89 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             progress_dialog.show()
             
             try:
+                # PRE-FLIGHT MEMORY CHECK (prevents loading data that won't fit in memory)
+                # Calculate expected output dimensions before any loading
+                pixels_per_degree = None
+
+                if database_info and database_info.get('pixels_per_degree'):
+                    pixels_per_degree = database_info['pixels_per_degree']
+                elif dem_reader and hasattr(dem_reader, 'pixels_per_degree'):
+                    pixels_per_degree = dem_reader.pixels_per_degree
+                else:
+                    # Try to detect from database
+                    if database_info and database_info.get('type') == 'multi_file':
+                        from multi_file_database import MultiFileDatabase
+                        from pathlib import Path
+                        database_path = Path(database_info.get('path', ''))
+                        if database_path.exists():
+                            database = MultiFileDatabase(database_path)
+                            pixels_per_degree = database.pixels_per_degree if hasattr(database, 'pixels_per_degree') else 120
+                    else:
+                        pixels_per_degree = 120  # Default fallback
+
+                print(f"📏 Database resolution: {pixels_per_degree:.1f} pixels/degree")
+
+                # Calculate expected output dimensions
+                deg_width = east - west
+                deg_height = north - south
+                expected_width = int(deg_width * pixels_per_degree * export_scale)
+                expected_height = int(deg_height * pixels_per_degree * export_scale)
+                total_pixels = expected_width * expected_height
+
+                # Calculate memory needed for raw elevation data (float32)
+                elevation_memory_mb = (total_pixels * 4) / (1024**2)
+                elevation_memory_gb = elevation_memory_mb / 1024
+
+                # Get system memory
+                import psutil
+                memory = psutil.virtual_memory()
+                available_gb = memory.available / (1024**3)
+                total_system_gb = memory.total / (1024**3)
+
+                # Hard limits (same as image export)
+                MAX_PIXELS = 500_000_000
+                MAX_MEMORY_PERCENT = 0.85
+                max_safe_memory_gb = total_system_gb * MAX_MEMORY_PERCENT
+
+                print(f"📊 Pre-flight check:")
+                print(f"   Expected output: {expected_width:,}×{expected_height:,} = {total_pixels:,} pixels")
+                print(f"   Memory needed: {elevation_memory_gb:.2f}GB")
+                print(f"   Memory available: {available_gb:.2f}GB")
+
+                # Check 1: Pixel count limit
+                if total_pixels > MAX_PIXELS:
+                    safe_scale = np.sqrt(MAX_PIXELS / total_pixels)
+                    safe_percent = int(safe_scale * 100)
+                    error_msg = (f"Export cancelled: Output too large\n\n"
+                                f"Requested: {expected_width:,}×{expected_height:,} = {total_pixels:,} pixels\n"
+                                f"Maximum: {MAX_PIXELS:,} pixels\n\n"
+                                f"Suggestion: Reduce export scale to ~{safe_percent}% or select a smaller area")
+                    print(f"❌ {error_msg}")
+                    from PyQt6.QtWidgets import QMessageBox
+                    QMessageBox.warning(self, "Export Too Large", error_msg)
+                    return False
+
+                # Check 2: Memory availability
+                if elevation_memory_gb > max_safe_memory_gb:
+                    safe_scale = np.sqrt(max_safe_memory_gb / elevation_memory_gb)
+                    safe_percent = int(safe_scale * 100)
+                    error_msg = (f"Export cancelled: Insufficient memory\n\n"
+                                f"Memory needed: {elevation_memory_gb:.1f}GB\n"
+                                f"Memory available: {available_gb:.1f}GB\n"
+                                f"System total: {total_system_gb:.1f}GB\n\n"
+                                f"Suggestion: Reduce export scale to ~{safe_percent}% or close other applications")
+                    print(f"❌ {error_msg}")
+                    from PyQt6.QtWidgets import QMessageBox
+                    QMessageBox.warning(self, "Insufficient Memory", error_msg)
+                    return False
+
+                print(f"✅ Pre-flight check passed: Export is safe to proceed")
+
                 # Phase 1: Load elevation data (0-60%)
                 progress_dialog.update_progress(5, "Loading elevation data...")
                 from PyQt6.QtWidgets import QApplication
                 QApplication.processEvents()
-                
+
                 elevation_data = self._get_cropped_elevation_data(
                     west, north, east, south, database_info, dem_reader, export_scale, progress_dialog
                 )
@@ -6706,41 +6784,46 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             if elevation_data is None:
                 print("❌ Failed to load elevation data")
                 return None
-                
+
             # Apply export scaling if not 100%
-            if export_scale != 1.0:
+            # NOTE: Skip scaling for multi-file databases - DEMAssemblySystem already applied it
+            is_multifile = database_info and database_info.get('type') == 'multi_file'
+
+            if export_scale != 1.0 and not is_multifile:
                 print(f"🔧 Applying export scale: {export_scale * 100:.1f}%")
                 if progress_dialog:
                     progress_dialog.update_progress(45, f"Scaling to {export_scale * 100:.1f}%...")
                     QApplication.processEvents()
-                    
+
                 original_shape = elevation_data.shape
                 target_shape = (
                     int(original_shape[0] * export_scale),
                     int(original_shape[1] * export_scale)
                 )
-                
+
                 try:
                     # Use NaN-aware bicubic interpolation for highest quality without data corruption
                     from nan_aware_interpolation import resize_with_nan_exclusion
                     elevation_data = resize_with_nan_exclusion(
-                        elevation_data, 
-                        target_shape, 
+                        elevation_data,
+                        target_shape,
                         method='bicubic'
                     )
                     print(f"   NaN-aware bicubic resize from {original_shape} to {elevation_data.shape}")
-                    
+
                 except ImportError:
                     print(f"   ⚠️ NaN-aware interpolation not available, using simple subsampling")
                     # Safe fallback: simple subsampling preserves data integrity
                     subsample_y = max(1, int(1.0 / export_scale))
                     subsample_x = max(1, int(1.0 / export_scale))
                     elevation_data = elevation_data[::subsample_y, ::subsample_x]
-                
+
                 if progress_dialog:
                     progress_dialog.update_progress(55, "Scaling completed")
                     QApplication.processEvents()
-                    
+            elif is_multifile:
+                print(f"✅ Scaling already applied during assembly (multi-file database)")
+
             if progress_dialog:
                 progress_dialog.update_progress(60, "Elevation data ready for export")
                 QApplication.processEvents()
@@ -7066,66 +7149,121 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         progress_dialog = None
     ):
         """
-        Load elevation data from multi-file database using simple assembly.
-        
+        Load elevation data from multi-file database using DEMAssemblySystem.
+
+        This uses the same memory-safe chunking system as image export, preventing
+        out-of-memory crashes when exporting large databases.
+
         Args:
             west, north, east, south: Geographic bounds in decimal degrees
             export_scale: Scale factor for final output (1.0 = 100%, 0.5 = 50%, etc.)
-            
+
         Returns:
             numpy.ndarray: Assembled elevation data, or None if failed
         """
         try:
-            print(f"🔧 Loading multi-file elevation data using simple assembly...")
+            print(f"🔧 Loading multi-file elevation data using DEMAssemblySystem...")
             print(f"   Bounds: W={west:.6f}, N={north:.6f}, E={east:.6f}, S={south:.6f}")
             print(f"   Scale: {export_scale * 100:.1f}%")
-            
-            # Use direct tile assembly approach
+
+            from pathlib import Path
             from multi_file_database import MultiFileDatabase
-            
+            from dem_assembly_system import DEMAssembler, AssemblyConfig
+            from dem_reader import DEMReader
+
             # Load database using the current database info
             db_path = self.current_database_info.get('path')
             if not db_path:
                 print("❌ No database path available")
                 return None
-                
-            from pathlib import Path
+
             db_path = Path(db_path)
             if not db_path.exists():
                 print(f"❌ Database path does not exist: {db_path}")
                 return None
-                
+
             database = MultiFileDatabase(db_path)
             if not database.tiles:
                 print(f"❌ No tiles found in database: {db_path}")
                 return None
-                
+
             print(f"🗂️ Database: {len(database.tiles)} tiles, type: {database.database_type}")
-            
+
+            # Get tiles for the requested bounds
+            tiles = database.get_tiles_for_bounds(west, north, east, south)
+            if not tiles:
+                print(f"❌ No tiles found for bounds")
+                return None
+
+            print(f"📦 Found {len(tiles)} intersecting tiles")
+
+            # Configure assembly system for export (use chunking for large exports)
+            assembly_config = AssemblyConfig(
+                temp_dem_location="system",
+                chunk_size_mb=200,  # Process in 200MB chunks
+                max_memory_percent=50.0
+            )
+
+            assembler = DEMAssembler(assembly_config)
+
+            # Progress callback wrapper
+            def assembly_progress_callback(message):
+                if progress_dialog:
+                    from PyQt6.QtWidgets import QApplication
+                    # Map assembly progress to 15-35% of overall export progress
+                    progress_dialog.update_progress(15, message)
+                    QApplication.processEvents()
+                print(f"   {message}")
+
             if progress_dialog:
                 from PyQt6.QtWidgets import QApplication
-                progress_dialog.update_progress(15, f"Assembling {len(database.tiles)} tiles...")
+                progress_dialog.update_progress(15, f"Assembling {len(tiles)} tiles with memory-safe chunking...")
                 QApplication.processEvents()
-            
-            # Use the database's built-in assembly method
-            elevation_data = database.assemble_tiles_for_bounds(west, north, east, south)
-            
-            if progress_dialog:
-                progress_dialog.update_progress(35, "Tile assembly completed")
-                QApplication.processEvents()
-            
-            if elevation_data is None:
-                print("❌ Tile assembly failed")
+
+            # Use assembly system with chunking support (handles large exports safely)
+            temp_dem_path = assembler.assemble_tiles_to_dem(
+                tiles=tiles,
+                west=west, north=north, east=east, south=south,
+                export_scale=export_scale,  # Scale is applied DURING assembly, not after
+                progress_callback=assembly_progress_callback
+            )
+
+            if not temp_dem_path:
+                print("❌ Assembly failed")
                 return None
-                
+
+            if progress_dialog:
+                progress_dialog.update_progress(30, "Loading assembled data...")
+                QApplication.processEvents()
+
+            # Load the assembled DEM file
+            dem_reader = DEMReader()
+            if not dem_reader.load_dem_file(str(temp_dem_path)):
+                print("❌ Failed to load assembled DEM")
+                return None
+
+            elevation_data = dem_reader.load_elevation_data()
+
+            if progress_dialog:
+                progress_dialog.update_progress(35, "Assembly completed")
+                QApplication.processEvents()
+
+            if elevation_data is None:
+                print("❌ Failed to load elevation data from assembled DEM")
+                return None
+
             print(f"✅ Assembled elevation data: {elevation_data.shape}")
-            
-            # NOTE: Do NOT apply export scaling here - it will be applied later in _get_cropped_elevation_data
-            # This prevents double scaling that would cause 5% × 5% = 0.25% instead of 5%
-            print(f"📏 Export scale {export_scale * 100:.1f}% will be applied in _get_cropped_elevation_data")
-            
+            print(f"   Scale was applied during assembly (no double-scaling)")
+
+            # Clean up temp file
+            try:
+                Path(temp_dem_path).unlink()
+                print(f"🧹 Cleaned up temporary DEM file")
+            except Exception as e:
+                print(f"⚠️ Could not delete temp file {temp_dem_path}: {e}")
+
             return elevation_data
-            
+
         except Exception as e:
             print(f"❌ Error loading multi-file elevation data: {e}")
             import traceback
