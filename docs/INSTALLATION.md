@@ -55,7 +55,7 @@ If you prefer to run TopoToImage from source code (or are on Windows/Linux):
 - Python 3.8 or higher
 - pip (Python package installer)
 
-### Installation
+### macOS / Linux Installation
 
 1. **Clone the repository:**
    ```bash
@@ -73,10 +73,40 @@ If you prefer to run TopoToImage from source code (or are on Windows/Linux):
    python3 topotoimage.py
    ```
 
+### ⚠️ Windows Installation - Important Notice
+
+**TopoToImage has not been tested on Windows.** The developer does not have a Windows system and cannot provide Windows-specific support.
+
+**The main challenge:** The GDAL dependency (required by the rasterio library) is notoriously difficult to install on Windows. It requires C++ compilation tools that are complex to set up.
+
+**For experienced Windows Python developers willing to experiment:**
+
+The following installation approaches were suggested by Claude Code (an AI coding assistant) but have not been verified by the developer:
+
+**Option 1: Use pipwin for pre-built wheels**
+```
+py -m pip install pipwin
+py -m pipwin install gdal
+py -m pipwin install rasterio
+py -m pip install -r requirements.txt
+```
+
+**Option 2: Use Conda (often more reliable on Windows)**
+```
+conda create -n topotoimage python=3.10
+conda activate topotoimage
+conda install -c conda-forge gdal rasterio
+pip install -r requirements.txt
+```
+
+**Known limitation:** The "Reveal in Finder" menu option will not work on Windows (macOS-specific feature).
+
+**🙏 We need Windows contributors!** If you successfully install and run TopoToImage on Windows, please document your process and share it via GitHub Issues or Discussions. Your contribution would help many future users!
+
 ### System Requirements
-- **macOS:** 10.13 (High Sierra) or later
-- **Windows:** Windows 10 or later
-- **Linux:** Most modern distributions with Python 3.8+
+- **macOS:** 10.13 (High Sierra) or later - ✅ Fully tested
+- **Windows:** Windows 10 or later - ⚠️ Not tested, GDAL installation challenging
+- **Linux:** Most modern distributions with Python 3.8+ - ⚠️ Not tested
 
 ---
 
