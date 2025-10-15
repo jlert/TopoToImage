@@ -477,50 +477,37 @@ class DEMAssembler:
         
         self.logger.logger.info("Starting in-memory assembly...")
         self.logger.log_memory_state("In-Memory Assembly Start")
-        
+
         if progress_callback:
-            progress_callback("📊 Loading tiles into memory...")
-        
+            progress_callback("📊 Loading and scaling tiles...")
+
         try:
             # For Week 1, use the existing multi_file_database assembly
             # This will be enhanced in later weeks
             from multi_file_database import MultiFileDatabase
-            
+
             # Create a temporary MultiFileDatabase instance
             # Note: This is a simplified approach for Week 1
             temp_db = MultiFileDatabase(tiles[0].file_path.parent)
-            
-            # Use existing assembly method 
-            assembled_data = temp_db._simple_tile_assembly(tiles, west, north, east, south)
-            
+
+            # Create a wrapper for progress callback to pass through
+            def tile_progress_callback(message):
+                if progress_callback:
+                    progress_callback(message)
+
+            # Use existing assembly method WITH export_scale (scale during assembly, not after!)
+            assembled_data = temp_db._simple_tile_assembly(
+                tiles, west, north, east, south,
+                export_scale=export_scale,  # Apply scale DURING assembly
+                progress_callback=tile_progress_callback
+            )
+
             if assembled_data is None:
                 self.logger.logger.error("Failed to assemble tiles")
                 return None
-            
-            # Apply export scale if not 1.0
-            if export_scale != 1.0:
-                if progress_callback:
-                    progress_callback(f"🔄 Scaling to {export_scale:.1%}...")
-                    
-                current_height, current_width = assembled_data.shape
-                target_width = int(current_width * export_scale)
-                target_height = int(current_height * export_scale)
-                
-                self.logger.logger.info(f"Applying scaling: {current_width}×{current_height} → {target_width}×{target_height}")
-                
-                # Simple scaling approach
-                try:
-                    from scipy import ndimage
-                    assembled_data = ndimage.zoom(assembled_data, export_scale, order=1)
-                    self.logger.logger.info(f"Scaling complete: {assembled_data.shape}")
-                except ImportError:
-                    # Fallback: simple subsampling
-                    subsample_factor = max(1, int(1.0 / export_scale))
-                    if subsample_factor > 1:
-                        assembled_data = assembled_data[::subsample_factor, ::subsample_factor]
-                        self.logger.logger.info(f"Simple subsampling complete: {assembled_data.shape}")
-            else:
-                self.logger.logger.info(f"Export scale is 100% - using full resolution data")
+
+            # NO post-assembly scaling! Scale was applied during assembly.
+            self.logger.logger.info(f"Assembly complete with scale applied: {assembled_data.shape}")
             
             # Phase 3: Write to DEM file
             if progress_callback:

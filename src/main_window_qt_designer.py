@@ -5246,10 +5246,17 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
 
     def save_image_file(self):
         """Save terrain as image file with 5 image export options"""
+        import time
+        from datetime import datetime
+
+        # Start timing the export
+        export_start_time = time.time()
+        export_timestamp = datetime.now()
+
         try:
             from PyQt6.QtWidgets import QFileDialog, QMessageBox
             from pathlib import Path
-            
+
             # Get the base database name for filename generation
             base_db_name = self._get_base_database_name()
             
@@ -7206,12 +7213,31 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
 
             assembler = DEMAssembler(assembly_config)
 
-            # Progress callback wrapper
+            # Progress callback wrapper - track current tile for progress calculation
+            current_tile_info = {'tile_num': 0, 'total_tiles': len(tiles)}
+
             def assembly_progress_callback(message):
                 if progress_dialog:
                     from PyQt6.QtWidgets import QApplication
-                    # Map assembly progress to 15-35% of overall export progress
-                    progress_dialog.update_progress(15, message)
+                    # Parse tile number from message if present (e.g., "Processing tile 5/96: tile_name")
+                    if "Processing tile" in message:
+                        try:
+                            parts = message.split()
+                            tile_fraction = parts[2]  # "5/96"
+                            current, total = map(int, tile_fraction.split('/'))
+                            current_tile_info['tile_num'] = current
+                            current_tile_info['total_tiles'] = total
+                        except:
+                            pass
+
+                    # Map assembly progress to 15-85% of overall export progress
+                    if current_tile_info['total_tiles'] > 0:
+                        tile_progress = current_tile_info['tile_num'] / current_tile_info['total_tiles']
+                        overall_progress = 15 + int(tile_progress * 70)  # 15% to 85%
+                    else:
+                        overall_progress = 15
+
+                    progress_dialog.update_progress(overall_progress, message)
                     QApplication.processEvents()
                 print(f"   {message}")
 
@@ -7233,7 +7259,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 return None
 
             if progress_dialog:
-                progress_dialog.update_progress(30, "Loading assembled data...")
+                progress_dialog.update_progress(85, "Loading assembled data...")
                 QApplication.processEvents()
 
             # Load the assembled DEM file
@@ -7245,7 +7271,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             elevation_data = dem_reader.load_elevation_data()
 
             if progress_dialog:
-                progress_dialog.update_progress(35, "Assembly completed")
+                progress_dialog.update_progress(95, "Assembly completed")
                 QApplication.processEvents()
 
             if elevation_data is None:

@@ -357,35 +357,45 @@ class MultiFileDatabase:
         # TODO: Implement proper stitching with overlap handling
         return self._simple_tile_assembly(tiles, west, north, east, south)
     
-    def _simple_tile_assembly(self, tiles: List[TileInfo], west: float, north: float, east: float, south: float) -> Optional[np.ndarray]:
-        """Simple tile assembly - loads and crops each tile individually then stitches"""
-        
+    def _simple_tile_assembly(self, tiles: List[TileInfo], west: float, north: float, east: float, south: float, export_scale: float = 1.0, progress_callback=None) -> Optional[np.ndarray]:
+        """Simple tile assembly - loads and crops each tile individually then stitches
+
+        Args:
+            tiles: List of tiles to assemble
+            west, north, east, south: Geographic bounds
+            export_scale: Scale factor to apply during assembly (e.g., 0.1 for 10%)
+            progress_callback: Optional callback for progress updates
+        """
+
         # Determine target resolution based on first tile
         if not tiles:
             return None
-            
+
         # Determine target resolution from tiles (use the highest resolution available)
         target_pixels_per_deg = 120  # Default fallback
-        
+
         for tile in tiles:
             if hasattr(tile, 'pixels_per_degree') and tile.pixels_per_degree > 0:
                 target_pixels_per_deg = max(target_pixels_per_deg, tile.pixels_per_degree)
-        
-        # Calculate output dimensions handling meridian crossing
+
+        # Apply export scale to resolution (scale DURING assembly, not after)
+        scaled_pixels_per_deg = target_pixels_per_deg * export_scale
+
+        # Calculate output dimensions handling meridian crossing (using SCALED resolution)
         output_width, crosses_meridian = calculate_meridian_crossing_output_dimensions(
-            west, east, target_pixels_per_deg
+            west, east, scaled_pixels_per_deg
         )
-        output_height = int((north - south) * target_pixels_per_deg)
+        output_height = int((north - south) * scaled_pixels_per_deg)
         
         # Fix for full world export: if width is 0 but we have full world bounds, force correct width
         if output_width == 0 and abs(west - (-180.0)) < 0.1 and abs(east - 180.0) < 0.1:
             print(f"🌍 Detected full world export with zero width - fixing...")
-            output_width = int(360.0 * target_pixels_per_deg)  # 360° * pixels_per_degree
+            output_width = int(360.0 * scaled_pixels_per_deg)  # 360° * scaled pixels_per_degree
             crosses_meridian = False  # Treat as normal span for full world
-            print(f"   Fixed width: {output_width} pixels (360° × {target_pixels_per_deg} px/deg)")
-        
+            print(f"   Fixed width: {output_width} pixels (360° × {scaled_pixels_per_deg:.1f} px/deg)")
+
         print(f"📐 Assembly target: {output_width}×{output_height} pixels")
-        print(f"   Resolution: {target_pixels_per_deg:.1f} pixels/degree")
+        print(f"   Base resolution: {target_pixels_per_deg:.1f} px/deg, Export scale: {export_scale:.1%}, Final resolution: {scaled_pixels_per_deg:.1f} px/deg")
         if crosses_meridian:
             span = calculate_longitude_span(west, east)
             print(f"   🌍 Prime meridian crossing detected: {span.width_degrees:.1f}° total span")
@@ -398,9 +408,12 @@ class MultiFileDatabase:
         
         # Create output array filled with NaN (no data)
         assembled_data = np.full((output_height, output_width), np.nan, dtype=np.float32)
-        
-        # Process each tile
-        for tile in tiles:
+
+        # Process each tile with progress reporting
+        total_tiles = len(tiles)
+        for tile_index, tile in enumerate(tiles):
+            if progress_callback:
+                progress_callback(f"Processing tile {tile_index + 1}/{total_tiles}: {tile.name}")
             try:
                 if not self.dem_reader.load_dem_file(str(tile.file_path)):
                     print(f"   ⚠️ Could not load tile: {tile.name}")
@@ -414,19 +427,13 @@ class MultiFileDatabase:
                 # Calculate intersection between tile bounds and selection bounds
                 # Handle meridian crossing by determining if this tile was found via shifting
                 tile_needs_shifting = False
-                
-                print(f"🔍 DEBUG: Processing tile {tile.name} with bounds {tile.bounds}")
-                print(f"🔍 DEBUG: Selection bounds: W={west}°, N={north}°, E={east}°, S={south}°")
-                print(f"🔍 DEBUG: crosses_meridian={crosses_meridian}")
-                
+
                 # Check if this tile needs longitude shifting for intersection calculation
                 if crosses_meridian:
                     # Check if tile intersects normally
                     normal_intersects = (tile.bounds.west < east and tile.bounds.east > west and
                                         tile.bounds.south < north and tile.bounds.north > south)
-                    
-                    print(f"🔍 DEBUG: Normal intersection check: ({tile.bounds.west} < {east}) and ({tile.bounds.east} > {west}) and ({tile.bounds.south} < {north}) and ({tile.bounds.north} > {south}) = {normal_intersects}")
-                    
+
                     if not normal_intersects:
                         # This tile was found via shifting - need to calculate intersection with shifted coordinates
                         if east > 180.0:  # East crossing case
@@ -436,36 +443,27 @@ class MultiFileDatabase:
                             intersect_west = max(west, shifted_west)
                             intersect_east = min(east, shifted_east)
                             tile_needs_shifting = True
-                            print(f"🔍 DEBUG: East crossing - tile shifted to ({shifted_west}°, {shifted_east}°)")
-                            print(f"🔍 DEBUG: Shifted intersection: W={intersect_west}°, E={intersect_east}°")
                         elif west < -180.0:  # West crossing case
                             # Shift tile west by 360° for intersection calculation
-                            # gt30e140n90 (140° to 180°) becomes (-220° to -180°)
                             shifted_west = tile.bounds.west - 360.0
                             shifted_east = tile.bounds.east - 360.0
                             intersect_west = max(west, shifted_west)
                             intersect_east = min(east, shifted_east)
                             tile_needs_shifting = True
-                            print(f"🔍 DEBUG: West crossing - tile shifted to ({shifted_west}°, {shifted_east}°)")
-                            print(f"🔍 DEBUG: Shifted intersection: W={intersect_west}°, E={intersect_east}°")
-                
+
                 if not tile_needs_shifting:
                     # Normal intersection calculation
                     intersect_west = max(west, tile.bounds.west)
                     intersect_east = min(east, tile.bounds.east)
-                    print(f"🔍 DEBUG: Normal intersection: W={intersect_west}°, E={intersect_east}°")
-                
+
                 intersect_north = min(north, tile.bounds.north)
                 intersect_south = max(south, tile.bounds.south)
-                
-                print(f"   📍 FINAL Intersection: W={intersect_west:.1f}°, N={intersect_north:.1f}°, E={intersect_east:.1f}°, S={intersect_south:.1f}°")
-                print(f"🔍 DEBUG: tile_needs_shifting = {tile_needs_shifting}")
                 
                 # Calculate where this intersection should go in the output array (handling meridian crossing)
                 output_west_px = map_longitude_to_array_x(intersect_west, west, east, output_width, crosses_meridian)
                 output_east_px = map_longitude_to_array_x(intersect_east, west, east, output_width, crosses_meridian)
-                output_north_px = int((north - intersect_north) * target_pixels_per_deg)
-                output_south_px = int((north - intersect_south) * target_pixels_per_deg)
+                output_north_px = int((north - intersect_north) * scaled_pixels_per_deg)
+                output_south_px = int((north - intersect_south) * scaled_pixels_per_deg)
                 
                 # Ensure east > west for array indexing
                 if output_east_px < output_west_px:
@@ -503,28 +501,11 @@ class MultiFileDatabase:
                     # Normal case - use intersection coordinates as-is
                     tile_intersect_west = intersect_west
                     tile_intersect_east = intersect_east
-                
-                print(f"🔍 DEBUG: Tile pixel calculation inputs:")
-                print(f"   tile_intersect_west = {tile_intersect_west:.6f}°")
-                print(f"   tile_intersect_east = {tile_intersect_east:.6f}°")
-                print(f"   tile.bounds.west = {tile.bounds.west:.6f}°")
-                print(f"   tile_width_deg = {tile_width_deg:.6f}°")
-                print(f"   tile_width_px = {tile_width_px}")
-                
+
                 tile_west_px = int((tile_intersect_west - tile.bounds.west) / tile_width_deg * tile_width_px)
                 tile_east_px = int((tile_intersect_east - tile.bounds.west) / tile_width_deg * tile_width_px)
                 tile_north_px = int((tile.bounds.north - intersect_north) / tile_height_deg * tile_height_px)
                 tile_south_px = int((tile.bounds.north - intersect_south) / tile_height_deg * tile_height_px)
-                
-                print(f"🔍 DEBUG: Calculated tile pixels:")
-                print(f"   tile_west_px = {tile_west_px}")
-                print(f"   tile_east_px = {tile_east_px}")
-                print(f"   pixel width = {tile_east_px - tile_west_px}")
-                
-                # Debug output for meridian crossing cases
-                if tile_needs_shifting:
-                    print(f"   🔧 Tile coordinate mapping: intersect({intersect_west:.1f}°, {intersect_east:.1f}°) → tile_intersect({tile_intersect_west:.1f}°, {tile_intersect_east:.1f}°)")
-                    print(f"   🔧 Pixel calculation: ({tile_intersect_west:.1f} - {tile.bounds.west:.1f}) / {tile_width_deg:.1f} * {tile_width_px} = {tile_west_px} to {tile_east_px}")
                 
                 # Clamp tile coordinates to valid ranges
                 tile_west_px = max(0, min(tile_west_px, tile_width_px - 1))
@@ -534,9 +515,7 @@ class MultiFileDatabase:
                 
                 # Extract the intersection portion from the tile
                 cropped_tile_data = elevation_data[tile_north_px:tile_south_px, tile_west_px:tile_east_px]
-                
-                print(f"   🔪 Tile crop: [{tile_north_px}:{tile_south_px}, {tile_west_px}:{tile_east_px}] → {cropped_tile_data.shape}")
-                
+
                 # Calculate target dimensions in output array
                 target_height = output_south_px - output_north_px
                 target_width = output_east_px - output_west_px
@@ -545,21 +524,16 @@ class MultiFileDatabase:
                     # Use NaN-aware interpolation to match single-file system behavior
                     try:
                         from nan_aware_interpolation import resize_with_nan_exclusion
-                        
-                        print(f"   🔄 NaN-aware tile resize: {cropped_tile_data.shape} → ({target_height}, {target_width})")
-                        
+
                         # Use NaN-aware interpolation for proper coastline handling
                         resized_data = resize_with_nan_exclusion(
-                            cropped_tile_data, 
+                            cropped_tile_data,
                             (target_height, target_width),
                             method='lanczos'
                         )
-                        
-                        print(f"   ✅ NaN-aware tile resize complete")
-                        
+
                     except Exception as e:
                         # Fallback to simple subsampling if NaN-aware fails
-                        print(f"   ⚠️ NaN-aware tile resize failed ({e}), using simple scaling")
                         
                         # Calculate scale factors
                         scale_y = target_height / cropped_tile_data.shape[0]
@@ -570,7 +544,6 @@ class MultiFileDatabase:
                             subsample_y = max(1, int(1.0 / scale_y))
                             subsample_x = max(1, int(1.0 / scale_x))
                             resized_data = cropped_tile_data[::subsample_y, ::subsample_x]
-                            print(f"   ✅ Simple subsampling: {resized_data.shape}")
                         else:
                             # Upsampling or complex scaling - use PIL with sentinel values
                             from PIL import Image
@@ -597,13 +570,9 @@ class MultiFileDatabase:
                             # Restore NaN values
                             if sentinel_value is not None:
                                 resized_data[resized_data <= sentinel_value + 500] = np.nan
-                            
-                            print(f"   ✅ PIL resize fallback: {resized_data.shape}")
-                    
+
                     # Place into assembled array at correct output position
                     assembled_data[output_north_px:output_south_px, output_west_px:output_east_px] = resized_data
-                    
-                    print(f"   ✅ Assembled tile {tile.name}: {resized_data.shape} → [{output_north_px}:{output_south_px}, {output_west_px}:{output_east_px}]")
                 
             except Exception as e:
                 print(f"   ❌ Error processing tile {tile.name}: {e}")
