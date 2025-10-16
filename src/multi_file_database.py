@@ -533,43 +533,41 @@ class MultiFileDatabase:
                         )
 
                     except Exception as e:
-                        # Fallback to simple subsampling if NaN-aware fails
-                        
-                        # Calculate scale factors
-                        scale_y = target_height / cropped_tile_data.shape[0]
-                        scale_x = target_width / cropped_tile_data.shape[1]
-                        
-                        if scale_y < 1.0 and scale_x < 1.0:
-                            # Downsampling - use simple subsampling to preserve data integrity
-                            subsample_y = max(1, int(1.0 / scale_y))
-                            subsample_x = max(1, int(1.0 / scale_x))
-                            resized_data = cropped_tile_data[::subsample_y, ::subsample_x]
+                        # Fallback: use PIL for reliable resizing
+                        from PIL import Image
+
+                        # Convert cropped tile data to PIL image for resizing
+                        if cropped_tile_data.dtype != np.float32:
+                            cropped_tile_data = cropped_tile_data.astype(np.float32)
+
+                        # Handle NaN values for PIL
+                        has_nan = np.isnan(cropped_tile_data)
+                        if np.any(has_nan):
+                            sentinel_value = np.nanmin(cropped_tile_data) - 1000 if np.any(~has_nan) else -9999
+                            resizing_data = cropped_tile_data.copy()
+                            resizing_data[has_nan] = sentinel_value
                         else:
-                            # Upsampling or complex scaling - use PIL with sentinel values
-                            from PIL import Image
-                            
-                            # Convert cropped tile data to PIL image for resizing
-                            if cropped_tile_data.dtype != np.float32:
-                                cropped_tile_data = cropped_tile_data.astype(np.float32)
-                            
-                            # Handle NaN values for PIL
-                            has_nan = np.isnan(cropped_tile_data)
-                            if np.any(has_nan):
-                                sentinel_value = np.nanmin(cropped_tile_data) - 1000 if np.any(~has_nan) else -9999
-                                resizing_data = cropped_tile_data.copy()
-                                resizing_data[has_nan] = sentinel_value
-                            else:
-                                resizing_data = cropped_tile_data
-                                sentinel_value = None
-                            
-                            # Resize using PIL
-                            pil_image = Image.fromarray(resizing_data.astype(np.float32), mode='F')
-                            resized_image = pil_image.resize((target_width, target_height), Image.Resampling.LANCZOS)
-                            resized_data = np.array(resized_image, dtype=np.float32)
-                            
-                            # Restore NaN values
-                            if sentinel_value is not None:
-                                resized_data[resized_data <= sentinel_value + 500] = np.nan
+                            resizing_data = cropped_tile_data
+                            sentinel_value = None
+
+                        # Resize using PIL - THIS GUARANTEES EXACT TARGET DIMENSIONS
+                        pil_image = Image.fromarray(resizing_data.astype(np.float32), mode='F')
+                        resized_image = pil_image.resize((target_width, target_height), Image.Resampling.LANCZOS)
+                        resized_data = np.array(resized_image, dtype=np.float32)
+
+                        # Restore NaN values
+                        if sentinel_value is not None:
+                            resized_data[resized_data <= sentinel_value + 500] = np.nan
+
+                    # CRITICAL: Verify resized_data dimensions match target before assignment
+                    if resized_data.shape != (target_height, target_width):
+                        print(f"   ⚠️ Dimension mismatch for {tile.name}: resized={resized_data.shape}, target=({target_height}, {target_width})")
+                        # Force exact dimensions using slicing/padding
+                        temp_data = np.full((target_height, target_width), np.nan, dtype=np.float32)
+                        copy_height = min(resized_data.shape[0], target_height)
+                        copy_width = min(resized_data.shape[1], target_width)
+                        temp_data[:copy_height, :copy_width] = resized_data[:copy_height, :copy_width]
+                        resized_data = temp_data
 
                     # Place into assembled array at correct output position
                     assembled_data[output_north_px:output_south_px, output_west_px:output_east_px] = resized_data

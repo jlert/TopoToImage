@@ -7224,11 +7224,11 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                         try:
                             parts = message.split()
                             tile_fraction = parts[2]  # "5/96"
-                            current, total = map(int, tile_fraction.split('/'))
-                            current_tile_info['tile_num'] = current
-                            current_tile_info['total_tiles'] = total
-                        except:
-                            pass
+                            current, total = tile_fraction.split('/')
+                            current_tile_info['tile_num'] = int(current)
+                            current_tile_info['total_tiles'] = int(total)
+                        except Exception as parse_error:
+                            print(f"   ⚠️ Progress parse error: {parse_error} in message: '{message}'")
 
                     # Map assembly progress to 15-85% of overall export progress
                     if current_tile_info['total_tiles'] > 0:
@@ -7239,7 +7239,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
 
                     progress_dialog.update_progress(overall_progress, message)
                     QApplication.processEvents()
-                print(f"   {message}")
+                else:
+                    # If no progress dialog, just print
+                    print(f"   {message}")
 
             if progress_dialog:
                 from PyQt6.QtWidgets import QApplication
