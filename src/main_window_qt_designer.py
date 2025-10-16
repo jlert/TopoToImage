@@ -5312,6 +5312,13 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     )
                 
                 if success:
+                    # Calculate elapsed time for key file
+                    elapsed_seconds = time.time() - export_start_time
+                    minutes = int(elapsed_seconds // 60)
+                    seconds = int(elapsed_seconds % 60)
+                    elapsed_time_str = f"{minutes} minutes, {seconds} seconds" if minutes > 0 else f"{seconds} seconds"
+                    print(f"⏱️ Export completed in: {elapsed_time_str}")
+
                     # Check if Key file generation is requested
                     generate_key_file = False
                     if hasattr(self, 'key_file_export_check_box'):
@@ -5319,7 +5326,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                         print(f"📋 Key file checkbox checked: {generate_key_file}")
                     else:
                         print("⚠️ Key file checkbox not found in UI")
-                    
+
                     key_file_status = ""
                     if generate_key_file:
                         print("🔑 Starting Key file generation...")
@@ -5329,7 +5336,11 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                         print(f"🎯 Key file path: {key_file_path}")
                         
                         print("📊 Collecting export data...")
-                        export_data = self._collect_export_data_for_key_file(file_path)
+                        export_data = self._collect_export_data_for_key_file(
+                            file_path,
+                            elapsed_time_str=elapsed_time_str,
+                            export_timestamp=export_timestamp
+                        )
                         
                         # Try to get actual image dimensions from the saved file
                         try:
@@ -5363,14 +5374,24 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             QMessageBox.warning(self, "Export Error", f"Export failed:\n{str(e)}")
             self.status_bar.showMessage(f"Export error: {str(e)}")
 
-    def _collect_export_data_for_key_file(self, image_path: str) -> dict:
+    def _collect_export_data_for_key_file(self, image_path: str, elapsed_time_str: str = None, export_timestamp = None) -> dict:
         """Collect all export metadata needed for Key file generation"""
         from pathlib import Path
-        
+
         export_data = {}
-        
+
         # Basic file information
         export_data['filename'] = Path(image_path).name
+        export_data['file_path'] = str(Path(image_path).absolute())
+
+        # Timing information (Phase 2)
+        if elapsed_time_str:
+            export_data['generation_time'] = elapsed_time_str
+            print(f"⏱️ Generation time: {elapsed_time_str}")
+
+        if export_timestamp:
+            export_data['timestamp'] = export_timestamp.strftime("%B %d, %Y at %I:%M %p")
+            print(f"📅 Timestamp: {export_data['timestamp']}")
         
         # Database information
         database_name = 'Unknown Database'
