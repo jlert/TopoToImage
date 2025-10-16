@@ -121,9 +121,9 @@ class KeyFileGenerator:
                 temp_thumb_path = "/tmp/key_thumbnail.png"
                 thumbnail.save(temp_thumb_path)
 
-                # Position at top-right corner
-                thumb_x = self.page_width - self.margin - thumbnail.width
-                thumb_y = self.page_height - self.margin - thumbnail.height
+                # Position thumbnail 205 points left and 117 points down from top-right corner
+                thumb_x = self.page_width - self.margin - thumbnail.width - 205
+                thumb_y = self.page_height - self.margin - thumbnail.height - 117
 
                 # Draw thumbnail
                 c.drawImage(temp_thumb_path, thumb_x, thumb_y,
@@ -174,7 +174,10 @@ class KeyFileGenerator:
     def _draw_info_panel(self, c: "canvas.Canvas", export_data: Dict):
         """Draw unified information panel with consistent spacing at 250pt from left"""
         x = 250  # Consistent left position for all info
-        y = self.page_height - self.margin - 120 - 18  # Start position moved down one line
+        # Position below thumbnail: thumbnail is at (page_height - margin - 117 - thumbnail.height)
+        # Start metadata panel ~18 points below bottom of thumbnail
+        # Thumbnail height is ~120px, so: page_height - margin - 117 - 120 - 18 = page_height - margin - 255
+        y = self.page_height - self.margin - 255
         line_height = 18
         
         c.setFont("Helvetica", self.font_size_normal)
