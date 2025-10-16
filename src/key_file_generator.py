@@ -107,9 +107,42 @@ class KeyFileGenerator:
         pass
     
     def _draw_header(self, c: "canvas.Canvas", export_data: Dict):
-        """Draw the header section with title and timing info (3 lines)"""
+        """Draw the header section with title, timing info, and thumbnail (Phase 3)"""
         # Start from top of page
         y = self.page_height - self.margin - 30
+
+        # Draw thumbnail at top-right if image is available (Phase 3)
+        if 'image' in export_data:
+            try:
+                # Create thumbnail
+                thumbnail = self._create_thumbnail(export_data['image'], max_dimension=120)
+
+                # Save thumbnail to temporary file
+                temp_thumb_path = "/tmp/key_thumbnail.png"
+                thumbnail.save(temp_thumb_path)
+
+                # Position at top-right corner
+                thumb_x = self.page_width - self.margin - thumbnail.width
+                thumb_y = self.page_height - self.margin - thumbnail.height
+
+                # Draw thumbnail
+                c.drawImage(temp_thumb_path, thumb_x, thumb_y,
+                           width=thumbnail.width, height=thumbnail.height)
+
+                # Draw thin border around thumbnail
+                c.setStrokeColor(Color(0, 0, 0))
+                c.setLineWidth(0.5)
+                c.rect(thumb_x, thumb_y, thumbnail.width, thumbnail.height, fill=0, stroke=1)
+
+                # Clean up temp file
+                try:
+                    os.remove(temp_thumb_path)
+                except:
+                    pass
+
+                print(f"✅ Thumbnail added to key file at ({thumb_x:.1f}, {thumb_y:.1f})")
+            except Exception as e:
+                print(f"⚠️ Could not add thumbnail to key file: {e}")
 
         # Line 1: Title (20pt bold)
         c.setFont("Helvetica-Bold", self.font_size_title)
@@ -448,6 +481,34 @@ class KeyFileGenerator:
             c.drawString(chip_x + chip_radius + 15, shadow_y + 5, "Shadow color")
             c.drawString(chip_x + chip_radius + 15, shadow_y - 5, rgb_text)
     
+    def _create_thumbnail(self, image: Image.Image, max_dimension: int = 120) -> Image.Image:
+        """
+        Create thumbnail from exported image
+
+        Args:
+            image: PIL Image to create thumbnail from
+            max_dimension: Maximum width or height in pixels
+
+        Returns:
+            PIL Image thumbnail
+        """
+        # Get original dimensions
+        width, height = image.size
+
+        # Calculate scaling factor to fit within max_dimension
+        scale = min(max_dimension / width, max_dimension / height)
+
+        # Calculate new dimensions
+        new_width = int(width * scale)
+        new_height = int(height * scale)
+
+        # Create thumbnail using high-quality resampling
+        thumbnail = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+        print(f"📸 Created thumbnail: {width}×{height} → {new_width}×{new_height}")
+
+        return thumbnail
+
     def _create_gradient_bar_image(self, export_data: Dict) -> Optional[Image.Image]:
         """Create PIL Image of the gradient bar"""
         try:

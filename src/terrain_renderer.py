@@ -31,7 +31,7 @@ class TerrainRenderer:
     def __init__(self, gradient_manager: Optional[GradientManager] = None):
         """
         Initialize terrain renderer.
-        
+
         Args:
             gradient_manager: Optional gradient manager instance. If None, creates new one.
         """
@@ -41,14 +41,17 @@ class TerrainRenderer:
             'last_pixels_processed': 0,
             'total_renders': 0
         }
-        
+
+        # Store most recent exported image for key file thumbnail generation (Phase 3)
+        self.last_exported_image = None
+
         # Shadow method selection (for development/testing)
         # Change this to switch between shadow algorithms:
         # "method1" = Current ray-casting method (slow but 360° support)
         # "method2" = TopoToImage height-propagation method (fast, 8-direction)
         # "method3" = Directional vector propagation (360° support, moderate speed)
         self.SHADOW_METHOD = "method3"
-        
+
         # Initialize shadow method instances
         self._shadow_method_1 = ShadowMethod1()
         self._shadow_method_2 = ShadowMethod2()
@@ -1451,6 +1454,9 @@ class TerrainRenderer:
                 if dpi:
                     save_kwargs['dpi'] = (dpi, dpi)
             
+            # Store reference for key file generation (Phase 3)
+            self.last_exported_image = image
+
             # Save the image
             image.save(file_path, **save_kwargs)
             

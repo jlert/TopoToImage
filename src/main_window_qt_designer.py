@@ -5341,6 +5341,11 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                             elapsed_time_str=elapsed_time_str,
                             export_timestamp=export_timestamp
                         )
+
+                        # Retrieve exported image for thumbnail (Phase 3)
+                        if hasattr(self.terrain_renderer, 'last_exported_image') and self.terrain_renderer.last_exported_image:
+                            export_data['image'] = self.terrain_renderer.last_exported_image
+                            print(f"🖼️ Retrieved exported image for thumbnail: {self.terrain_renderer.last_exported_image.size}")
                         
                         # Try to get actual image dimensions from the saved file
                         try:
@@ -5940,7 +5945,11 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 return False
                 
             generated_image = self._export_result['image']
-                
+
+            # Store image for key file thumbnail (Phase 3)
+            self.terrain_renderer.last_exported_image = generated_image
+            print(f"🖼️ Stored exported image for key file thumbnail: {generated_image.size}")
+
             # Save the generated image to file
             print(f"💾 Saving exported image to: {file_path}")
             
