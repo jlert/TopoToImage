@@ -224,6 +224,51 @@ class DEMReader:
                     self.metadata['STATS_MEAN'] = float(parts[3])
                     self.metadata['STATS_STDDEV'] = float(parts[4])
     
+    def _normalize_bounds(self, west: float, north: float, east: float, south: float) -> dict:
+        """
+        Normalize geographic bounds to prevent issues with values slightly beyond ±180°/±90°
+
+        Some databases (like GMTED2010_MEA) have bounds like west=-180.000139° which are
+        15 meters beyond the standard -180° limit. This can trigger inappropriate meridian
+        crossing logic and cause division by zero errors in preview calculations.
+
+        Args:
+            west, north, east, south: Raw bounds from DEM file
+
+        Returns:
+            Dictionary with normalized 'west', 'north', 'east', 'south' keys
+        """
+        TOLERANCE = 0.001  # ~100 meters tolerance
+
+        # Clamp longitude bounds that are slightly beyond ±180°
+        if abs(west - (-180.0)) < TOLERANCE:
+            original_west = west
+            west = -180.0
+            print(f"🔧 Normalized west bound: {original_west:.6f}° → -180.0°")
+
+        if abs(east - 180.0) < TOLERANCE:
+            original_east = east
+            east = 180.0
+            print(f"🔧 Normalized east bound: {original_east:.6f}° → 180.0°")
+
+        # Clamp latitude bounds that are slightly beyond ±90°
+        if abs(north - 90.0) < TOLERANCE:
+            original_north = north
+            north = 90.0
+            print(f"🔧 Normalized north bound: {original_north:.6f}° → 90.0°")
+
+        if abs(south - (-90.0)) < TOLERANCE:
+            original_south = south
+            south = -90.0
+            print(f"🔧 Normalized south bound: {original_south:.6f}° → -90.0°")
+
+        return {
+            'west': west,
+            'north': north,
+            'east': east,
+            'south': south
+        }
+
     def _calculate_bounds(self):
         """Calculate geographic bounds"""
         if all(key in self.metadata for key in ['ULXMAP', 'ULYMAP', 'XDIM', 'YDIM', 'NCOLS', 'NROWS']):
@@ -231,14 +276,10 @@ class DEMReader:
             north = self.metadata['ULYMAP']
             east = west + (self.metadata['NCOLS'] * self.metadata['XDIM'])
             south = north - (self.metadata['NROWS'] * self.metadata['YDIM'])
-            
-            self.bounds = {
-                'west': west,
-                'north': north,
-                'east': east,
-                'south': south
-            }
-            
+
+            # Normalize bounds to handle values slightly beyond ±180°/±90°
+            self.bounds = self._normalize_bounds(west, north, east, south)
+
             # Set width and height for easy access
             self.width = self.metadata['NCOLS']
             self.height = self.metadata['NROWS']
@@ -311,12 +352,15 @@ class DEMReader:
                 self.metadata['NROWS'] = dataset.height
                 self.metadata['NCOLS'] = dataset.width
                 self.metadata['NBANDS'] = dataset.count
-                self.bounds = {
-                    'west': dataset.bounds.left,
-                    'south': dataset.bounds.bottom,
-                    'east': dataset.bounds.right,
-                    'north': dataset.bounds.top
-                }
+
+                # Normalize bounds to handle values slightly beyond ±180°/±90°
+                self.bounds = self._normalize_bounds(
+                    dataset.bounds.left,  # west
+                    dataset.bounds.top,   # north
+                    dataset.bounds.right, # east
+                    dataset.bounds.bottom # south
+                )
+
                 self.metadata['CRS'] = str(dataset.crs)
                 
                 # Set width and height for easy access
