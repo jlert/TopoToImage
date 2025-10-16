@@ -371,6 +371,25 @@ class MultiFileDatabase:
         if not tiles:
             return None
 
+        # CRITICAL FIX: Clamp bounds that are slightly beyond ±180° to prevent spurious meridian crossing
+        # GMTED2010_MEA has west=-180.000139° which triggers west < -180.0 check inappropriately
+        TOLERANCE = 0.001  # ~100 meters tolerance
+        original_west, original_east = west, east
+
+        if abs(west - (-180.0)) < TOLERANCE:
+            west = -180.0
+            print(f"🔧 Clamped west bound: {original_west:.6f}° → -180.0°")
+
+        if abs(east - 180.0) < TOLERANCE:
+            east = 180.0
+            print(f"🔧 Clamped east bound: {original_east:.6f}° → 180.0°")
+
+        # Also clamp north/south for completeness
+        if abs(north - 90.0) < TOLERANCE:
+            north = 90.0
+        if abs(south - (-90.0)) < TOLERANCE:
+            south = -90.0
+
         # Determine target resolution from tiles (use the highest resolution available)
         target_pixels_per_deg = 120  # Default fallback
 

@@ -2423,6 +2423,131 @@
       "units": "meters"
     },
     {
+      "name": "Ocean Floor_test",
+      "description": "Created with gradient editor",
+      "min_elevation": -5000,
+      "max_elevation": 5000,
+      "color_stops": [
+        {
+          "position": 0.0,
+          "red": 223,
+          "green": 207,
+          "blue": 181,
+          "alpha": 255
+        },
+        {
+          "position": 0.09090909090909083,
+          "red": 178,
+          "green": 111,
+          "blue": 73,
+          "alpha": 255
+        },
+        {
+          "position": 0.18181818181818177,
+          "red": 255,
+          "green": 232,
+          "blue": 122,
+          "alpha": 255
+        },
+        {
+          "position": 0.2727272727272727,
+          "red": 129,
+          "green": 201,
+          "blue": 55,
+          "alpha": 255
+        },
+        {
+          "position": 0.36363636363636365,
+          "red": 60,
+          "green": 167,
+          "blue": 52,
+          "alpha": 255
+        },
+        {
+          "position": 0.4545454545454545,
+          "red": 177,
+          "green": 254,
+          "blue": 182,
+          "alpha": 255
+        },
+        {
+          "position": 0.4998,
+          "red": 254,
+          "green": 254,
+          "blue": 254,
+          "alpha": 255
+        },
+        {
+          "position": 0.4999,
+          "red": 92,
+          "green": 254,
+          "blue": 250,
+          "alpha": 255
+        },
+        {
+          "position": 0.7272727272727273,
+          "red": 78,
+          "green": 244,
+          "blue": 250,
+          "alpha": 255
+        },
+        {
+          "position": 0.8181818181818182,
+          "red": 18,
+          "green": 200,
+          "blue": 254,
+          "alpha": 255
+        },
+        {
+          "position": 0.909090909090909,
+          "red": 22,
+          "green": 117,
+          "blue": 255,
+          "alpha": 255
+        },
+        {
+          "position": 1.0,
+          "red": 0,
+          "green": 5,
+          "blue": 255,
+          "alpha": 255
+        }
+      ],
+      "discrete": false,
+      "created_by": "Gradient Editor",
+      "tags": [
+        "custom",
+        "user_created"
+      ],
+      "shadow_color": {
+        "red": 163,
+        "green": 171,
+        "blue": 191,
+        "alpha": 255
+      },
+      "no_data_color": {
+        "red": 0,
+        "green": 0,
+        "blue": 0,
+        "alpha": 255
+      },
+      "below_gradient_color": {
+        "red": 0,
+        "green": 0,
+        "blue": 255,
+        "alpha": 255
+      },
+      "gradient_type": "gradient",
+      "light_direction": 235,
+      "shading_intensity": 2000,
+      "cast_shadows": true,
+      "shadow_drop_distance": 40.0,
+      "shadow_soft_edge": 6,
+      "blending_mode": "Hard Light",
+      "color_mode": "8-bit",
+      "units": "meters"
+    },
+    {
       "name": "Ocean Floor Posterized",
       "description": "Created with gradient editor",
       "min_elevation": -10000,
@@ -2890,7 +3015,7 @@
     {
       "name": "amazon_bluegreen_copy",
       "description": "Created with gradient editor",
-      "min_elevation": -1,
+      "min_elevation": -2000,
       "max_elevation": 6000,
       "color_stops": [
         {
@@ -2901,59 +3026,66 @@
           "alpha": 255
         },
         {
-          "position": 0.4999166805532411,
+          "position": 0.3125,
           "red": 203,
           "green": 203,
           "blue": 203,
           "alpha": 255
         },
         {
-          "position": 0.8331944675887353,
+          "position": 0.5,
           "red": 113,
           "green": 188,
           "blue": 117,
           "alpha": 255
         },
         {
-          "position": 0.9165139143476088,
+          "position": 0.625,
           "red": 207,
           "green": 241,
           "blue": 191,
           "alpha": 255
         },
         {
-          "position": 0.9665055824029328,
+          "position": 0.6875,
           "red": 60,
           "green": 213,
           "blue": 86,
           "alpha": 255
         },
         {
-          "position": 0.9865022496250625,
-          "red": 188,
-          "green": 242,
-          "blue": 239,
-          "alpha": 255
-        },
-        {
-          "position": 0.9981669721713048,
+          "position": 0.725,
           "red": 56,
           "green": 177,
           "blue": 183,
           "alpha": 255
         },
         {
-          "position": 0.9997500416597234,
+          "position": 0.74375,
+          "red": 188,
+          "green": 242,
+          "blue": 239,
+          "alpha": 255
+        },
+        {
+          "position": 0.75,
           "red": 55,
           "green": 151,
           "blue": 255,
           "alpha": 255
         },
         {
-          "position": 0.9998333611064822,
+          "position": 0.7500625,
           "red": 255,
           "green": 255,
           "blue": 255,
+          "alpha": 255
+        },
+        {
+          "position": 1.0,
+          "red": 209,
+          "green": 226,
+          "blue": 234,
           "alpha": 255
         }
       ],
@@ -2983,10 +3115,10 @@
       },
       "gradient_type": "shading_and_gradient",
       "light_direction": 270,
-      "shading_intensity": 800,
+      "shading_intensity": 15,
       "cast_shadows": true,
-      "shadow_drop_distance": 25.0,
-      "shadow_soft_edge": 10,
+      "shadow_drop_distance": 400.0,
+      "shadow_soft_edge": 3,
       "blending_mode": "Hard Light",
       "color_mode": "8-bit",
       "units": "meters"

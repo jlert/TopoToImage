@@ -109,3 +109,373 @@
 2025-10-15 12:04:15,260 - INFO - log_assembly_completion:156 - Assembly Completed: 0.0 seconds
 2025-10-15 12:04:15,260 - INFO - log_assembly_completion:157 - Output file: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_120415.dem
 2025-10-15 12:04:15,260 - INFO - assemble_tiles_to_dem:461 - ✅ Assembly successful: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_120415.dem
+2025-10-15 20:42:04,570 - INFO - log_system_info:120 - ============================================================
+2025-10-15 20:42:04,571 - INFO - log_system_info:121 - DEM ASSEMBLY SESSION STARTED
+2025-10-15 20:42:04,571 - INFO - log_system_info:122 - ============================================================
+2025-10-15 20:42:04,571 - INFO - log_system_info:123 - System Memory: 24.0GB total, 6.2GB available (74.0% used)
+2025-10-15 20:42:04,571 - INFO - log_system_info:125 - Disk Space: 1262.7GB free
+2025-10-15 20:42:04,571 - INFO - log_system_info:126 - NumPy version: 1.26.4
+2025-10-15 20:42:04,571 - INFO - log_system_info:127 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage
+2025-10-15 20:42:04,574 - INFO - log_assembly_request:133 - Assembly Request:
+2025-10-15 20:42:04,574 - INFO - log_assembly_request:134 -   Bounds: W=-180.000139°, N=89.999861°, E=179.999861°, S=-70.000139°
+2025-10-15 20:42:04,574 - INFO - log_assembly_request:135 -   Area: 57600.00 square degrees
+2025-10-15 20:42:04,574 - INFO - log_assembly_request:136 -   Export Scale: 10.0%
+2025-10-15 20:42:04,574 - INFO - log_assembly_request:137 -   Tiles: 96
+2025-10-15 20:42:04,574 - DEBUG - log_memory_state:142 - Assembly Start: Memory 74.1% used, 6.2GB available
+2025-10-15 20:42:04,574 - INFO - _detect_resolution_from_tiles:314 - 📏 Detected resolution from 96 tiles: 480.0 px/deg
+2025-10-15 20:42:04,574 - INFO - assemble_tiles_to_dem:433 - 📏 Detected resolution: 480.0 pixels/degree
+2025-10-15 20:42:04,821 - DEBUG - estimate_assembly_memory_gb:224 - Memory estimation: 17280×7680 = 132,710,400 pixels = 1.24GB (resolution: 480.0 px/deg)
+2025-10-15 20:42:04,822 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-15 20:42:04,822 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (1.2GB < 3.2GB threshold)
+2025-10-15 20:42:04,822 - INFO - select_assembly_approach:263 -    Available memory: 6.3GB
+2025-10-15 20:42:04,822 - INFO - log_strategy_selection:147 - Strategy Selected: in_memory
+2025-10-15 20:42:04,822 - INFO - log_strategy_selection:148 -   Estimated Memory: 1.2GB
+2025-10-15 20:42:04,822 - INFO - log_strategy_selection:149 -   Memory Limit: 3.2GB
+2025-10-15 20:42:04,822 - INFO - log_strategy_selection:150 -   Description: Fast in-memory assembly (Option 1)
+2025-10-15 20:42:04,822 - INFO - log_strategy_selection:151 -   Expected Time: <30 seconds
+2025-10-15 20:42:04,822 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-15 20:42:04,822 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (1.2GB < 3.2GB threshold)
+2025-10-15 20:42:04,822 - INFO - select_assembly_approach:263 -    Available memory: 6.3GB
+2025-10-15 20:42:04,822 - INFO - _assemble_in_memory:478 - Starting in-memory assembly...
+2025-10-15 20:42:04,822 - DEBUG - log_memory_state:142 - In-Memory Assembly Start: Memory 73.7% used, 6.3GB available
+2025-10-15 20:51:56,053 - INFO - _assemble_in_memory:510 - Assembly complete with scale applied: (7680, 17280)
+2025-10-15 20:51:56,059 - DEBUG - create_temp_dem_path:402 - Temp DEM path: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_205156.dem
+2025-10-15 20:51:56,193 - INFO - _write_dem_file:922 - DEM file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_205156.dem (17280×7680)
+2025-10-15 20:51:56,193 - DEBUG - _write_dem_file:923 - Header file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_205156.hdr
+2025-10-15 20:51:56,199 - DEBUG - log_memory_state:142 - In-Memory Assembly Complete: Memory 69.3% used, 7.4GB available
+2025-10-15 20:51:56,207 - INFO - log_assembly_completion:156 - Assembly Completed: 0.0 seconds
+2025-10-15 20:51:56,207 - INFO - log_assembly_completion:157 - Output file: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_205156.dem
+2025-10-15 20:51:56,207 - INFO - assemble_tiles_to_dem:461 - ✅ Assembly successful: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_205156.dem
+2025-10-15 20:56:09,444 - INFO - log_system_info:120 - ============================================================
+2025-10-15 20:56:09,444 - INFO - log_system_info:121 - DEM ASSEMBLY SESSION STARTED
+2025-10-15 20:56:09,444 - INFO - log_system_info:122 - ============================================================
+2025-10-15 20:56:09,444 - INFO - log_system_info:123 - System Memory: 24.0GB total, 6.5GB available (72.9% used)
+2025-10-15 20:56:09,444 - INFO - log_system_info:125 - Disk Space: 1262.6GB free
+2025-10-15 20:56:09,444 - INFO - log_system_info:126 - NumPy version: 1.26.4
+2025-10-15 20:56:09,444 - INFO - log_system_info:127 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage
+2025-10-15 20:56:09,446 - INFO - log_assembly_request:133 - Assembly Request:
+2025-10-15 20:56:09,446 - INFO - log_assembly_request:134 -   Bounds: W=-180.0°, N=90.0°, E=180.0°, S=-90.0°
+2025-10-15 20:56:09,446 - INFO - log_assembly_request:135 -   Area: 64800.00 square degrees
+2025-10-15 20:56:09,446 - INFO - log_assembly_request:136 -   Export Scale: 5.0%
+2025-10-15 20:56:09,446 - INFO - log_assembly_request:137 -   Tiles: 8
+2025-10-15 20:56:09,446 - DEBUG - log_memory_state:142 - Assembly Start: Memory 72.9% used, 6.5GB available
+2025-10-15 20:56:09,446 - INFO - _detect_resolution_from_tiles:314 - 📏 Detected resolution from 8 tiles: 240.0 px/deg
+2025-10-15 20:56:09,446 - INFO - assemble_tiles_to_dem:433 - 📏 Detected resolution: 240.0 pixels/degree
+2025-10-15 20:56:09,484 - DEBUG - estimate_assembly_memory_gb:224 - Memory estimation: 4320×2160 = 9,331,200 pixels = 0.09GB (resolution: 240.0 px/deg)
+2025-10-15 20:56:09,484 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-15 20:56:09,484 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.1GB < 3.3GB threshold)
+2025-10-15 20:56:09,484 - INFO - select_assembly_approach:263 -    Available memory: 6.5GB
+2025-10-15 20:56:09,484 - INFO - log_strategy_selection:147 - Strategy Selected: in_memory
+2025-10-15 20:56:09,484 - INFO - log_strategy_selection:148 -   Estimated Memory: 0.1GB
+2025-10-15 20:56:09,484 - INFO - log_strategy_selection:149 -   Memory Limit: 3.3GB
+2025-10-15 20:56:09,484 - INFO - log_strategy_selection:150 -   Description: Fast in-memory assembly (Option 1)
+2025-10-15 20:56:09,484 - INFO - log_strategy_selection:151 -   Expected Time: <30 seconds
+2025-10-15 20:56:09,484 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-15 20:56:09,484 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.1GB < 3.3GB threshold)
+2025-10-15 20:56:09,484 - INFO - select_assembly_approach:263 -    Available memory: 6.5GB
+2025-10-15 20:56:09,484 - INFO - _assemble_in_memory:478 - Starting in-memory assembly...
+2025-10-15 20:56:09,484 - DEBUG - log_memory_state:142 - In-Memory Assembly Start: Memory 72.9% used, 6.5GB available
+2025-10-15 20:59:27,703 - INFO - _assemble_in_memory:510 - Assembly complete with scale applied: (2160, 4320)
+2025-10-15 20:59:27,709 - DEBUG - create_temp_dem_path:402 - Temp DEM path: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_205927.dem
+2025-10-15 20:59:27,719 - INFO - _write_dem_file:922 - DEM file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_205927.dem (4320×2160)
+2025-10-15 20:59:27,719 - DEBUG - _write_dem_file:923 - Header file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_205927.hdr
+2025-10-15 20:59:27,719 - DEBUG - log_memory_state:142 - In-Memory Assembly Complete: Memory 56.0% used, 10.5GB available
+2025-10-15 20:59:27,773 - INFO - log_assembly_completion:156 - Assembly Completed: 0.0 seconds
+2025-10-15 20:59:27,773 - INFO - log_assembly_completion:157 - Output file: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_205927.dem
+2025-10-15 20:59:27,773 - INFO - assemble_tiles_to_dem:461 - ✅ Assembly successful: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251015_205927.dem
+2025-10-16 08:00:09,479 - INFO - log_system_info:120 - ============================================================
+2025-10-16 08:00:09,479 - INFO - log_system_info:121 - DEM ASSEMBLY SESSION STARTED
+2025-10-16 08:00:09,479 - INFO - log_system_info:122 - ============================================================
+2025-10-16 08:00:09,479 - INFO - log_system_info:123 - System Memory: 24.0GB total, 9.3GB available (61.2% used)
+2025-10-16 08:00:09,479 - INFO - log_system_info:125 - Disk Space: 1266.2GB free
+2025-10-16 08:00:09,479 - INFO - log_system_info:126 - NumPy version: 1.26.4
+2025-10-16 08:00:09,479 - INFO - log_system_info:127 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage
+2025-10-16 08:00:09,482 - INFO - log_assembly_request:133 - Assembly Request:
+2025-10-16 08:00:09,482 - INFO - log_assembly_request:134 -   Bounds: W=-180.000139°, N=89.999861°, E=179.999861°, S=59.999861°
+2025-10-16 08:00:09,482 - INFO - log_assembly_request:135 -   Area: 10800.00 square degrees
+2025-10-16 08:00:09,482 - INFO - log_assembly_request:136 -   Export Scale: 5.0%
+2025-10-16 08:00:09,482 - INFO - log_assembly_request:137 -   Tiles: 24
+2025-10-16 08:00:09,482 - DEBUG - log_memory_state:142 - Assembly Start: Memory 61.2% used, 9.3GB available
+2025-10-16 08:00:09,482 - INFO - _detect_resolution_from_tiles:314 - 📏 Detected resolution from 24 tiles: 480.0 px/deg
+2025-10-16 08:00:09,482 - INFO - assemble_tiles_to_dem:433 - 📏 Detected resolution: 480.0 pixels/degree
+2025-10-16 08:00:09,483 - DEBUG - estimate_assembly_memory_gb:224 - Memory estimation: 8640×720 = 6,220,800 pixels = 0.06GB (resolution: 480.0 px/deg)
+2025-10-16 08:00:09,483 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 08:00:09,483 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.1GB < 4.7GB threshold)
+2025-10-16 08:00:09,483 - INFO - select_assembly_approach:263 -    Available memory: 9.3GB
+2025-10-16 08:00:09,483 - INFO - log_strategy_selection:147 - Strategy Selected: in_memory
+2025-10-16 08:00:09,483 - INFO - log_strategy_selection:148 -   Estimated Memory: 0.1GB
+2025-10-16 08:00:09,483 - INFO - log_strategy_selection:149 -   Memory Limit: 4.7GB
+2025-10-16 08:00:09,483 - INFO - log_strategy_selection:150 -   Description: Fast in-memory assembly (Option 1)
+2025-10-16 08:00:09,483 - INFO - log_strategy_selection:151 -   Expected Time: <30 seconds
+2025-10-16 08:00:09,483 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 08:00:09,483 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.1GB < 4.7GB threshold)
+2025-10-16 08:00:09,483 - INFO - select_assembly_approach:263 -    Available memory: 9.3GB
+2025-10-16 08:00:09,483 - INFO - _assemble_in_memory:478 - Starting in-memory assembly...
+2025-10-16 08:00:09,483 - DEBUG - log_memory_state:142 - In-Memory Assembly Start: Memory 61.2% used, 9.3GB available
+2025-10-16 08:01:53,792 - INFO - _assemble_in_memory:510 - Assembly complete with scale applied: (720, 8640)
+2025-10-16 08:01:53,793 - DEBUG - create_temp_dem_path:402 - Temp DEM path: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_080153.dem
+2025-10-16 08:01:53,799 - INFO - _write_dem_file:922 - DEM file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_080153.dem (8640×720)
+2025-10-16 08:01:53,799 - DEBUG - _write_dem_file:923 - Header file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_080153.hdr
+2025-10-16 08:01:53,800 - DEBUG - log_memory_state:142 - In-Memory Assembly Complete: Memory 55.9% used, 10.6GB available
+2025-10-16 08:01:53,804 - INFO - log_assembly_completion:156 - Assembly Completed: 0.0 seconds
+2025-10-16 08:01:53,804 - INFO - log_assembly_completion:157 - Output file: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_080153.dem
+2025-10-16 08:01:53,804 - INFO - assemble_tiles_to_dem:461 - ✅ Assembly successful: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_080153.dem
+2025-10-16 10:05:50,537 - INFO - log_system_info:120 - ============================================================
+2025-10-16 10:05:50,538 - INFO - log_system_info:121 - DEM ASSEMBLY SESSION STARTED
+2025-10-16 10:05:50,538 - INFO - log_system_info:122 - ============================================================
+2025-10-16 10:05:50,538 - INFO - log_system_info:123 - System Memory: 24.0GB total, 7.7GB available (67.8% used)
+2025-10-16 10:05:50,538 - INFO - log_system_info:125 - Disk Space: 1266.8GB free
+2025-10-16 10:05:50,538 - INFO - log_system_info:126 - NumPy version: 1.26.4
+2025-10-16 10:05:50,538 - INFO - log_system_info:127 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage
+2025-10-16 10:05:50,541 - INFO - log_assembly_request:133 - Assembly Request:
+2025-10-16 10:05:50,541 - INFO - log_assembly_request:134 -   Bounds: W=-174.000139°, N=80.499861°, E=175.499861°, S=54.499861°
+2025-10-16 10:05:50,541 - INFO - log_assembly_request:135 -   Area: 9087.00 square degrees
+2025-10-16 10:05:50,541 - INFO - log_assembly_request:136 -   Export Scale: 10.0%
+2025-10-16 10:05:50,541 - INFO - log_assembly_request:137 -   Tiles: 24
+2025-10-16 10:05:50,541 - DEBUG - log_memory_state:142 - Assembly Start: Memory 67.8% used, 7.7GB available
+2025-10-16 10:05:50,541 - INFO - _detect_resolution_from_tiles:314 - 📏 Detected resolution from 24 tiles: 480.0 px/deg
+2025-10-16 10:05:50,541 - INFO - assemble_tiles_to_dem:433 - 📏 Detected resolution: 480.0 pixels/degree
+2025-10-16 10:05:50,542 - DEBUG - estimate_assembly_memory_gb:224 - Memory estimation: 16776×1248 = 20,936,448 pixels = 0.19GB (resolution: 480.0 px/deg)
+2025-10-16 10:05:50,542 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:05:50,542 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.2GB < 3.9GB threshold)
+2025-10-16 10:05:50,542 - INFO - select_assembly_approach:263 -    Available memory: 7.7GB
+2025-10-16 10:05:50,543 - INFO - log_strategy_selection:147 - Strategy Selected: in_memory
+2025-10-16 10:05:50,543 - INFO - log_strategy_selection:148 -   Estimated Memory: 0.2GB
+2025-10-16 10:05:50,543 - INFO - log_strategy_selection:149 -   Memory Limit: 3.9GB
+2025-10-16 10:05:50,543 - INFO - log_strategy_selection:150 -   Description: Fast in-memory assembly (Option 1)
+2025-10-16 10:05:50,543 - INFO - log_strategy_selection:151 -   Expected Time: <30 seconds
+2025-10-16 10:05:50,543 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:05:50,543 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.2GB < 3.9GB threshold)
+2025-10-16 10:05:50,543 - INFO - select_assembly_approach:263 -    Available memory: 7.7GB
+2025-10-16 10:05:50,543 - INFO - _assemble_in_memory:478 - Starting in-memory assembly...
+2025-10-16 10:05:50,543 - DEBUG - log_memory_state:142 - In-Memory Assembly Start: Memory 67.8% used, 7.7GB available
+2025-10-16 10:07:14,728 - INFO - _assemble_in_memory:510 - Assembly complete with scale applied: (1248, 16776)
+2025-10-16 10:07:14,731 - DEBUG - create_temp_dem_path:402 - Temp DEM path: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_100714.dem
+2025-10-16 10:07:14,747 - INFO - _write_dem_file:922 - DEM file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_100714.dem (16776×1248)
+2025-10-16 10:07:14,747 - DEBUG - _write_dem_file:923 - Header file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_100714.hdr
+2025-10-16 10:07:14,748 - DEBUG - log_memory_state:142 - In-Memory Assembly Complete: Memory 64.9% used, 8.4GB available
+2025-10-16 10:07:14,753 - INFO - log_assembly_completion:156 - Assembly Completed: 0.0 seconds
+2025-10-16 10:07:14,753 - INFO - log_assembly_completion:157 - Output file: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_100714.dem
+2025-10-16 10:07:14,753 - INFO - assemble_tiles_to_dem:461 - ✅ Assembly successful: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_100714.dem
+2025-10-16 10:28:34,697 - INFO - log_system_info:120 - ============================================================
+2025-10-16 10:28:34,697 - INFO - log_system_info:121 - DEM ASSEMBLY SESSION STARTED
+2025-10-16 10:28:34,697 - INFO - log_system_info:122 - ============================================================
+2025-10-16 10:28:34,697 - INFO - log_system_info:123 - System Memory: 24.0GB total, 7.7GB available (68.0% used)
+2025-10-16 10:28:34,697 - INFO - log_system_info:125 - Disk Space: 1268.2GB free
+2025-10-16 10:28:34,697 - INFO - log_system_info:126 - NumPy version: 1.26.4
+2025-10-16 10:28:34,697 - INFO - log_system_info:127 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage
+2025-10-16 10:28:34,699 - INFO - log_assembly_request:133 - Assembly Request:
+2025-10-16 10:28:34,699 - INFO - log_assembly_request:134 -   Bounds: W=-180.000139°, N=89.999861°, E=-100.000139°, S=59.999861°
+2025-10-16 10:28:34,699 - INFO - log_assembly_request:135 -   Area: 2400.00 square degrees
+2025-10-16 10:28:34,699 - INFO - log_assembly_request:136 -   Export Scale: 10.0%
+2025-10-16 10:28:34,700 - INFO - log_assembly_request:137 -   Tiles: 6
+2025-10-16 10:28:34,700 - DEBUG - log_memory_state:142 - Assembly Start: Memory 68.0% used, 7.7GB available
+2025-10-16 10:28:34,700 - INFO - _detect_resolution_from_tiles:314 - 📏 Detected resolution from 6 tiles: 480.0 px/deg
+2025-10-16 10:28:34,700 - INFO - assemble_tiles_to_dem:433 - 📏 Detected resolution: 480.0 pixels/degree
+2025-10-16 10:28:34,700 - DEBUG - estimate_assembly_memory_gb:224 - Memory estimation: 3840×1440 = 5,529,600 pixels = 0.05GB (resolution: 480.0 px/deg)
+2025-10-16 10:28:34,700 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:28:34,700 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.1GB < 3.8GB threshold)
+2025-10-16 10:28:34,700 - INFO - select_assembly_approach:263 -    Available memory: 7.7GB
+2025-10-16 10:28:34,701 - INFO - log_strategy_selection:147 - Strategy Selected: in_memory
+2025-10-16 10:28:34,701 - INFO - log_strategy_selection:148 -   Estimated Memory: 0.1GB
+2025-10-16 10:28:34,701 - INFO - log_strategy_selection:149 -   Memory Limit: 3.8GB
+2025-10-16 10:28:34,701 - INFO - log_strategy_selection:150 -   Description: Fast in-memory assembly (Option 1)
+2025-10-16 10:28:34,701 - INFO - log_strategy_selection:151 -   Expected Time: <30 seconds
+2025-10-16 10:28:34,701 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:28:34,701 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.1GB < 3.8GB threshold)
+2025-10-16 10:28:34,701 - INFO - select_assembly_approach:263 -    Available memory: 7.7GB
+2025-10-16 10:28:34,701 - INFO - _assemble_in_memory:478 - Starting in-memory assembly...
+2025-10-16 10:28:34,701 - DEBUG - log_memory_state:142 - In-Memory Assembly Start: Memory 68.0% used, 7.7GB available
+2025-10-16 10:28:59,252 - INFO - _assemble_in_memory:510 - Assembly complete with scale applied: (1440, 3840)
+2025-10-16 10:28:59,253 - DEBUG - create_temp_dem_path:402 - Temp DEM path: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_102859.dem
+2025-10-16 10:28:59,260 - INFO - _write_dem_file:922 - DEM file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_102859.dem (3840×1440)
+2025-10-16 10:28:59,260 - DEBUG - _write_dem_file:923 - Header file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_102859.hdr
+2025-10-16 10:28:59,260 - DEBUG - log_memory_state:142 - In-Memory Assembly Complete: Memory 64.1% used, 8.6GB available
+2025-10-16 10:28:59,264 - INFO - log_assembly_completion:156 - Assembly Completed: 0.0 seconds
+2025-10-16 10:28:59,264 - INFO - log_assembly_completion:157 - Output file: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_102859.dem
+2025-10-16 10:28:59,264 - INFO - assemble_tiles_to_dem:461 - ✅ Assembly successful: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_102859.dem
+2025-10-16 10:30:50,960 - INFO - log_system_info:120 - ============================================================
+2025-10-16 10:30:50,960 - INFO - log_system_info:121 - DEM ASSEMBLY SESSION STARTED
+2025-10-16 10:30:50,960 - INFO - log_system_info:122 - ============================================================
+2025-10-16 10:30:50,960 - INFO - log_system_info:123 - System Memory: 24.0GB total, 8.0GB available (66.7% used)
+2025-10-16 10:30:50,960 - INFO - log_system_info:125 - Disk Space: 1268.2GB free
+2025-10-16 10:30:50,960 - INFO - log_system_info:126 - NumPy version: 1.26.4
+2025-10-16 10:30:50,960 - INFO - log_system_info:127 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage
+2025-10-16 10:30:50,964 - INFO - log_assembly_request:133 - Assembly Request:
+2025-10-16 10:30:50,964 - INFO - log_assembly_request:134 -   Bounds: W=99.999861°, N=89.999861°, E=179.999861°, S=59.999861°
+2025-10-16 10:30:50,965 - INFO - log_assembly_request:135 -   Area: 2400.00 square degrees
+2025-10-16 10:30:50,965 - INFO - log_assembly_request:136 -   Export Scale: 10.0%
+2025-10-16 10:30:50,965 - INFO - log_assembly_request:137 -   Tiles: 6
+2025-10-16 10:30:50,965 - DEBUG - log_memory_state:142 - Assembly Start: Memory 66.7% used, 8.0GB available
+2025-10-16 10:30:50,965 - INFO - _detect_resolution_from_tiles:314 - 📏 Detected resolution from 6 tiles: 480.0 px/deg
+2025-10-16 10:30:50,965 - INFO - assemble_tiles_to_dem:433 - 📏 Detected resolution: 480.0 pixels/degree
+2025-10-16 10:30:50,965 - DEBUG - estimate_assembly_memory_gb:224 - Memory estimation: 3840×1440 = 5,529,600 pixels = 0.05GB (resolution: 480.0 px/deg)
+2025-10-16 10:30:50,965 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:30:50,965 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.1GB < 4.0GB threshold)
+2025-10-16 10:30:50,966 - INFO - select_assembly_approach:263 -    Available memory: 8.0GB
+2025-10-16 10:30:50,966 - INFO - log_strategy_selection:147 - Strategy Selected: in_memory
+2025-10-16 10:30:50,966 - INFO - log_strategy_selection:148 -   Estimated Memory: 0.1GB
+2025-10-16 10:30:50,966 - INFO - log_strategy_selection:149 -   Memory Limit: 4.0GB
+2025-10-16 10:30:50,966 - INFO - log_strategy_selection:150 -   Description: Fast in-memory assembly (Option 1)
+2025-10-16 10:30:50,966 - INFO - log_strategy_selection:151 -   Expected Time: <30 seconds
+2025-10-16 10:30:50,966 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:30:50,966 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.1GB < 4.0GB threshold)
+2025-10-16 10:30:50,966 - INFO - select_assembly_approach:263 -    Available memory: 8.0GB
+2025-10-16 10:30:50,966 - INFO - _assemble_in_memory:478 - Starting in-memory assembly...
+2025-10-16 10:30:50,966 - DEBUG - log_memory_state:142 - In-Memory Assembly Start: Memory 66.7% used, 8.0GB available
+2025-10-16 10:31:14,418 - INFO - _assemble_in_memory:510 - Assembly complete with scale applied: (1440, 3840)
+2025-10-16 10:31:14,419 - DEBUG - create_temp_dem_path:402 - Temp DEM path: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103114.dem
+2025-10-16 10:31:14,424 - INFO - _write_dem_file:922 - DEM file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103114.dem (3840×1440)
+2025-10-16 10:31:14,425 - DEBUG - _write_dem_file:923 - Header file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103114.hdr
+2025-10-16 10:31:14,425 - DEBUG - log_memory_state:142 - In-Memory Assembly Complete: Memory 63.1% used, 8.9GB available
+2025-10-16 10:31:14,431 - INFO - log_assembly_completion:156 - Assembly Completed: 0.0 seconds
+2025-10-16 10:31:14,431 - INFO - log_assembly_completion:157 - Output file: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103114.dem
+2025-10-16 10:31:14,431 - INFO - assemble_tiles_to_dem:461 - ✅ Assembly successful: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103114.dem
+2025-10-16 10:32:59,177 - INFO - log_system_info:120 - ============================================================
+2025-10-16 10:32:59,177 - INFO - log_system_info:121 - DEM ASSEMBLY SESSION STARTED
+2025-10-16 10:32:59,177 - INFO - log_system_info:122 - ============================================================
+2025-10-16 10:32:59,177 - INFO - log_system_info:123 - System Memory: 24.0GB total, 7.8GB available (67.4% used)
+2025-10-16 10:32:59,177 - INFO - log_system_info:125 - Disk Space: 1268.1GB free
+2025-10-16 10:32:59,177 - INFO - log_system_info:126 - NumPy version: 1.26.4
+2025-10-16 10:32:59,177 - INFO - log_system_info:127 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage
+2025-10-16 10:32:59,180 - INFO - log_assembly_request:133 - Assembly Request:
+2025-10-16 10:32:59,180 - INFO - log_assembly_request:134 -   Bounds: W=-180.000139°, N=89.999861°, E=179.999861°, S=59.999861°
+2025-10-16 10:32:59,180 - INFO - log_assembly_request:135 -   Area: 10800.00 square degrees
+2025-10-16 10:32:59,180 - INFO - log_assembly_request:136 -   Export Scale: 10.0%
+2025-10-16 10:32:59,180 - INFO - log_assembly_request:137 -   Tiles: 24
+2025-10-16 10:32:59,180 - DEBUG - log_memory_state:142 - Assembly Start: Memory 67.4% used, 7.8GB available
+2025-10-16 10:32:59,180 - INFO - _detect_resolution_from_tiles:314 - 📏 Detected resolution from 24 tiles: 480.0 px/deg
+2025-10-16 10:32:59,180 - INFO - assemble_tiles_to_dem:433 - 📏 Detected resolution: 480.0 pixels/degree
+2025-10-16 10:32:59,181 - DEBUG - estimate_assembly_memory_gb:224 - Memory estimation: 17280×1440 = 24,883,200 pixels = 0.23GB (resolution: 480.0 px/deg)
+2025-10-16 10:32:59,181 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:32:59,181 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.2GB < 3.9GB threshold)
+2025-10-16 10:32:59,181 - INFO - select_assembly_approach:263 -    Available memory: 7.8GB
+2025-10-16 10:32:59,181 - INFO - log_strategy_selection:147 - Strategy Selected: in_memory
+2025-10-16 10:32:59,181 - INFO - log_strategy_selection:148 -   Estimated Memory: 0.2GB
+2025-10-16 10:32:59,181 - INFO - log_strategy_selection:149 -   Memory Limit: 3.9GB
+2025-10-16 10:32:59,181 - INFO - log_strategy_selection:150 -   Description: Fast in-memory assembly (Option 1)
+2025-10-16 10:32:59,181 - INFO - log_strategy_selection:151 -   Expected Time: <30 seconds
+2025-10-16 10:32:59,181 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:32:59,181 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.2GB < 3.9GB threshold)
+2025-10-16 10:32:59,181 - INFO - select_assembly_approach:263 -    Available memory: 7.8GB
+2025-10-16 10:32:59,181 - INFO - _assemble_in_memory:478 - Starting in-memory assembly...
+2025-10-16 10:32:59,181 - DEBUG - log_memory_state:142 - In-Memory Assembly Start: Memory 67.4% used, 7.8GB available
+2025-10-16 10:34:44,949 - INFO - _assemble_in_memory:510 - Assembly complete with scale applied: (1440, 17280)
+2025-10-16 10:34:44,950 - DEBUG - create_temp_dem_path:402 - Temp DEM path: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103444.dem
+2025-10-16 10:34:44,972 - INFO - _write_dem_file:922 - DEM file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103444.dem (17280×1440)
+2025-10-16 10:34:44,972 - DEBUG - _write_dem_file:923 - Header file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103444.hdr
+2025-10-16 10:34:44,973 - DEBUG - log_memory_state:142 - In-Memory Assembly Complete: Memory 63.4% used, 8.8GB available
+2025-10-16 10:34:44,978 - INFO - log_assembly_completion:156 - Assembly Completed: 0.0 seconds
+2025-10-16 10:34:44,978 - INFO - log_assembly_completion:157 - Output file: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103444.dem
+2025-10-16 10:34:44,978 - INFO - assemble_tiles_to_dem:461 - ✅ Assembly successful: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103444.dem
+2025-10-16 10:36:20,584 - INFO - log_system_info:120 - ============================================================
+2025-10-16 10:36:20,584 - INFO - log_system_info:121 - DEM ASSEMBLY SESSION STARTED
+2025-10-16 10:36:20,584 - INFO - log_system_info:122 - ============================================================
+2025-10-16 10:36:20,584 - INFO - log_system_info:123 - System Memory: 24.0GB total, 8.3GB available (65.4% used)
+2025-10-16 10:36:20,584 - INFO - log_system_info:125 - Disk Space: 1268.0GB free
+2025-10-16 10:36:20,584 - INFO - log_system_info:126 - NumPy version: 1.26.4
+2025-10-16 10:36:20,584 - INFO - log_system_info:127 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage
+2025-10-16 10:36:20,586 - INFO - log_assembly_request:133 - Assembly Request:
+2025-10-16 10:36:20,586 - INFO - log_assembly_request:134 -   Bounds: W=-180.000139°, N=79.999861°, E=179.999861°, S=59.999861°
+2025-10-16 10:36:20,587 - INFO - log_assembly_request:135 -   Area: 7200.00 square degrees
+2025-10-16 10:36:20,587 - INFO - log_assembly_request:136 -   Export Scale: 10.0%
+2025-10-16 10:36:20,587 - INFO - log_assembly_request:137 -   Tiles: 24
+2025-10-16 10:36:20,587 - DEBUG - log_memory_state:142 - Assembly Start: Memory 65.4% used, 8.3GB available
+2025-10-16 10:36:20,587 - INFO - _detect_resolution_from_tiles:314 - 📏 Detected resolution from 24 tiles: 480.0 px/deg
+2025-10-16 10:36:20,587 - INFO - assemble_tiles_to_dem:433 - 📏 Detected resolution: 480.0 pixels/degree
+2025-10-16 10:36:20,587 - DEBUG - estimate_assembly_memory_gb:224 - Memory estimation: 17280×960 = 16,588,800 pixels = 0.15GB (resolution: 480.0 px/deg)
+2025-10-16 10:36:20,587 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:36:20,587 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.2GB < 4.2GB threshold)
+2025-10-16 10:36:20,588 - INFO - select_assembly_approach:263 -    Available memory: 8.3GB
+2025-10-16 10:36:20,588 - INFO - log_strategy_selection:147 - Strategy Selected: in_memory
+2025-10-16 10:36:20,588 - INFO - log_strategy_selection:148 -   Estimated Memory: 0.2GB
+2025-10-16 10:36:20,588 - INFO - log_strategy_selection:149 -   Memory Limit: 4.2GB
+2025-10-16 10:36:20,588 - INFO - log_strategy_selection:150 -   Description: Fast in-memory assembly (Option 1)
+2025-10-16 10:36:20,588 - INFO - log_strategy_selection:151 -   Expected Time: <30 seconds
+2025-10-16 10:36:20,588 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:36:20,588 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.2GB < 4.2GB threshold)
+2025-10-16 10:36:20,588 - INFO - select_assembly_approach:263 -    Available memory: 8.3GB
+2025-10-16 10:36:20,588 - INFO - _assemble_in_memory:478 - Starting in-memory assembly...
+2025-10-16 10:36:20,588 - DEBUG - log_memory_state:142 - In-Memory Assembly Start: Memory 65.4% used, 8.3GB available
+2025-10-16 10:37:27,103 - INFO - _assemble_in_memory:510 - Assembly complete with scale applied: (960, 17280)
+2025-10-16 10:37:27,103 - DEBUG - create_temp_dem_path:402 - Temp DEM path: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103727.dem
+2025-10-16 10:37:27,118 - INFO - _write_dem_file:922 - DEM file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103727.dem (17280×960)
+2025-10-16 10:37:27,118 - DEBUG - _write_dem_file:923 - Header file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103727.hdr
+2025-10-16 10:37:27,119 - DEBUG - log_memory_state:142 - In-Memory Assembly Complete: Memory 66.4% used, 8.1GB available
+2025-10-16 10:37:27,124 - INFO - log_assembly_completion:156 - Assembly Completed: 0.0 seconds
+2025-10-16 10:37:27,124 - INFO - log_assembly_completion:157 - Output file: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103727.dem
+2025-10-16 10:37:27,124 - INFO - assemble_tiles_to_dem:461 - ✅ Assembly successful: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_103727.dem
+2025-10-16 10:57:56,027 - INFO - log_system_info:120 - ============================================================
+2025-10-16 10:57:56,027 - INFO - log_system_info:121 - DEM ASSEMBLY SESSION STARTED
+2025-10-16 10:57:56,027 - INFO - log_system_info:122 - ============================================================
+2025-10-16 10:57:56,027 - INFO - log_system_info:123 - System Memory: 24.0GB total, 8.4GB available (64.8% used)
+2025-10-16 10:57:56,027 - INFO - log_system_info:125 - Disk Space: 1267.7GB free
+2025-10-16 10:57:56,027 - INFO - log_system_info:126 - NumPy version: 1.26.4
+2025-10-16 10:57:56,027 - INFO - log_system_info:127 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage
+2025-10-16 10:57:56,029 - INFO - log_assembly_request:133 - Assembly Request:
+2025-10-16 10:57:56,030 - INFO - log_assembly_request:134 -   Bounds: W=-180.000139°, N=89.999861°, E=-122.000139°, S=50.499861°
+2025-10-16 10:57:56,030 - INFO - log_assembly_request:135 -   Area: 2291.00 square degrees
+2025-10-16 10:57:56,030 - INFO - log_assembly_request:136 -   Export Scale: 10.0%
+2025-10-16 10:57:56,030 - INFO - log_assembly_request:137 -   Tiles: 4
+2025-10-16 10:57:56,030 - DEBUG - log_memory_state:142 - Assembly Start: Memory 64.8% used, 8.5GB available
+2025-10-16 10:57:56,030 - INFO - _detect_resolution_from_tiles:314 - 📏 Detected resolution from 4 tiles: 480.0 px/deg
+2025-10-16 10:57:56,030 - INFO - assemble_tiles_to_dem:433 - 📏 Detected resolution: 480.0 pixels/degree
+2025-10-16 10:57:56,030 - DEBUG - estimate_assembly_memory_gb:224 - Memory estimation: 2784×1896 = 5,278,464 pixels = 0.05GB (resolution: 480.0 px/deg)
+2025-10-16 10:57:56,030 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:57:56,030 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.0GB < 4.2GB threshold)
+2025-10-16 10:57:56,030 - INFO - select_assembly_approach:263 -    Available memory: 8.5GB
+2025-10-16 10:57:56,030 - INFO - log_strategy_selection:147 - Strategy Selected: in_memory
+2025-10-16 10:57:56,030 - INFO - log_strategy_selection:148 -   Estimated Memory: 0.0GB
+2025-10-16 10:57:56,030 - INFO - log_strategy_selection:149 -   Memory Limit: 4.2GB
+2025-10-16 10:57:56,031 - INFO - log_strategy_selection:150 -   Description: Fast in-memory assembly (Option 1)
+2025-10-16 10:57:56,031 - INFO - log_strategy_selection:151 -   Expected Time: <30 seconds
+2025-10-16 10:57:56,031 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 10:57:56,031 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.0GB < 4.2GB threshold)
+2025-10-16 10:57:56,031 - INFO - select_assembly_approach:263 -    Available memory: 8.5GB
+2025-10-16 10:57:56,031 - INFO - _assemble_in_memory:478 - Starting in-memory assembly...
+2025-10-16 10:57:56,031 - DEBUG - log_memory_state:142 - In-Memory Assembly Start: Memory 64.8% used, 8.5GB available
+2025-10-16 10:58:19,527 - INFO - _assemble_in_memory:510 - Assembly complete with scale applied: (1896, 2784)
+2025-10-16 10:58:19,529 - DEBUG - create_temp_dem_path:402 - Temp DEM path: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_105819.dem
+2025-10-16 10:58:19,535 - INFO - _write_dem_file:922 - DEM file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_105819.dem (2784×1896)
+2025-10-16 10:58:19,535 - DEBUG - _write_dem_file:923 - Header file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_105819.hdr
+2025-10-16 10:58:19,535 - DEBUG - log_memory_state:142 - In-Memory Assembly Complete: Memory 63.5% used, 8.8GB available
+2025-10-16 10:58:19,543 - INFO - log_assembly_completion:156 - Assembly Completed: 0.0 seconds
+2025-10-16 10:58:19,543 - INFO - log_assembly_completion:157 - Output file: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_105819.dem
+2025-10-16 10:58:19,543 - INFO - assemble_tiles_to_dem:461 - ✅ Assembly successful: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_105819.dem
+2025-10-16 14:21:24,299 - INFO - log_system_info:120 - ============================================================
+2025-10-16 14:21:24,299 - INFO - log_system_info:121 - DEM ASSEMBLY SESSION STARTED
+2025-10-16 14:21:24,299 - INFO - log_system_info:122 - ============================================================
+2025-10-16 14:21:24,299 - INFO - log_system_info:123 - System Memory: 24.0GB total, 7.4GB available (69.1% used)
+2025-10-16 14:21:24,299 - INFO - log_system_info:125 - Disk Space: 1267.5GB free
+2025-10-16 14:21:24,299 - INFO - log_system_info:126 - NumPy version: 1.26.4
+2025-10-16 14:21:24,299 - INFO - log_system_info:127 - Working directory: /Users/josephlertola/Documents/claude-code/TopoToImage
+2025-10-16 14:21:24,303 - INFO - log_assembly_request:133 - Assembly Request:
+2025-10-16 14:21:24,303 - INFO - log_assembly_request:134 -   Bounds: W=-179.000139°, N=89.999861°, E=179.999861°, S=59.999861°
+2025-10-16 14:21:24,303 - INFO - log_assembly_request:135 -   Area: 10770.00 square degrees
+2025-10-16 14:21:24,303 - INFO - log_assembly_request:136 -   Export Scale: 10.0%
+2025-10-16 14:21:24,303 - INFO - log_assembly_request:137 -   Tiles: 24
+2025-10-16 14:21:24,303 - DEBUG - log_memory_state:142 - Assembly Start: Memory 69.1% used, 7.4GB available
+2025-10-16 14:21:24,303 - INFO - _detect_resolution_from_tiles:314 - 📏 Detected resolution from 24 tiles: 480.0 px/deg
+2025-10-16 14:21:24,303 - INFO - assemble_tiles_to_dem:433 - 📏 Detected resolution: 480.0 pixels/degree
+2025-10-16 14:21:24,305 - DEBUG - estimate_assembly_memory_gb:224 - Memory estimation: 17232×1440 = 24,814,080 pixels = 0.23GB (resolution: 480.0 px/deg)
+2025-10-16 14:21:24,305 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 14:21:24,305 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.2GB < 3.7GB threshold)
+2025-10-16 14:21:24,305 - INFO - select_assembly_approach:263 -    Available memory: 7.4GB
+2025-10-16 14:21:24,305 - INFO - log_strategy_selection:147 - Strategy Selected: in_memory
+2025-10-16 14:21:24,305 - INFO - log_strategy_selection:148 -   Estimated Memory: 0.2GB
+2025-10-16 14:21:24,305 - INFO - log_strategy_selection:149 -   Memory Limit: 3.7GB
+2025-10-16 14:21:24,305 - INFO - log_strategy_selection:150 -   Description: Fast in-memory assembly (Option 1)
+2025-10-16 14:21:24,305 - INFO - log_strategy_selection:151 -   Expected Time: <30 seconds
+2025-10-16 14:21:24,305 - INFO - select_assembly_approach:261 - 🎯 Selected approach: in_memory
+2025-10-16 14:21:24,305 - INFO - select_assembly_approach:262 -    Reason: Data fits comfortably in memory (0.2GB < 3.7GB threshold)
+2025-10-16 14:21:24,305 - INFO - select_assembly_approach:263 -    Available memory: 7.4GB
+2025-10-16 14:21:24,305 - INFO - _assemble_in_memory:478 - Starting in-memory assembly...
+2025-10-16 14:21:24,305 - DEBUG - log_memory_state:142 - In-Memory Assembly Start: Memory 69.1% used, 7.4GB available
+2025-10-16 14:23:09,754 - INFO - _assemble_in_memory:510 - Assembly complete with scale applied: (1440, 17232)
+2025-10-16 14:23:09,756 - DEBUG - create_temp_dem_path:402 - Temp DEM path: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_142309.dem
+2025-10-16 14:23:09,778 - INFO - _write_dem_file:922 - DEM file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_142309.dem (17232×1440)
+2025-10-16 14:23:09,778 - DEBUG - _write_dem_file:923 - Header file written: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_142309.hdr
+2025-10-16 14:23:09,779 - DEBUG - log_memory_state:142 - In-Memory Assembly Complete: Memory 65.2% used, 8.3GB available
+2025-10-16 14:23:09,784 - INFO - log_assembly_completion:156 - Assembly Completed: 0.0 seconds
+2025-10-16 14:23:09,784 - INFO - log_assembly_completion:157 - Output file: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_142309.dem
+2025-10-16 14:23:09,784 - INFO - assemble_tiles_to_dem:461 - ✅ Assembly successful: /var/folders/61/bg4l4r997q1b55m02vg7s7g40000gn/T/assembled_dem_20251016_142309.dem
