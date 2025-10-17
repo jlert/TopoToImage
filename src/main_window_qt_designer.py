@@ -610,8 +610,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         user_guide_action.triggered.connect(self.open_user_guide)
         
         help_menu.addSeparator()
-        
-        help_menu.addAction("About DEM Visualizer")
+
+        about_action = help_menu.addAction("About TopoToImage")
+        about_action.triggered.connect(self.show_about_dialog)
         
         print("✅ Menu setup complete")
     
@@ -2683,9 +2684,127 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         else:
             QMessageBox.information(
                 self, 
-                "User Guide Not Available", 
+                "User Guide Not Available",
                 f"The user guide is not yet available.\n\nWhen complete, it will be located at:\n{user_guide_path}"
             )
+
+    def show_about_dialog(self):
+        """Show the About dialog with application information"""
+        from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtGui import QPixmap, QDesktopServices, QFont
+        from src.version import get_version_string, APP_NAME
+        import sys
+        from pathlib import Path
+
+        # Create dialog
+        dialog = QDialog(self)
+        dialog.setWindowTitle(f"About {APP_NAME}")
+        dialog.setFixedWidth(450)
+
+        # Main layout
+        layout = QVBoxLayout()
+        layout.setSpacing(15)
+        layout.setContentsMargins(30, 30, 30, 30)
+
+        # Icon section
+        icon_label = QLabel()
+        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        # Try to load the application icon (PNG version)
+        try:
+            icon_path = get_resource_path("icons/TopoToImage_128.png")
+            if icon_path.exists():
+                pixmap = QPixmap(str(icon_path))
+                if not pixmap.isNull():
+                    icon_label.setPixmap(pixmap)
+                else:
+                    # Fallback to emoji if PNG loading fails
+                    icon_label.setText("🏔️")
+                    icon_label.setStyleSheet("font-size: 72px;")
+            else:
+                # Fallback to emoji if file doesn't exist
+                icon_label.setText("🏔️")
+                icon_label.setStyleSheet("font-size: 72px;")
+        except Exception as e:
+            # Fallback to emoji on any error
+            icon_label.setText("🏔️")
+            icon_label.setStyleSheet("font-size: 72px;")
+
+        layout.addWidget(icon_label)
+
+        # Application name
+        name_label = QLabel(APP_NAME)
+        name_font = QFont()
+        name_font.setPointSize(20)
+        name_font.setBold(True)
+        name_label.setFont(name_font)
+        name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(name_label)
+
+        # Version
+        version_label = QLabel(get_version_string())
+        version_font = QFont()
+        version_font.setPointSize(14)
+        version_label.setFont(version_font)
+        version_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        version_label.setStyleSheet("color: #666;")
+        layout.addWidget(version_label)
+
+        # Separator
+        separator = QLabel()
+        separator.setFixedHeight(1)
+        separator.setStyleSheet("background-color: #ccc;")
+        layout.addWidget(separator)
+
+        # Description
+        desc_label = QLabel("Professional Digital Elevation Model\nvisualization and cartographic rendering")
+        desc_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        desc_label.setStyleSheet("color: #444;")
+        layout.addWidget(desc_label)
+
+        # Free and open source
+        foss_label = QLabel("Free and Open Source Software")
+        foss_font = QFont()
+        foss_font.setBold(True)
+        foss_label.setFont(foss_font)
+        foss_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(foss_label)
+
+        # Copyright
+        copyright_label = QLabel("Copyright © 2024 Joseph Lertola")
+        copyright_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        copyright_label.setStyleSheet("color: #666; font-size: 11px;")
+        layout.addWidget(copyright_label)
+
+        # License
+        license_label = QLabel("Released under the MIT License")
+        license_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        license_label.setStyleSheet("color: #666; font-size: 11px;")
+        layout.addWidget(license_label)
+
+        # GitHub link
+        github_link = QLabel('<a href="https://github.com/jlert/TopoToImage">https://github.com/jlert/TopoToImage</a>')
+        github_link.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        github_link.setOpenExternalLinks(True)
+        github_link.setStyleSheet("font-size: 12px;")
+        layout.addWidget(github_link)
+
+        # Add some spacing
+        layout.addSpacing(10)
+
+        # Close button
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        close_button = QPushButton("Close")
+        close_button.setFixedWidth(100)
+        close_button.clicked.connect(dialog.accept)
+        button_layout.addWidget(close_button)
+        button_layout.addStretch()
+        layout.addLayout(button_layout)
+
+        dialog.setLayout(layout)
+        dialog.exec()
 
     # Signal handlers
     def on_selection_changed(self, bounds):

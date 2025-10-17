@@ -23,6 +23,7 @@ datas = [
     
     # Application icons
     ('assets/icons/TopoToImage.icns', 'icons'),
+    ('assets/icons/TopoToImage_128.png', 'icons'),
     
     # Maps and backgrounds
     ('assets/maps/default_background_map.svg', 'maps'),
@@ -31,7 +32,7 @@ datas = [
     ('assets/gradients.json', 'gradients'),
     
     # Sample data for first-run experience
-    ('assets/sample_data/Gtopo30_reduced_2160x1080.tif', 'sample_data'),
+    ('assets/sample_data/Gtopo30_reduced_2160x1080_map.tif', 'sample_data'),
     
     # Preview icon databases for cycling functionality - include all existing preview icons
     ('assets/preview_icon_databases/pr01_fixed.tif', 'preview_icon_databases'),
