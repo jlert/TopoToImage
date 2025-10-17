@@ -1,4 +1,4 @@
-# TopoToImage 4.0.0-beta.2
+# TopoToImage 4.0.0-beta.3
 
 > **Modern recreation of the 1990s Macintosh terrain visualization software**
 
@@ -8,7 +8,7 @@
 
 ### Option 1: Download the macOS App Bundle (Apple Silicon Macs Only)
 
-**[Download TopoToImage v4.0.0-beta.2 (DMG)](https://github.com/jlert/TopoToImage/releases/latest) - 201 MB**
+**[Download TopoToImage v4.0.0-beta.3 (DMG)](https://github.com/jlert/TopoToImage/releases/latest) - 201 MB**
 
 - Simple installation - drag and drop
 - No Python or dependencies required
