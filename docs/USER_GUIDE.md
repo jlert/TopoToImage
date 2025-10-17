@@ -1,6 +1,6 @@
 # TopoToImage User Guide
 
-**Version 4.0.0-beta.1**
+**Version 4.0.0-beta.3**
 
 ![TopoToImage Banner](images/banner_image.png)
 
