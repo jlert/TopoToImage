@@ -85,6 +85,8 @@ For comprehensive information on elevation data sources, formats, and download i
 
 ---
 
+![Mountains Banner](images/mountains_banner.png)
+
 ## Opening Databases
 
 ### Opening Single-File Databases
@@ -335,6 +337,8 @@ Critical setting that controls how gradients are applied to elevation data.
 If this radio button is checked when an image file is saved, a separate PDF file with the same name is saved containing metadata for the saved image. This metadata includes the width, height, pixels per degree for the selected area. It also contains information about the gradient elevations including the elevation of each color and its RGB values.
 
 ---
+
+![Hammond Banner](images/hammond_banner.png)
 
 ## Creating Visualizations
 

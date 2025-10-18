@@ -1967,6 +1967,110 @@
       "units": "meters"
     },
     {
+      "name": "Hammond_for_low_terrain",
+      "description": "Created with gradient editor",
+      "min_elevation": 0,
+      "max_elevation": 2000,
+      "color_stops": [
+        {
+          "position": 0.09999999999999998,
+          "red": 226,
+          "green": 224,
+          "blue": 215,
+          "alpha": 255
+        },
+        {
+          "position": 0.4,
+          "red": 174,
+          "green": 207,
+          "blue": 222,
+          "alpha": 255
+        },
+        {
+          "position": 0.7,
+          "red": 212,
+          "green": 143,
+          "blue": 101,
+          "alpha": 255
+        },
+        {
+          "position": 0.85,
+          "red": 255,
+          "green": 127,
+          "blue": 21,
+          "alpha": 255
+        },
+        {
+          "position": 0.8773099105461394,
+          "red": 241,
+          "green": 179,
+          "blue": 46,
+          "alpha": 255
+        },
+        {
+          "position": 0.9028954802259888,
+          "red": 253,
+          "green": 251,
+          "blue": 128,
+          "alpha": 255
+        },
+        {
+          "position": 0.9285766831450094,
+          "red": 147,
+          "green": 252,
+          "blue": 97,
+          "alpha": 255
+        },
+        {
+          "position": 0.9586937970809792,
+          "red": 58,
+          "green": 220,
+          "blue": 52,
+          "alpha": 255
+        },
+        {
+          "position": 1.0,
+          "red": 137,
+          "green": 220,
+          "blue": 250,
+          "alpha": 255
+        }
+      ],
+      "discrete": false,
+      "created_by": "Gradient Editor",
+      "tags": [
+        "custom",
+        "user_created"
+      ],
+      "shadow_color": {
+        "red": 128,
+        "green": 134,
+        "blue": 150,
+        "alpha": 255
+      },
+      "no_data_color": {
+        "red": 235,
+        "green": 254,
+        "blue": 255,
+        "alpha": 255
+      },
+      "below_gradient_color": {
+        "red": 250,
+        "green": 253,
+        "blue": 253,
+        "alpha": 255
+      },
+      "gradient_type": "shading_and_posterized",
+      "light_direction": 270,
+      "shading_intensity": 1000,
+      "cast_shadows": true,
+      "shadow_drop_distance": 3.0,
+      "shadow_soft_edge": 6,
+      "blending_mode": "Hard Light",
+      "color_mode": "8-bit",
+      "units": "meters"
+    },
+    {
       "name": "Hammond_flipped",
       "description": "Created with gradient editor",
       "min_elevation": 0,
