@@ -38,6 +38,8 @@ The elevation export feature allows you to create smaller, cropped, or reduced-r
 
 ---
 
+![Desert Banner](images/desert_banner.png)
+
 ## Elevation Databases
 
 ### What Are Elevation Databases?
