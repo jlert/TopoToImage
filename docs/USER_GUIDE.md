@@ -155,6 +155,8 @@ Quick access to previously opened databases. Shows a list of recently used eleva
 
 ---
 
+![Main Window](images/main_window.png)
+
 ## Main Window Interface
 
 ### World Map
@@ -218,6 +220,9 @@ These controls function similarly to Photoshop's Image Size command:
 **Note:** Resolution controls are relevant when exporting TIFF, JPEG or PNG image files. They determine the physical dimensions and print resolution of the exported image.
 
 ---
+
+![Amazon banner](images/amazon_banner.png)
+
 
 ## Gradient Style Panel
 
@@ -368,6 +373,8 @@ When this option is selected, a pop-up window will be available in the file requ
 - **DEM** - BIL format with header and projection files
 
 ---
+
+![Gradient Editor](images/gradient_window.png)
 
 ## Gradient Editor Window
 
@@ -524,3 +531,9 @@ If the Shaded Relief, Shading and Gradient, or Shading and Posterized options ar
 **For technical details on bundle creation, see [COMPLETE_BUNDLE_CREATION_GUIDE.md](COMPLETE_BUNDLE_CREATION_GUIDE.md)**
 
 **Report issues at:** https://github.com/jlert/TopoToImage/issues
+
+---
+
+![Black Sea banner](images/black_sea_banner.png)
+
+---
