@@ -347,7 +347,7 @@ If this radio button is checked when an image file is saved, a separate PDF file
 - Renders current selection with current gradient settings
 - Opens in separate window
 - Pay attention to the export file info pixel width and height. These elevation databases can be quite large, so if a huge area is accidentally selected and the Preview button is clicked, it could take a very long time for the preview to generate a large image. Use the export scale spin box to reduce a large selected area to a manageable size.
-- Note that this program has been designed to work with huge elevation databases. The program has successfully processed the full GEBCO database and reduced it to a manageable size to show the full world. However, this took many hours. Working with huge databases has not been fully tested.
+- Note that this program has been designed to work with huge elevation databases. However, working with huge databases needs further testing.
 - Does not save file - for evaluation only
 
 ### Save Image File Button
