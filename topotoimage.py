@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-TopoToImage 4.0.0-beta.1 - Main Entry Point
+TopoToImage 4.0.0-beta.3 - Main Entry Point
 Professional terrain visualization software
 """
 
