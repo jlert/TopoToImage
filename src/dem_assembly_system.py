@@ -33,7 +33,7 @@ class AssemblyConfig:
     compare_with_legacy: bool = True      # Side-by-side comparison during development
     debug_mode: bool = True               # Show debug info to user
     temp_dem_location: str = "system"     # "project" or "system" temp directory
-    log_file: str = "dem_assembly_debug.log"
+    log_file: str = str(Path.home() / "TopoToImage_Debug" / "dem_assembly_debug.log")
     max_memory_percent: float = 50.0      # Maximum percentage of available RAM to use
     
     # New Option 2 controls

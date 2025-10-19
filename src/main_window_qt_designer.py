@@ -4,6 +4,9 @@ Main Window Qt Designer Integration - Complete Version
 Loads the main_window_complete.ui file and provides the same interface as the original main window
 """
 
+# Debug control - set to True only when actively debugging
+_DEBUG = False
+
 import sys
 import logging
 import os
@@ -134,10 +137,15 @@ def setup_debug_logging():
         dev_workspace = project_root / "topoToimage-dev-workspace" / "debug-logs"
         dev_workspace.mkdir(parents=True, exist_ok=True)
         log_file = dev_workspace / "preview_debug.log"
-    
+
+    # Determine logging level based on _DEBUG flag
+    # DEBUG: All detailed logs (for troubleshooting)
+    # INFO: Important operations and errors only (for production)
+    log_level = logging.DEBUG if _DEBUG else logging.INFO
+
     # Setup logging
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=log_level,
         format='%(asctime)s - %(levelname)s - %(message)s',
         handlers=[
             logging.FileHandler(log_file, mode='w'),  # Overwrite each run
@@ -490,7 +498,8 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         
         export_db_action = file_menu.addAction("Export Elevation Database...")
         export_db_action.setShortcut("Ctrl+Shift+E")
-        export_db_action.triggered.connect(self.show_export_elevation_database_dialog)
+        export_db_action.triggered.connect(self._debug_export_wrapper)
+        debug_logger.info("✅ Export Elevation Database menu action connected to _debug_export_wrapper")
         
         file_menu.addSeparator()
         
@@ -5612,11 +5621,24 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         print(f"📋 Export data collection complete with {len(export_data)} fields")
         return export_data
 
+    def _debug_export_wrapper(self):
+        """Debug wrapper to verify menu action connection"""
+        print("=" * 80)
+        debug_logger.debug("🔧 DEBUG: _debug_export_wrapper CALLED - menu action triggered!")
+        print("=" * 80)
+        self.show_export_elevation_database_dialog()
+
     def show_export_elevation_database_dialog(self):
         """Show export elevation database dialog with 2 database export options"""
+        debug_logger.info("=" * 80)
+        debug_logger.debug("🔧 DEBUG: show_export_elevation_database_dialog CALLED!")
+        debug_logger.info("=" * 80)
         try:
+            debug_logger.debug("🔧 DEBUG: About to import QFileDialog and QMessageBox...")
             from PyQt6.QtWidgets import QFileDialog, QMessageBox
+            debug_logger.debug("🔧 DEBUG: PyQt6 imports successful")
             from pathlib import Path
+            debug_logger.debug("🔧 DEBUG: pathlib import successful")
             
             # Get the base database name for filename generation
             base_db_name = self._get_base_database_name()
@@ -5631,11 +5653,12 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             file_filters = [filter_name for _, filter_name, _ in database_types]
             filter_string = ";;".join(file_filters)
             
-            # Set initial default filename with _db suffix
-            initial_filename = f"{base_db_name}_db.dem"
+            # Set initial default filename with full path (fixes bundle QFileDialog bug where it defaults to root /)
+            from pathlib import Path
+            initial_filename = str(Path.home() / f"{base_db_name}_db.dem")
             
-            print(f"📁 Base database name: {base_db_name}")
-            print(f"🎯 Initial file path: {initial_filename}")
+            debug_logger.info(f"📁 Base database name: {base_db_name}")
+            debug_logger.info(f"🎯 Initial file path: {initial_filename}")
             
             # Show save dialog
             file_path, chosen_filter = QFileDialog.getSaveFileName(
@@ -5651,9 +5674,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 is_dem_elevation_export = chosen_filter and "DEM Elevation Database" in chosen_filter
                 is_geotiff_elevation_export = chosen_filter and "GeoTIFF Elevation Database" in chosen_filter
                 
-                print(f"💾 Export file path: {file_path}")
-                print(f"🏔️ DEM elevation export: {is_dem_elevation_export}")
-                print(f"🗻 GeoTIFF elevation export: {is_geotiff_elevation_export}")
+                debug_logger.info(f"💾 Export file path: {file_path}")
+                debug_logger.info(f"🏔️ DEM elevation export: {is_dem_elevation_export}")
+                debug_logger.info(f"🗻 GeoTIFF elevation export: {is_geotiff_elevation_export}")
                 
                 # Execute the export using existing elevation database export pipeline
                 success = self._execute_terrain_export(
@@ -5669,8 +5692,15 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 else:
                     QMessageBox.warning(self, "Export Failed", "Failed to export elevation database.")
                     self.status_bar.showMessage("Elevation database export failed")
-                    
+
         except Exception as e:
+            debug_logger.info("=" * 80)
+            debug_logger.info(f"🔧 DEBUG: EXCEPTION in show_export_elevation_database_dialog!")
+            debug_logger.info(f"🔧 DEBUG: Exception type: {type(e)}")
+            debug_logger.info(f"🔧 DEBUG: Exception message: {str(e)}")
+            debug_logger.info("=" * 80)
+            import traceback
+            traceback.print_exc()
             from PyQt6.QtWidgets import QMessageBox
             QMessageBox.warning(self, "Export Error", f"Export failed:\n{str(e)}")
             self.status_bar.showMessage(f"Export error: {str(e)}")
@@ -6724,13 +6754,20 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             bool: True if successful, False if failed
         """
         try:
+            import sys
+            debug_logger.info(f"🔧 DEBUG: About to import numpy...")
             import numpy as np
+            debug_logger.info(f"🔧 DEBUG: numpy imported successfully")
+
+            debug_logger.info(f"🔧 DEBUG: About to import TerrainProgressDialog from preview_window...")
+            debug_logger.info(f"🔧 DEBUG: sys.path = {sys.path[:3]}")  # Show first 3 paths
             from preview_window import TerrainProgressDialog
-            
-            print(f"🏔️ Starting elevation database export...")
-            print(f"   Format: {'GeoTIFF Elevation' if is_geotiff_elevation else 'DEM'}")
-            print(f"   Bounds: W={west:.6f}, N={north:.6f}, E={east:.6f}, S={south:.6f}")
-            print(f"   Scale: {export_scale * 100:.1f}%")
+            debug_logger.info(f"🔧 DEBUG: TerrainProgressDialog imported successfully")
+
+            debug_logger.info(f"🏔️ Starting elevation database export...")
+            debug_logger.info(f"   Format: {'GeoTIFF Elevation' if is_geotiff_elevation else 'DEM'}")
+            debug_logger.info(f"   Bounds: W={west:.6f}, N={north:.6f}, E={east:.6f}, S={south:.6f}")
+            debug_logger.info(f"   Scale: {export_scale * 100:.1f}%")
             
             # Create and show progress dialog
             progress_dialog = TerrainProgressDialog(self)
@@ -6759,7 +6796,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     else:
                         pixels_per_degree = 120  # Default fallback
 
-                print(f"📏 Database resolution: {pixels_per_degree:.1f} pixels/degree")
+                debug_logger.info(f"📏 Database resolution: {pixels_per_degree:.1f} pixels/degree")
 
                 # Calculate expected output dimensions
                 deg_width = east - west
@@ -6783,10 +6820,10 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 MAX_MEMORY_PERCENT = 0.85
                 max_safe_memory_gb = total_system_gb * MAX_MEMORY_PERCENT
 
-                print(f"📊 Pre-flight check:")
-                print(f"   Expected output: {expected_width:,}×{expected_height:,} = {total_pixels:,} pixels")
-                print(f"   Memory needed: {elevation_memory_gb:.2f}GB")
-                print(f"   Memory available: {available_gb:.2f}GB")
+                debug_logger.info(f"📊 Pre-flight check:")
+                debug_logger.info(f"   Expected output: {expected_width:,}×{expected_height:,} = {total_pixels:,} pixels")
+                debug_logger.info(f"   Memory needed: {elevation_memory_gb:.2f}GB")
+                debug_logger.info(f"   Memory available: {available_gb:.2f}GB")
 
                 # Check 1: Pixel count limit
                 if total_pixels > MAX_PIXELS:
@@ -6796,7 +6833,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                                 f"Requested: {expected_width:,}×{expected_height:,} = {total_pixels:,} pixels\n"
                                 f"Maximum: {MAX_PIXELS:,} pixels\n\n"
                                 f"Suggestion: Reduce export scale to ~{safe_percent}% or select a smaller area")
-                    print(f"❌ {error_msg}")
+                    debug_logger.info(f"❌ {error_msg}")
                     from PyQt6.QtWidgets import QMessageBox
                     QMessageBox.warning(self, "Export Too Large", error_msg)
                     return False
@@ -6810,12 +6847,12 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                                 f"Memory available: {available_gb:.1f}GB\n"
                                 f"System total: {total_system_gb:.1f}GB\n\n"
                                 f"Suggestion: Reduce export scale to ~{safe_percent}% or close other applications")
-                    print(f"❌ {error_msg}")
+                    debug_logger.info(f"❌ {error_msg}")
                     from PyQt6.QtWidgets import QMessageBox
                     QMessageBox.warning(self, "Insufficient Memory", error_msg)
                     return False
 
-                print(f"✅ Pre-flight check passed: Export is safe to proceed")
+                debug_logger.info(f"✅ Pre-flight check passed: Export is safe to proceed")
 
                 # Phase 1: Load elevation data (0-60%)
                 progress_dialog.update_progress(5, "Loading elevation data...")
@@ -6827,11 +6864,11 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 )
                 
                 if elevation_data is None:
-                    print("❌ Failed to get elevation data for export")
+                    debug_logger.info("❌ Failed to get elevation data for export")
                     return False
                     
-                print(f"✅ Got elevation data: {elevation_data.shape}")
-                print(f"   Elevation range: {np.nanmin(elevation_data):.1f} to {np.nanmax(elevation_data):.1f} meters")
+                debug_logger.info(f"✅ Got elevation data: {elevation_data.shape}")
+                debug_logger.info(f"   Elevation range: {np.nanmin(elevation_data):.1f} to {np.nanmax(elevation_data):.1f} meters")
                 
                 # Phase 2: Export in the requested format (60-100%)
                 progress_dialog.update_progress(60, f"Writing {format_name} file...")
@@ -6876,13 +6913,17 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         progress_dialog = None
     ):
         """Get elevation data cropped to selection bounds"""
+        debug_logger.debug("🔧 DEBUG: _get_cropped_elevation_data CALLED")
+        debug_logger.info(f"   database_info: {database_info}")
+        debug_logger.info(f"   dem_reader: {dem_reader}")
+        debug_logger.info(f"   database_info type: {database_info.get('type') if database_info else None}")
         try:
             from PyQt6.QtWidgets import QApplication
             
             # Check database type to determine export path
             if database_info and database_info.get('type') == 'multi_file':
                 # Multi-file database - use assembly system like preview
-                print("📁 Loading from multi-file database using assembly system...")
+                debug_logger.info("📁 Loading from multi-file database using assembly system...")
                 if progress_dialog:
                     progress_dialog.update_progress(10, "Assembling tiles from multi-file database...")
                     QApplication.processEvents()
@@ -6897,7 +6938,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     
             elif dem_reader or (database_info and database_info.get('type') == 'single_file'):
                 # Single-file database
-                print("📄 Loading from single-file database...")
+                debug_logger.info("📄 Loading from single-file database...")
                 if progress_dialog:
                     progress_dialog.update_progress(10, "Loading elevation data from file...")
                     QApplication.processEvents()
@@ -6906,7 +6947,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 if not dem_reader and database_info and database_info.get('type') == 'single_file':
                     dem_reader = getattr(self, 'dem_reader', None)
                     if not dem_reader:
-                        print("❌ No DEM reader available for single-file database")
+                        debug_logger.info("❌ No DEM reader available for single-file database")
                         return None
                 
                 if dem_reader.elevation_data is None:
@@ -6934,11 +6975,11 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     progress_dialog.update_progress(40, "Cropping completed")
                     QApplication.processEvents()
             else:
-                print("❌ No elevation data source available")
+                debug_logger.info("❌ No elevation data source available")
                 return None
                 
             if elevation_data is None:
-                print("❌ Failed to load elevation data")
+                debug_logger.info("❌ Failed to load elevation data")
                 return None
 
             # Apply export scaling if not 100%
@@ -6946,7 +6987,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             is_multifile = database_info and database_info.get('type') == 'multi_file'
 
             if export_scale != 1.0 and not is_multifile:
-                print(f"🔧 Applying export scale: {export_scale * 100:.1f}%")
+                debug_logger.info(f"🔧 Applying export scale: {export_scale * 100:.1f}%")
                 if progress_dialog:
                     progress_dialog.update_progress(45, f"Scaling to {export_scale * 100:.1f}%...")
                     QApplication.processEvents()
@@ -6965,10 +7006,10 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                         target_shape,
                         method='bicubic'
                     )
-                    print(f"   NaN-aware bicubic resize from {original_shape} to {elevation_data.shape}")
+                    debug_logger.info(f"   NaN-aware bicubic resize from {original_shape} to {elevation_data.shape}")
 
                 except ImportError:
-                    print(f"   ⚠️ NaN-aware interpolation not available, using simple subsampling")
+                    debug_logger.info(f"   ⚠️ NaN-aware interpolation not available, using simple subsampling")
                     # Safe fallback: simple subsampling preserves data integrity
                     subsample_y = max(1, int(1.0 / export_scale))
                     subsample_x = max(1, int(1.0 / export_scale))
@@ -6978,7 +7019,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     progress_dialog.update_progress(55, "Scaling completed")
                     QApplication.processEvents()
             elif is_multifile:
-                print(f"✅ Scaling already applied during assembly (multi-file database)")
+                debug_logger.info(f"✅ Scaling already applied during assembly (multi-file database)")
 
             if progress_dialog:
                 progress_dialog.update_progress(60, "Elevation data ready for export")
@@ -6987,7 +7028,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             return elevation_data
             
         except Exception as e:
-            print(f"❌ Error getting cropped elevation data: {e}")
+            debug_logger.info(f"❌ Error getting cropped elevation data: {e}")
             import traceback
             traceback.print_exc()
             return None
@@ -7006,7 +7047,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
     ) -> bool:
         """Save elevation data as DEM format with companion files"""
         try:
-            print("🏔️ Creating DEM elevation database...")
+            debug_logger.info("🏔️ Creating DEM elevation database...")
             import numpy as np
             from pathlib import Path
             from PyQt6.QtWidgets import QApplication
@@ -7318,9 +7359,9 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             numpy.ndarray: Assembled elevation data, or None if failed
         """
         try:
-            print(f"🔧 Loading multi-file elevation data using DEMAssemblySystem...")
-            print(f"   Bounds: W={west:.6f}, N={north:.6f}, E={east:.6f}, S={south:.6f}")
-            print(f"   Scale: {export_scale * 100:.1f}%")
+            debug_logger.info(f"🔧 Loading multi-file elevation data using DEMAssemblySystem...")
+            debug_logger.info(f"   Bounds: W={west:.6f}, N={north:.6f}, E={east:.6f}, S={south:.6f}")
+            debug_logger.info(f"   Scale: {export_scale * 100:.1f}%")
 
             from pathlib import Path
             from multi_file_database import MultiFileDatabase
@@ -7330,28 +7371,28 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             # Load database using the current database info
             db_path = self.current_database_info.get('path')
             if not db_path:
-                print("❌ No database path available")
+                debug_logger.info("❌ No database path available")
                 return None
 
             db_path = Path(db_path)
             if not db_path.exists():
-                print(f"❌ Database path does not exist: {db_path}")
+                debug_logger.info(f"❌ Database path does not exist: {db_path}")
                 return None
 
             database = MultiFileDatabase(db_path)
             if not database.tiles:
-                print(f"❌ No tiles found in database: {db_path}")
+                debug_logger.info(f"❌ No tiles found in database: {db_path}")
                 return None
 
-            print(f"🗂️ Database: {len(database.tiles)} tiles, type: {database.database_type}")
+            debug_logger.info(f"🗂️ Database: {len(database.tiles)} tiles, type: {database.database_type}")
 
             # Get tiles for the requested bounds
             tiles = database.get_tiles_for_bounds(west, north, east, south)
             if not tiles:
-                print(f"❌ No tiles found for bounds")
+                debug_logger.info(f"❌ No tiles found for bounds")
                 return None
 
-            print(f"📦 Found {len(tiles)} intersecting tiles")
+            debug_logger.info(f"📦 Found {len(tiles)} intersecting tiles")
 
             # Configure assembly system for export (use chunking for large exports)
             assembly_config = AssemblyConfig(
@@ -7377,7 +7418,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                             current_tile_info['tile_num'] = int(current)
                             current_tile_info['total_tiles'] = int(total)
                         except Exception as parse_error:
-                            print(f"   ⚠️ Progress parse error: {parse_error} in message: '{message}'")
+                            debug_logger.info(f"   ⚠️ Progress parse error: {parse_error} in message: '{message}'")
 
                     # Map assembly progress to 15-85% of overall export progress
                     if current_tile_info['total_tiles'] > 0:
@@ -7390,7 +7431,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                     QApplication.processEvents()
                 else:
                     # If no progress dialog, just print
-                    print(f"   {message}")
+                    debug_logger.info(f"   {message}")
 
             if progress_dialog:
                 from PyQt6.QtWidgets import QApplication
@@ -7406,7 +7447,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             )
 
             if not temp_dem_path:
-                print("❌ Assembly failed")
+                debug_logger.info("❌ Assembly failed")
                 return None
 
             if progress_dialog:
@@ -7416,7 +7457,7 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             # Load the assembled DEM file
             dem_reader = DEMReader()
             if not dem_reader.load_dem_file(str(temp_dem_path)):
-                print("❌ Failed to load assembled DEM")
+                debug_logger.info("❌ Failed to load assembled DEM")
                 return None
 
             elevation_data = dem_reader.load_elevation_data()
@@ -7426,23 +7467,23 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
                 QApplication.processEvents()
 
             if elevation_data is None:
-                print("❌ Failed to load elevation data from assembled DEM")
+                debug_logger.info("❌ Failed to load elevation data from assembled DEM")
                 return None
 
-            print(f"✅ Assembled elevation data: {elevation_data.shape}")
-            print(f"   Scale was applied during assembly (no double-scaling)")
+            debug_logger.info(f"✅ Assembled elevation data: {elevation_data.shape}")
+            debug_logger.info(f"   Scale was applied during assembly (no double-scaling)")
 
             # Clean up temp file
             try:
                 Path(temp_dem_path).unlink()
-                print(f"🧹 Cleaned up temporary DEM file")
+                debug_logger.info(f"🧹 Cleaned up temporary DEM file")
             except Exception as e:
-                print(f"⚠️ Could not delete temp file {temp_dem_path}: {e}")
+                debug_logger.info(f"⚠️ Could not delete temp file {temp_dem_path}: {e}")
 
             return elevation_data
 
         except Exception as e:
-            print(f"❌ Error loading multi-file elevation data: {e}")
+            debug_logger.info(f"❌ Error loading multi-file elevation data: {e}")
             import traceback
             traceback.print_exc()
             return None

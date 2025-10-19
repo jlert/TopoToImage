@@ -14,7 +14,8 @@ def main():
         # Add src directory to path for imports
         if hasattr(sys, '_MEIPASS'):
             # PyInstaller bundle mode - use bundled src directory
-            src_path = os.path.join(sys._MEIPASS, 'src')
+            # In PyInstaller bundles, data files are in Contents/Resources/, not Contents/MacOS/
+            src_path = os.path.join(Path(sys._MEIPASS).parent, 'Resources', 'src')
             sys.path.insert(0, src_path)
             print(f"🧳 Bundle mode: Added {src_path} to Python path")
         else:
