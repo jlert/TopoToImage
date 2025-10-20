@@ -630,6 +630,275 @@ Failed to create Preview icon from selection                  # BAD - CRS/PROJ i
 | `Key file generation failed` | Missing reportlab | Add reportlab to hiddenimports |
 | `Failed to create Preview icon` | CRS/PROJ database issue | Ensure PROJ data is included |
 | Import errors for local modules | Missing application modules | Add all src files to datas section |
+| Export elevation database returns empty string | QFileDialog cancel handling issue | Check for empty string, not just None |
+
+## Debugging Bundled Applications
+
+### Overview
+Debugging bundled applications differs significantly from debugging development code. The bundle runs in a restricted environment with different file paths and permissions. This section covers strategies learned through real-world debugging sessions.
+
+### 1. Debug Logging Configuration
+
+**CRITICAL**: Set appropriate logging level for production bundles.
+
+```python
+# In topotoimage.py - Main entry point
+import logging
+
+# For PRODUCTION bundles - use INFO level
+logging.basicConfig(
+    level=logging.INFO,  # NOT logging.DEBUG
+    format='%(levelname)s: %(message)s'
+)
+
+# For DEBUG bundles only - use DEBUG level
+# logging.basicConfig(
+#     level=logging.DEBUG,
+#     format='%(levelname)s: %(message)s'
+# )
+```
+
+**Why this matters:**
+- DEBUG level can generate 16,000+ lines per operation
+- Creates huge log files that slow down the application
+- Makes it impossible to find actual errors in the noise
+- INFO level logs only essential information
+
+### 2. File Dialog Issues in Bundled Apps
+
+**Symptom**: File dialogs return empty string `""` instead of `None` when user cancels
+
+**Root Cause**: QFileDialog behavior differs between development and bundled environments
+
+**Correct Implementation**:
+```python
+# BAD - Only checks for None
+output_path = QFileDialog.getSaveFileName(...)
+if output_path:  # Empty string is truthy!
+    # This runs even when user cancelled
+
+# GOOD - Checks for both None and empty string
+output_path = QFileDialog.getSaveFileName(...)
+if output_path and output_path.strip():  # Handles both None and ""
+    # Only runs when user actually selected a file
+```
+
+**Files to check:**
+- `src/dem_assembly_system.py:712` (single-file export)
+- `src/main_window_qt_designer.py:3463` (multi-file export)
+- Any other file dialog handling code
+
+### 3. File Dialog Default Paths
+
+**Issue**: File dialogs opening in wrong locations (root directory, system folders)
+
+**Solution**: Always use home directory as default:
+```python
+import os
+
+# BAD - Uses current working directory (could be /)
+output_path = QFileDialog.getSaveFileName(self, "Save File", "", "...")
+
+# GOOD - Uses home directory
+default_path = os.path.expanduser('~')
+output_path = QFileDialog.getSaveFileName(self, "Save File", default_path, "...")
+```
+
+### 4. Systematic Debugging Approach
+
+When a feature doesn't work in the bundle but works in development:
+
+**Step 1: Enable console output**
+```bash
+# Don't just double-click the app - run from terminal
+./dist/TopoToImage.app/Contents/MacOS/TopoToImage
+```
+
+**Step 2: Reproduce the issue**
+- Perform the exact action that fails
+- Watch console output carefully
+- Look for Python exceptions, not just warnings
+
+**Step 3: Identify the failure point**
+- Note the last successful operation before failure
+- Look for file path issues (wrong paths, missing files)
+- Check for permission errors (read-only locations)
+
+**Step 4: Compare development vs bundle behavior**
+```python
+# Add temporary debug prints to identify environment
+import sys
+print(f"Running in bundle: {hasattr(sys, '_MEIPASS')}")
+print(f"Current working directory: {os.getcwd()}")
+print(f"Home directory: {Path.home()}")
+```
+
+**Step 5: Fix and verify**
+- Make the fix in source code
+- Rebuild bundle: `pyinstaller topotoimage.spec`
+- Test the specific feature again
+- Verify console shows expected behavior
+
+### 5. Common Bundle-Specific Bugs
+
+#### Export Elevation Database Not Working
+
+**Symptoms:**
+- Feature works in development
+- Fails silently in bundle
+- Console shows no error messages
+- Function returns immediately without doing anything
+
+**Debugging Process:**
+```python
+# Add strategic debug prints
+def export_elevation_database(self):
+    print("DEBUG: Export function called")
+
+    output_path = QFileDialog.getSaveFileName(...)
+    print(f"DEBUG: Dialog returned: '{output_path}'")
+
+    if output_path:
+        print(f"DEBUG: Path check passed")
+        # Export code...
+    else:
+        print(f"DEBUG: Path check failed")
+```
+
+**Common Findings:**
+- `output_path` is `""` (empty string) when user cancels, not `None`
+- Empty string passes the `if output_path:` check
+- Function proceeds with empty path, causing silent failure
+
+**Fix:**
+```python
+# Change from:
+if output_path:
+
+# To:
+if output_path and output_path.strip():
+```
+
+### 6. Excessive Debug Output
+
+**Symptom**: Bundle is slow, generates huge log files
+
+**Root Cause**: logging.DEBUG level in production
+
+**Investigation**:
+```bash
+# Check log file size
+ls -lh ~/TopoToImage_Debug/dem_assembly_debug.log
+
+# Count log lines
+wc -l ~/TopoToImage_Debug/dem_assembly_debug.log
+
+# If you see 16,000+ lines for one export, DEBUG level is enabled
+```
+
+**Fix**:
+```python
+# In topotoimage.py
+logging.basicConfig(
+    level=logging.INFO,  # Change from DEBUG to INFO
+    format='%(levelname)s: %(message)s'
+)
+```
+
+### 7. Testing Strategy for Bundled Apps
+
+**Create a testing checklist for every bundle:**
+
+1. **Basic Launch**
+   - [ ] App starts without errors
+   - [ ] Main window displays
+   - [ ] No missing file warnings
+
+2. **File Dialogs**
+   - [ ] Open file dialog works
+   - [ ] Save file dialog works
+   - [ ] Cancel doesn't cause errors
+   - [ ] Default paths are sensible (not root)
+
+3. **Export Functions**
+   - [ ] Image export works
+   - [ ] Elevation database export works
+   - [ ] Key file generation works
+   - [ ] Scale settings are respected
+
+4. **Performance**
+   - [ ] Operations complete in reasonable time
+   - [ ] No excessive logging
+   - [ ] Disk space usage is reasonable
+
+### 8. Release Package Testing
+
+Before creating final DMG for release:
+
+**Full Test Protocol:**
+```bash
+# 1. Clean build
+rm -rf dist/ build/
+pyinstaller topotoimage.spec
+
+# 2. Test from terminal (see all output)
+./dist/TopoToImage.app/Contents/MacOS/TopoToImage
+
+# 3. Test every major feature
+#    - Load database
+#    - Generate preview
+#    - Export image
+#    - Export elevation database
+#    - Generate key file
+#    - Open dialogs (gradient editor, HLS adjustment)
+
+# 4. Test as user would (double-click)
+open dist/TopoToImage.app
+#    - Verify first-run experience
+#    - Test all features again
+#    - Check for any unexpected behavior
+
+# 5. Check log files
+ls -lh ~/TopoToImage_Debug/
+# Should be minimal or empty for INFO logging
+```
+
+### 9. Lessons Learned - File Dialog Best Practices
+
+**Summary of today's debugging session:**
+
+**Problem**: Export elevation database feature worked in development but failed silently in bundle.
+
+**Investigation Process:**
+1. Noticed feature did nothing when clicked
+2. Added debug prints to trace execution
+3. Found QFileDialog.getSaveFileName() returned empty string when cancelled
+4. Discovered `if output_path:` check passed for empty string
+5. Function proceeded with empty path, failing silently
+
+**Root Cause**: Inconsistent QFileDialog behavior between environments
+- Development: Returns `None` on cancel
+- Bundle: Returns `""` (empty string) on cancel
+
+**Solution Applied**:
+```python
+# Updated both locations:
+# src/dem_assembly_system.py:712
+# src/main_window_qt_designer.py:3463
+
+# From:
+if output_path:
+
+# To:
+if output_path and output_path.strip():
+```
+
+**Prevention**: Always check file dialog returns for both `None` and empty string:
+```python
+path = QFileDialog.getSaveFileName(...)
+if path and path.strip():  # Handles both None and ""
+    # Safe to proceed
+```
 
 ## Maintenance and Updates
 
@@ -686,10 +955,15 @@ The bundle created by this process is ready for:
 This guide represents the culmination of multiple development phases:
 
 - **Phase 0**: Critical pre-bundle preparations and resource path resolution
-- **Phase 1**: Initial PyInstaller bundle creation and dependency management  
+- **Phase 1**: Initial PyInstaller bundle creation and dependency management
 - **Phase 2**: UI file inclusion and gradient system fixes
 - **Phase 3**: Preview icon system corrections and initialization order fixes
 - **Phase 4**: PROJ database inclusion and CRS functionality restoration
+- **Phase 5**: Production debugging and file dialog handling fixes
+  - Fixed export elevation database feature (QFileDialog empty string vs None)
+  - Optimized debug logging for production (INFO vs DEBUG level)
+  - Improved file dialog default paths (home directory instead of root)
+  - Documented systematic debugging approach for bundled applications
 
 All known issues have been identified and resolved. Following this guide should produce a fully functional TopoToImage bundle without the trial-and-error process of the original development.
 
