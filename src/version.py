@@ -8,7 +8,7 @@ Centralized version management for the application
 VERSION_MAJOR = 4
 VERSION_MINOR = 0
 VERSION_PATCH = 0
-VERSION_PRERELEASE = "beta.3"
+VERSION_PRERELEASE = ""  # Empty for final releases (e.g. "beta.3")
 
 # Application metadata
 APP_NAME = "TopoToImage"

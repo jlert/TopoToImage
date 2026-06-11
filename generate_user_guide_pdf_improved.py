@@ -27,7 +27,7 @@ with open(user_guide_path, 'r') as f:
     content = f.read()
 
 # Output PDF path
-output_path = Path("/Users/josephlertola/Documents/claude-code/topoToimage-dev-workspace/releases/TopoToImage-v4.0.0-beta.3-staging/TopoToImage_User_Guide.pdf")
+output_path = Path("/Users/josephlertola/Documents/claude-code/topoToimage-dev-workspace/releases/TopoToImage-v4.0.0-staging/TopoToImage_User_Guide.pdf")
 
 # Create PDF with bookmarks enabled
 doc = SimpleDocTemplate(str(output_path), pagesize=letter,
@@ -126,7 +126,7 @@ story = []
 
 # Add title
 story.append(Paragraph("TopoToImage User Guide", title_style))
-story.append(Paragraph(f"Version 4.0.0-beta.3 | {datetime.now().strftime('%B %Y')}", body_style))
+story.append(Paragraph(f"Version 4.0.0 | {datetime.now().strftime('%B %Y')}", body_style))
 story.append(Spacer(1, 0.1*inch))
 
 # Add banner image

@@ -16,7 +16,7 @@ from reportlab.lib import colors
 from datetime import datetime
 
 # Output PDF path
-output_path = Path("/Users/josephlertola/Documents/claude-code/topoToimage-dev-workspace/releases/TopoToImage-v4.0.0-beta.3-staging/TopoToImage_README.pdf")
+output_path = Path("/Users/josephlertola/Documents/claude-code/topoToimage-dev-workspace/releases/TopoToImage-v4.0.0-staging/TopoToImage_README.pdf")
 
 # Create PDF
 doc = SimpleDocTemplate(str(output_path), pagesize=letter,
@@ -120,7 +120,7 @@ story = []
 # Title page
 story.append(Spacer(1, 1*inch))
 story.append(Paragraph("TopoToImage", title_style))
-story.append(Paragraph("v4.0.0-beta.3 for macOS", subtitle_style))
+story.append(Paragraph("v4.0.0 for macOS", subtitle_style))
 story.append(Paragraph("Professional Terrain Visualization Software", body_style))
 story.append(Spacer(1, 0.5*inch))
 
