@@ -1,8 +1,12 @@
-# TopoToImage 4.0.0-beta.3
+# TopoToImage 4.0.0 — First Final Release
 
 > **Modern recreation of the 1990s Macintosh terrain visualization software**
 
-**⚠️ BETA SOFTWARE**: This is pre-release software under active development. Please report bugs and provide feedback!
+TopoToImage 4.0 is out of beta. This release contains all the features of the original 1990s TopoToImage, rebuilt for modern macOS.
+
+### What's New Since Beta 3
+- **Much faster rendering** — hillshade and cast-shadow calculations have been rewritten with vectorized math and are now faster
+- Code cleanup and security hardening
 
 ## 📥 Two Ways to Use TopoToImage
 
