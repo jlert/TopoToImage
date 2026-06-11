@@ -821,14 +821,19 @@ class MultiFileDatabase:
             return False
 
 
-def test_multi_file_database():
-    """Test the multi-file database system with Gtopo30"""
-    
+def test_multi_file_database(database_path=None):
+    """Test the multi-file database system with a multi-file DEM database.
+
+    Pass the database folder as a command-line argument, e.g.:
+        python multi_file_database.py /path/to/Gtopo30
+    """
     print("🧪 Testing Multi-File Database System")
     print("=" * 50)
-    
-    # Test with Gtopo30 database
-    gtopo30_path = Path("/Users/josephlertola/Documents/claude-code/dem-databases/Gtopo30")
+
+    if database_path is None:
+        print("❌ No database path given. Usage: python multi_file_database.py /path/to/database")
+        return False
+    gtopo30_path = Path(database_path)
     
     if not gtopo30_path.exists():
         print(f"❌ Gtopo30 database not found at: {gtopo30_path}")
@@ -862,4 +867,5 @@ def test_multi_file_database():
 
 
 if __name__ == "__main__":
-    test_multi_file_database()
+    import sys
+    test_multi_file_database(sys.argv[1] if len(sys.argv) > 1 else None)

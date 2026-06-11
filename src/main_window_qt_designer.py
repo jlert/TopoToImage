@@ -2669,9 +2669,10 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
         """Open the user guide PDF file"""
         import os
         import platform
+        import subprocess
         from pathlib import Path
         from PyQt6.QtWidgets import QMessageBox
-        
+
         # Look for user guide PDF in the application directory
         user_guide_path = Path(__file__).parent / "TopoToImage_User_Guide.pdf"
         
@@ -2679,11 +2680,11 @@ class DEMVisualizerQtDesignerWindow(QMainWindow):
             try:
                 # Open PDF with system default viewer
                 if platform.system() == "Darwin":  # macOS
-                    os.system(f'open "{user_guide_path}"')
+                    subprocess.run(['open', str(user_guide_path)], check=True)
                 elif platform.system() == "Windows":  # Windows
                     os.startfile(str(user_guide_path))
                 else:  # Linux and others
-                    os.system(f'xdg-open "{user_guide_path}"')
+                    subprocess.run(['xdg-open', str(user_guide_path)], check=True)
             except Exception as e:
                 QMessageBox.warning(
                     self, 

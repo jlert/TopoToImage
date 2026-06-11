@@ -9,19 +9,10 @@ from typing import List, Optional, Tuple
 from dataclasses import dataclass
 import math
 
-try:
-    from PyQt6.QtWidgets import QWidget, QApplication
-    from PyQt6.QtCore import Qt, QRect, pyqtSignal, QPointF
-    from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QPen, QBrush, 
-                             QMouseEvent, QPaintEvent, QCursor)
-except ImportError:
-    print("PyQt6 not found. Installing...")
-    import os
-    os.system("pip install PyQt6")
-    from PyQt6.QtWidgets import QWidget, QApplication
-    from PyQt6.QtCore import Qt, QRect, pyqtSignal, QPointF
-    from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QPen, QBrush, 
-                             QMouseEvent, QPaintEvent, QCursor)
+from PyQt6.QtWidgets import QWidget, QApplication
+from PyQt6.QtCore import Qt, QRect, pyqtSignal, QPointF
+from PyQt6.QtGui import (QPainter, QColor, QLinearGradient, QPen, QBrush,
+                         QMouseEvent, QPaintEvent, QCursor)
 
 
 @dataclass
