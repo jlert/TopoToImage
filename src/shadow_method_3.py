@@ -248,48 +248,61 @@ class ShadowMethod3:
         # We need to determine how far to extend lines in the shadow direction
         max_extent = max(width, height) * 2  # Generous extent to cover entire image
         
-        for start_idx, (start_x, start_y) in enumerate(starting_points):
-            # Report progress
-            if progress_callback and (start_idx % max(1, len(starting_points) // 20) == 0):
-                progress = start_idx / len(starting_points) if len(starting_points) > 0 else 1.0
-                progress_callback(progress)
-            
-            # Calculate target point for Bresenham line in shadow direction
-            target_x = start_x + dx * max_extent // max(abs(dx), abs(dy), 1)
-            target_y = start_y + dy * max_extent // max(abs(dx), abs(dy), 1)
-            
-            # Generate Bresenham line from starting point in shadow direction
-            line_points = self._bresenham_line(start_x, start_y, target_x, target_y)
-            
-            # Apply height propagation along this exact Bresenham line
-            shadow_height = -float('inf')  # Start with no shadow height
-            
-            for x, y in line_points:
-                # Check if pixel is within image bounds
-                if x < 0 or x >= width or y < 0 or y >= height:
-                    continue
-                
-                # Get elevation at this position
-                current_elev = elevation_data[y, x]
-                
-                # Update shadow height - this pixel can cast shadows
-                shadow_height = max(shadow_height, current_elev - drop_distance)
-                
-                # Check if this pixel should be in shadow from previous elevations
-                if shadow_height > current_elev:
-                    # Calculate shadow intensity (same as ShadowMethod2)
-                    shadow_diff = shadow_height - current_elev
-                    shadow_intensity = min(1.0, shadow_diff * shadow_gray_step / drop_distance)
-                    
-                    # Apply shadow (take maximum to preserve stronger shadows)
-                    shadow_map[y, x] = max(shadow_map[y, x], shadow_intensity)
-                    
-                    # Shadow weakens with distance (same as ShadowMethod2)
-                    shadow_height = max(shadow_height - drop_distance, current_elev - drop_distance)
-                else:
-                    # No shadow at this pixel, update shadow height
-                    shadow_height = current_elev - drop_distance
-        
+        if not starting_points:
+            return shadow_map
+
+        # Every line uses the same direction and length, so the Bresenham step
+        # pattern is identical for all of them — only the starting point differs.
+        # Compute the shared pixel-offset sequence once, then advance all lines
+        # in lockstep with array operations instead of looping per line.
+        end_dx = dx * max_extent // max(abs(dx), abs(dy), 1)
+        end_dy = dy * max_extent // max(abs(dx), abs(dy), 1)
+        offsets = self._bresenham_line(0, 0, end_dx, end_dy)
+
+        start_x = np.array([p[0] for p in starting_points], dtype=np.int64)
+        start_y = np.array([p[1] for p in starting_points], dtype=np.int64)
+
+        # Per-line propagated shadow height (height propagation, same as ShadowMethod2)
+        shadow_height = np.full(start_x.shape, -np.inf, dtype=np.float64)
+
+        n_steps = len(offsets)
+        for step_idx, (offset_x, offset_y) in enumerate(offsets):
+            if progress_callback and (step_idx % max(1, n_steps // 20) == 0):
+                progress_callback(step_idx / n_steps)
+
+            x = start_x + offset_x
+            y = start_y + offset_y
+
+            # Lines currently outside the image keep their shadow height unchanged
+            inside = (x >= 0) & (x < width) & (y >= 0) & (y < height)
+            if not np.any(inside):
+                continue
+
+            xv = x[inside]
+            yv = y[inside]
+            current_elev = elevation_data[yv, xv].astype(np.float64)
+
+            # Update shadow height - this pixel can cast shadows
+            line_height = np.maximum(shadow_height[inside], current_elev - drop_distance)
+
+            # Pixels shadowed by previously propagated heights
+            in_shadow = line_height > current_elev
+            shadow_diff = line_height - current_elev
+            shadow_intensity = np.minimum(1.0, shadow_diff * shadow_gray_step / drop_distance)
+            shadow_intensity = np.where(in_shadow, shadow_intensity, 0.0).astype(np.float32)
+
+            # Apply shadow (take maximum to preserve stronger shadows);
+            # maximum.at handles lines that overlap on the same pixel
+            np.maximum.at(shadow_map, (yv, xv), shadow_intensity)
+
+            # Shadow weakens with distance where shadowed, otherwise reset to this pixel
+            line_height = np.where(
+                in_shadow,
+                np.maximum(line_height - drop_distance, current_elev - drop_distance),
+                current_elev - drop_distance
+            )
+            shadow_height[inside] = line_height
+
         return shadow_map
     
     def get_method_info(self) -> dict:

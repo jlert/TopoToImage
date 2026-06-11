@@ -344,30 +344,21 @@ class TerrainRenderer:
             # Convert shadow to 0.0-1.0 range for blending
             shadow_map = shadow_layer.astype(np.float32) / 255.0
             
-            # Apply shadows using TopoToImage formula (same as shaded relief)
-            height, width = result.shape[:2]
-            total_pixels = height * width
-            processed_pixels = 0
-            
-            for y in range(height):
-                # Report progress during shadow compositing
-                if progress_callback and y % max(1, height // 10) == 0:  # Update 10 times during processing
-                    progress = 0.5 + (processed_pixels / total_pixels) * 0.4  # Start at 50%, end at 90%
-                    progress_callback(progress, "Compositing")
-                
-                for x in range(width):
-                    processed_pixels += 1
-                    shadow_intensity = shadow_map[y, x]
-                    if shadow_intensity > 0:  # Only apply where there are shadows
-                        # Calculate shadow scaling factors (TopoToImage formula)
-                        r_scale = ((1 - shadow_intensity) * (1 - shadow_r / 255.0)) + (shadow_r / 255.0)
-                        g_scale = ((1 - shadow_intensity) * (1 - shadow_g / 255.0)) + (shadow_g / 255.0)
-                        b_scale = ((1 - shadow_intensity) * (1 - shadow_b / 255.0)) + (shadow_b / 255.0)
-                        
-                        # Apply shadow to RGB channels
-                        result[y, x, 0] = int(result[y, x, 0] * r_scale)
-                        result[y, x, 1] = int(result[y, x, 1] * g_scale)
-                        result[y, x, 2] = int(result[y, x, 2] * b_scale)
+            # Apply shadows using TopoToImage formula (same as shaded relief).
+            # Vectorized: same per-pixel scaling formula applied to whole channels at once;
+            # pixels with zero shadow intensity are left untouched, as in the loop version.
+            if progress_callback:
+                progress_callback(0.5, "Compositing")
+
+            shadow_pixels = shadow_map > 0
+            # float64 to match the original loop's Python-float arithmetic exactly
+            inverse_intensity = 1.0 - shadow_map.astype(np.float64)
+            for channel, shadow_component in enumerate((shadow_r, shadow_g, shadow_b)):
+                # Calculate shadow scaling factors (TopoToImage formula)
+                scale = (inverse_intensity * (1 - shadow_component / 255.0)) + (shadow_component / 255.0)
+                # astype(uint8) truncates like int() since values are non-negative
+                shadowed = (result[:, :, channel] * scale).astype(np.uint8)
+                result[:, :, channel] = np.where(shadow_pixels, shadowed, result[:, :, channel])
         
         # Final progress update
         if progress_callback:
@@ -801,74 +792,63 @@ class TerrainRenderer:
         x_offset = dx * sample_distance
         y_offset = dy * sample_distance
         
-        # Apply TopoToImage's simple elevation difference algorithm with bilinear interpolation
-        total_pixels = height * width
-        processed_pixels = 0
-        
-        for y in range(height):
-            # Report progress during hillshade calculation
-            if progress_callback and y % max(1, height // 10) == 0:  # Update 10 times during processing
-                progress = min(0.9, processed_pixels / total_pixels)  # Cap at 90%
+        # Apply TopoToImage's simple elevation difference algorithm with bilinear interpolation.
+        # Vectorized: same formula as the original per-pixel loop, evaluated on whole
+        # row blocks at once. Processed in blocks to bound peak memory on large DEMs.
+        intensity_factor = shading_intensity / 100.0
+
+        # Per-column neighbor x coordinates are identical for every row (x_offset is constant)
+        nx = np.arange(width, dtype=np.float64) + x_offset
+        x0 = nx.astype(np.int64)  # int() truncation; valid positions are non-negative
+        wx = nx - x0
+        x_in_bounds = (nx >= 0) & (nx < width - 1)
+        x0c = np.clip(x0, 0, width - 2)  # safe gather indices; invalid columns masked out below
+
+        block_rows = 512
+        for y_start in range(0, height, block_rows):
+            y_end = min(y_start + block_rows, height)
+
+            if progress_callback:
+                progress = min(0.9, y_start / height)
                 progress_callback(progress, "Hillshading")
-            
-            for x in range(width):
-                processed_pixels += 1
-                # Get current pixel elevation
-                current_elev = elevation_data[y, x]
-                
-                # Skip if current pixel has no data
-                if np.isnan(current_elev):
-                    continue
-                
-                # Calculate neighbor position with floating-point precision
-                neighbor_x = x + x_offset
-                neighbor_y = y + y_offset
-                
-                # Check if neighbor position is within bounds
-                if (neighbor_x < 0 or neighbor_x >= width - 1 or 
-                    neighbor_y < 0 or neighbor_y >= height - 1):
-                    continue
-                
-                # Bilinear interpolation to get neighbor elevation at fractional coordinates
-                x0, x1 = int(neighbor_x), int(neighbor_x) + 1
-                y0, y1 = int(neighbor_y), int(neighbor_y) + 1
-                
-                # Get the four surrounding pixels
-                q00 = elevation_data[y0, x0]  # Top-left
-                q01 = elevation_data[y1, x0]  # Bottom-left  
-                q10 = elevation_data[y0, x1]  # Top-right
-                q11 = elevation_data[y1, x1]  # Bottom-right
-                
-                # Skip if any surrounding pixel has no data
-                if np.isnan(q00) or np.isnan(q01) or np.isnan(q10) or np.isnan(q11):
-                    continue
-                
-                # Calculate interpolation weights
-                wx = neighbor_x - x0
-                wy = neighbor_y - y0
-                
-                # Bilinear interpolation
-                neighbor_elev = (q00 * (1 - wx) * (1 - wy) + 
-                               q10 * wx * (1 - wy) + 
-                               q01 * (1 - wx) * wy + 
-                               q11 * wx * wy)
-                
-                # Calculate simple elevation difference (TopoToImage: j-k)
-                # Fixed to match shadow direction: current - neighbor
-                # When current is higher than neighbor (slope facing away from light) → positive → darker
-                # When current is lower than neighbor (slope facing towards light) → negative → lighter
-                elev_diff = current_elev - neighbor_elev
-                
-                # Apply intensity scaling (TopoToImage: col*pcent%>>8)
-                # Convert intensity from 0-100 to equivalent of TopoToImage's scaling
-                intensity_factor = shading_intensity / 100.0
-                
-                # Scale elevation difference to produce visible shading range
-                # Target range: ±0.4 around 0.5 baseline for strong contrast (wider than before)
-                shaded_value_normalized = (elev_diff / terrain_relief) * intensity_factor * 1.2  # 1.2 = enhanced contrast range
-                
-                # Apply to hillshade (add to neutral 0.5)
-                hillshade[y, x] = 0.5 + shaded_value_normalized
+
+            ny = np.arange(y_start, y_end, dtype=np.float64) + y_offset
+            y0 = ny.astype(np.int64)
+            wy = ny - y0
+            y_in_bounds = (ny >= 0) & (ny < height - 1)
+            y0c = np.clip(y0, 0, height - 2)
+
+            block = elevation_data[y_start:y_end, :]
+
+            # Get the four surrounding pixels (same q layout as the original loop)
+            q00 = elevation_data[y0c[:, None], x0c[None, :]]      # Top-left
+            q01 = elevation_data[y0c[:, None] + 1, x0c[None, :]]  # Bottom-left
+            q10 = elevation_data[y0c[:, None], x0c[None, :] + 1]  # Top-right
+            q11 = elevation_data[y0c[:, None] + 1, x0c[None, :] + 1]  # Bottom-right
+
+            # Bilinear interpolation
+            wxr = wx[None, :]
+            wyr = wy[:, None]
+            neighbor_elev = (q00 * (1 - wxr) * (1 - wyr) +
+                             q10 * wxr * (1 - wyr) +
+                             q01 * (1 - wxr) * wyr +
+                             q11 * wxr * wyr)
+
+            # Pixels keep the neutral 0.5 unless current pixel, bounds, and all four
+            # neighbors are valid — identical to the skip conditions in the loop version
+            valid = (~np.isnan(block) &
+                     y_in_bounds[:, None] & x_in_bounds[None, :] &
+                     ~np.isnan(q00) & ~np.isnan(q01) & ~np.isnan(q10) & ~np.isnan(q11))
+
+            # Calculate simple elevation difference (TopoToImage: j-k)
+            # current - neighbor: slope facing away from light → positive → darker
+            elev_diff = block - neighbor_elev
+
+            # Scale elevation difference (TopoToImage: col*pcent%>>8); 1.2 = enhanced contrast range
+            shaded_value_normalized = (elev_diff / terrain_relief) * intensity_factor * 1.2
+
+            hs_block = hillshade[y_start:y_end, :]
+            hs_block[valid] = (0.5 + shaded_value_normalized[valid]).astype(np.float32)
         
         # Clamp values to valid 0-1 range (TopoToImage: clipCol2)
         hillshade = np.clip(hillshade, 0.0, 1.0)
