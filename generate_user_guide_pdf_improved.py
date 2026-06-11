@@ -27,7 +27,7 @@ with open(user_guide_path, 'r') as f:
     content = f.read()
 
 # Output PDF path
-output_path = Path("/Users/josephlertola/Documents/claude-code/topoToimage-dev-workspace/releases/TopoToImage-v4.0.0-staging/TopoToImage_User_Guide.pdf")
+output_path = Path("/Users/josephlertola/Projects/claude-code/topoToimage-dev-workspace/releases/TopoToImage-v4.0.0-staging/TopoToImage_User_Guide.pdf")
 
 # Create PDF with bookmarks enabled
 doc = SimpleDocTemplate(str(output_path), pagesize=letter,

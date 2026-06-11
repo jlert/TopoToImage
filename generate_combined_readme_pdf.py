@@ -16,7 +16,7 @@ from reportlab.lib import colors
 from datetime import datetime
 
 # Output PDF path
-output_path = Path("/Users/josephlertola/Documents/claude-code/topoToimage-dev-workspace/releases/TopoToImage-v4.0.0-staging/TopoToImage_README.pdf")
+output_path = Path("/Users/josephlertola/Projects/claude-code/topoToimage-dev-workspace/releases/TopoToImage-v4.0.0-staging/TopoToImage_README.pdf")
 
 # Create PDF
 doc = SimpleDocTemplate(str(output_path), pagesize=letter,
@@ -205,12 +205,12 @@ story.append(Spacer(1, 0.2*inch))
 
 # What's New
 story.append(PageBreak())
-story.append(Paragraph("✨ What's New in Beta.3", heading1_style))
+story.append(Paragraph("✨ What's New in Version 4.0.0", heading1_style))
 story.append(Spacer(1, 0.1*inch))
-story.append(Paragraph("• <b>Fixed:</b> Export elevation database feature now works correctly in bundled app", bullet_style))
-story.append(Paragraph("• <b>Fixed:</b> Multi-file database export issue resolved", bullet_style))
-story.append(Paragraph("• <b>Improved:</b> Optimized debug logging for better performance", bullet_style))
-story.append(Paragraph("• <b>Improved:</b> File dialog paths now use home directory by default", bullet_style))
+story.append(Paragraph("• <b>First final release</b> — TopoToImage 4.0 is out of beta", bullet_style))
+story.append(Paragraph("• <b>Much faster rendering:</b> hillshade and cast-shadow calculations are dramatically faster, with identical visual output", bullet_style))
+story.append(Paragraph("• <b>Fixed:</b> Export elevation database feature works correctly in bundled app", bullet_style))
+story.append(Paragraph("• <b>Improved:</b> Optimized logging and file dialog default paths", bullet_style))
 story.append(Spacer(1, 0.3*inch))
 
 # Features Overview
